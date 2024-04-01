@@ -36,7 +36,7 @@ public static class TalentManager
             if (talent.Value.m_type is TalentType.Characteristic)
             {
                 talent.Value.m_description =
-                    $"+ <color=orange>{talent.Value.m_characteristicValue * talent.Value.m_level}</color> {talent.Value.m_characteristic}";
+                    $"+ <color=orange>{talent.Value.m_characteristicValue * talent.Value.m_level}</color> {DefaultData.LocalizeCharacteristics[talent.Value.m_characteristic]}";
             }
         }
 
@@ -46,7 +46,7 @@ public static class TalentManager
             if (talent.Value.m_type is TalentType.Characteristic)
             {
                 talent.Value.m_description =
-                    $"+ <color=orange>{talent.Value.m_characteristicValue * talent.Value.m_level}</color> {talent.Value.m_characteristic}";
+                    $"+ <color=orange>{talent.Value.m_characteristicValue * talent.Value.m_level}</color> {DefaultData.LocalizeCharacteristics[talent.Value.m_characteristic]}";
             }
         }
 
@@ -56,7 +56,7 @@ public static class TalentManager
             if (talent.m_data.m_type is TalentType.Characteristic)
             {
                 talent.m_data.m_description =
-                    $"+ <color=orange>{talent.m_data.m_characteristicValue * talent.m_data.m_level}</color> {talent.m_data.m_characteristic}";
+                    $"+ <color=orange>{talent.m_data.m_characteristicValue * talent.m_data.m_level}</color> {DefaultData.LocalizeCharacteristics[talent.m_data.m_characteristic]}";
             }
         }
     }

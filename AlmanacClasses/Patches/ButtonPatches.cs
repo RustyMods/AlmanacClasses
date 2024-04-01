@@ -31,7 +31,7 @@ public static class ButtonPatches
                 LoadUI.TalentCost.text = Localization.instance.Localize($"$almanac_cost: <color=orange>{talent.m_cost}</color>");
                 switch (talent.m_type)
                 {
-                    case TalentType.Ability or TalentType.StatusEffect:
+                    case TalentType.Ability or TalentType.StatusEffect or TalentType.Finder:
                         LoadUI.ActivePassive.text = Localization.instance.Localize("$almanac_ability");
                         break;
                     case TalentType.Characteristic:

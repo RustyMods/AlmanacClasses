@@ -137,7 +137,7 @@ public static class PlayerPatches
         }
         
         if (JumpCount >= ((talent.m_healthCost?.Value ?? 1) * talent.m_level)) return;
-        if (!Input.GetKeyDown(KeyCode.Space)) return;
+        if (!ZInput.GetButtonDown("Jump")) return;
         bool flag = false;
 
         if (!instance.HaveEitr(talent.m_eitrCost?.Value ?? 0f))

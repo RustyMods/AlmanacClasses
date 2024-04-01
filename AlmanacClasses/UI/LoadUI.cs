@@ -909,7 +909,7 @@ public static class LoadUI
             {
                 if (!CanBuyEndAbility(name))
                 {
-                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, "msg_need_connected_talents");
+                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_need_connected_talents");
                     return;
                 }
             }
@@ -1064,9 +1064,17 @@ public static class LoadUI
             string key = DefaultData.LocalizeModifiers[kvp.Key];
             switch (kvp.Key)
             {
-                case StatusEffectData.Modifier.MaxCarryWeight or StatusEffectData.Modifier.Vitality or StatusEffectData.Modifier.Stamina or StatusEffectData.Modifier.Eitr or StatusEffectData.Modifier.Heal or StatusEffectData.Modifier.DamageAbsorb:
+                case StatusEffectData.Modifier.MaxCarryWeight 
+                    or StatusEffectData.Modifier.Vitality 
+                    or StatusEffectData.Modifier.Stamina 
+                    or StatusEffectData.Modifier.Eitr:
                     float amount = kvp.Value.Value * talent.m_level;
                     stringBuilder.Append($"{key}: <color=orange>{amount}</color>\n");
+                    break;
+                case StatusEffectData.Modifier.Heal 
+                    or StatusEffectData.Modifier.DamageAbsorb:
+                    float value = Spells.ApplySkill(talent.m_skill, kvp.Value.Value * talent.m_level);
+                    stringBuilder.Append($"{key}: <color=orange>{value}</color>\n");
                     break;
                 case StatusEffectData.Modifier.Speed
                     or StatusEffectData.Modifier.Attack
@@ -1075,10 +1083,10 @@ public static class LoadUI
                     or StatusEffectData.Modifier.RaiseSkills
                     or StatusEffectData.Modifier.Noise
                     or StatusEffectData.Modifier.RunStaminaDrain
-                    or StatusEffectData.Modifier.Reflect
-                    or StatusEffectData.Modifier.EitrRegen:
-                    float modPercentage = (kvp.Value.Value * talent.m_level) * 100;
-                    stringBuilder.Append($"{key}: <color=orange>{modPercentage}</color>%\n");
+                    or StatusEffectData.Modifier.EitrRegen
+                    or StatusEffectData.Modifier.Reflect:
+                    float skilledPercentage = Spells.ApplySkill(talent.m_skill, kvp.Value.Value * talent.m_level) * 100;
+                    stringBuilder.Append($"{key}: <color=orange>{skilledPercentage}</color>%\n");
                     break;
                 default:
                     float percentage = kvp.Value.Value * 100;

@@ -260,8 +260,7 @@ public abstract class StatusEffectManager
                 else
                 {
                     if (!ShouldAffect(StatusEffectData.Modifier.MaxCarryWeight)) return;
-                    if (!data.talent.m_modifiers.TryGetValue(StatusEffectData.Modifier.MaxCarryWeight,
-                            out ConfigEntry<float> config)) return;
+                    if (!data.talent.m_modifiers.TryGetValue(StatusEffectData.Modifier.MaxCarryWeight, out ConfigEntry<float> config)) return;
                     
                     limit += config.Value * data.talent.m_level;
                 }
@@ -291,8 +290,7 @@ public abstract class StatusEffectManager
                 if (!m_character) return;
                 if (ShouldAffect(StatusEffectData.Modifier.Reflect))
                 {
-                    if (!data.talent.m_modifiers.TryGetValue(StatusEffectData.Modifier.Reflect,
-                            out ConfigEntry<float> reflectConfig)) return;
+                    if (!data.talent.m_modifiers.TryGetValue(StatusEffectData.Modifier.Reflect, out ConfigEntry<float> reflectConfig)) return;
                     
                     float modifier = reflectConfig.Value * data.talent.m_level;
                     HitData hitData = new()
