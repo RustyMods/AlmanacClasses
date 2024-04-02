@@ -11,7 +11,7 @@ public static class LoadPieces
     {
         BuildPiece altar = new("classesbundle", "AlmanacClassAltar");
         altar.Name.English("Class Altar");
-        altar.Description.English("Description...");
+        altar.Description.English("");
         altar.Crafting.Set(CraftingTable.None);
         altar.RequiredItems.Add("Stone", 20, true);
         altar.RequiredItems.Add("Wood", 20, true);

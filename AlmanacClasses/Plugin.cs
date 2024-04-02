@@ -21,7 +21,7 @@ namespace AlmanacClasses
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
-        internal const string ModVersion = "0.2.0";
+        internal const string ModVersion = "0.2.2";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
         private static readonly string ConfigFileName = ModGUID + ".cfg";
@@ -118,7 +118,6 @@ namespace AlmanacClasses
         public static ConfigEntry<int> _ExperienceMultiplier = null!;
         public static ConfigEntry<int> _TalentPointPerLevel = null!;
         public static ConfigEntry<int> _TalentPointsPerTenLevel = null!;
-        public static ConfigEntry<Toggle> _MuninAlwaysSpawns = null!;
         #endregion
 
         public static ConfigEntry<int> _MaxEitr = null!;
@@ -127,6 +126,8 @@ namespace AlmanacClasses
         public static ConfigEntry<int> _EitrRatio = null!;
         public static ConfigEntry<int> _HealthRatio = null!;
         public static ConfigEntry<int> _StaminaRatio = null!;
+
+        public static ConfigEntry<int> _DamageRatio = null!;
 
         #region Key Codes
         public static ConfigEntry<KeyCode> _SpellAlt = null!;
@@ -191,6 +192,11 @@ namespace AlmanacClasses
             _MaxStamina = config("4 - Characteristics", "6. Max Stamina", 100,
                 new ConfigDescription("Set max amount of stamina that can be gained from characteristic points",
                     new AcceptableValueRange<int>(0, 500)));
+
+            _DamageRatio = config("4 - Characteristics", "7. Damage Ratio", 10,
+                new ConfigDescription(
+                    "Set the ratio of strength, dexterity, intelligence to increased damage output of, melee, ranged and magic damage",
+                    new AcceptableValueRange<int>(0, 20)));
             
             _RangerMeadowSpawn = config("Ranger - Creature Mask", "1. Meadows",
                 Classes.Abilities.SpawnSystem.SpawnOptions.Neck, "Set friendly spawn");

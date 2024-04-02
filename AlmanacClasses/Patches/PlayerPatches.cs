@@ -1,6 +1,9 @@
-﻿using AlmanacClasses.Classes;
+﻿using System.Collections.Generic;
+using System.Linq;
+using AlmanacClasses.Classes;
 using AlmanacClasses.Data;
 using AlmanacClasses.LoadAssets;
+using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
 using YamlDotNet.Serialization;
@@ -188,5 +191,46 @@ public static class PlayerPatches
         instance.SetCrouch(false);
         instance.UpdateBodyFriction();
         ++JumpCount;
+    }
+
+    [HarmonyPatch(typeof(Player), nameof(Player.UseHotbarItem))]
+    private static class Player_UseHotbarItem_Patch
+    {
+        private static bool Prefix()
+        {
+            if (!AreKeysAlpha()) return true;
+            return !Input.GetKey(AlmanacClassesPlugin._SpellAlt.Value);
+        }
+
+        private static bool AreKeysAlpha()
+        {
+            if (AlmanacClassesPlugin._SpellAlt.Value is KeyCode.None) return false;
+            List<ConfigEntry<KeyCode>> configs = new()
+            {
+                AlmanacClassesPlugin._Spell1,
+                AlmanacClassesPlugin._Spell2,
+                AlmanacClassesPlugin._Spell3,
+                AlmanacClassesPlugin._Spell4,
+                AlmanacClassesPlugin._Spell5,
+                AlmanacClassesPlugin._Spell6,
+                AlmanacClassesPlugin._Spell7,
+                AlmanacClassesPlugin._Spell8
+            };
+            return configs.Any(isKeyAlpha);
+        }
+
+        private static bool isKeyAlpha(ConfigEntry<KeyCode> config)
+        {
+            return config.Value 
+                is KeyCode.Alpha1 
+                or KeyCode.Alpha2 
+                or KeyCode.Alpha3
+                or KeyCode.Alpha4 
+                or KeyCode.Alpha4 
+                or KeyCode.Alpha5 
+                or KeyCode.Alpha6
+                or KeyCode.Alpha7 
+                or KeyCode.Alpha8;
+        }
     }
 }

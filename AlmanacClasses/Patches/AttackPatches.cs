@@ -54,6 +54,6 @@ public static class AttackPatches
         if (left.m_shared.m_itemType is not ItemDrop.ItemData.ItemType.OneHandedWeapon) return;
         string normalAttack = instance.m_attackAnimation;
         instance.m_attackAnimation = normalAttack.EndsWith("_secondary") ? "dual_knives_secondary" : "dual_knives";
-        instance.m_attackChainLevels = 3;
+        instance.m_attackChainLevels = normalAttack.EndsWith("_secondary") ? 1 : 3;
     }
 }

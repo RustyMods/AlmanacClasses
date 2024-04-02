@@ -151,6 +151,7 @@
         <Compile Include="Managers\MaterialReplacer.cs" />
         <Compile Include="Managers\PieceManager.cs" />
         <Compile Include="Managers\RavenTutorialManager.cs" />
+        <Compile Include="Managers\ReceiveDataManager.cs" />
         <Compile Include="Managers\SpriteManager.cs" />
         <Compile Include="Managers\StatusEffectManager.cs" />
         <Compile Include="Patches\AttackPatches.cs" />

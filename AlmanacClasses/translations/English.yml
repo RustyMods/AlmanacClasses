@@ -33,6 +33,7 @@ almanac_passive: "Passive"
 almanac_heal: "Heal"
 almanac_reflect: "Reflect"
 almanac_vitality: "Vitality"
+almanac_damage_absorb: "Damage Absorb"
 
 
 info_move_spellbar: "Move spell bar"

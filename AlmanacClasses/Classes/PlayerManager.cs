@@ -14,9 +14,6 @@ public static class PlayerManager
     public static readonly string m_playerDataKey = "AlmanacClassesPlayerData";
     public static PlayerData m_tempPlayerData = new();
     public static readonly Dictionary<string, Talent> m_playerTalents = new();
-    
-    private const float m_damageRatio = 10f;
-
     public static void InitPlayerData()
     {
         if (!Player.m_localPlayer) return;
@@ -70,6 +67,7 @@ public static class PlayerManager
     public static int GetTotalAddedHealth()
     {
         int output = CharacteristicManager.GetCharacteristic(Characteristic.Constitution) / AlmanacClassesPlugin._HealthRatio.Value;
+        output = Mathf.Clamp(output, 0, AlmanacClassesPlugin._MaxHealth.Value);
         List<StatusEffect> effects = Player.m_localPlayer.GetSEMan().GetStatusEffects().FindAll(x => x is StatusEffectManager.Data.TalentEffect);
         foreach (StatusEffect? effect in effects)
         {
@@ -80,12 +78,13 @@ public static class PlayerManager
             output += (int)config.Value * talentEffect.data.talent.m_level;
         }
         
-        return Mathf.Clamp(output, 0, AlmanacClassesPlugin._MaxHealth.Value);
+        return output;
     }
 
     public static int GetTotalAddedStamina()
     {
         int output = CharacteristicManager.GetCharacteristic(Characteristic.Dexterity) / AlmanacClassesPlugin._StaminaRatio.Value;
+        output = Mathf.Clamp(output, 0, AlmanacClassesPlugin._MaxStamina.Value);
         List<StatusEffect> effects = Player.m_localPlayer.GetSEMan().GetStatusEffects().FindAll(x => x is StatusEffectManager.Data.TalentEffect);
         foreach (StatusEffect? effect in effects)
         {
@@ -96,12 +95,13 @@ public static class PlayerManager
             output += (int)config.Value * talentEffect.data.talent.m_level;
         }
 
-        return Mathf.Clamp(output, 0, AlmanacClassesPlugin._MaxStamina.Value);
+        return output;
     }
 
     public static int GetTotalAddedEitr()
     {
         int output = CharacteristicManager.GetCharacteristic(Characteristic.Wisdom) / AlmanacClassesPlugin._EitrRatio.Value;
+        output = Mathf.Clamp(output, 0, AlmanacClassesPlugin._MaxEitr.Value);
         List<StatusEffect> effects = Player.m_localPlayer.GetSEMan().GetStatusEffects().FindAll(x => x is StatusEffectManager.Data.TalentEffect);
         foreach (StatusEffect? effect in effects)
         {
@@ -112,13 +112,13 @@ public static class PlayerManager
             output += (int)config.Value * talentEffect.data.talent.m_level;
         }
 
-        return Mathf.Clamp(output, 0, AlmanacClassesPlugin._MaxEitr.Value);
+        return output;
     }
 
-    public static float GetDamageRatio(Characteristic type)
+    public static int GetDamageRatio(Characteristic type)
     {
         int characteristic = CharacteristicManager.GetCharacteristic(type);
-        float output = characteristic / m_damageRatio;
+        int output = characteristic / AlmanacClassesPlugin._DamageRatio.Value;
         return 1 + output / 100;
     }
     

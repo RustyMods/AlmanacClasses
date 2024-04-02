@@ -83,7 +83,6 @@ public abstract class StatusEffectManager
                     if (character.IsPlayer()) continue;
                     HitData hitData = new HitData()
                     {
-                        // m_attacker = m_character.GetZDOID(),
                         m_ranged = true,
                         m_hitType = HitData.HitType.PlayerHit,
                         m_skill = Skills.SkillType.ElementalMagic,
@@ -269,8 +268,7 @@ public abstract class StatusEffectManager
             public override void ModifyRunStaminaDrain(float baseDrain, ref float drain)
             {
                 if (!ShouldAffect(StatusEffectData.Modifier.RunStaminaDrain)) return;
-                if (!data.talent.m_modifiers.TryGetValue(StatusEffectData.Modifier.RunStaminaDrain,
-                        out ConfigEntry<float> config)) return;
+                if (!data.talent.m_modifiers.TryGetValue(StatusEffectData.Modifier.RunStaminaDrain, out ConfigEntry<float> config)) return;
                 
                 drain *= config.Value;
             }
@@ -317,8 +315,7 @@ public abstract class StatusEffectManager
                 }
                 
                 if (!ShouldAffect(StatusEffectData.Modifier.DamageReduction)) return;
-                if (!data.talent.m_modifiers.TryGetValue(StatusEffectData.Modifier.DamageReduction,
-                        out ConfigEntry<float> damageReductionConfig)) return;
+                if (!data.talent.m_modifiers.TryGetValue(StatusEffectData.Modifier.DamageReduction, out ConfigEntry<float> damageReductionConfig)) return;
                 
                 float value = Mathf.Clamp01(2f - damageReductionConfig.Value * data.talent.m_level);
                 hit.ApplyModifier(value);

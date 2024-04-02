@@ -23,11 +23,7 @@ public static class CharacterPatches
             if (!__instance.m_nview) return;
             if (!__instance.m_nview.IsValid()) return;
             if (__instance.m_nview.GetZDO().GetBool(Classes.Abilities.SpawnSystem.FriendlyKey)) return;
-            int exp = 1 * __instance.m_level;
-            if (ExperienceManager.CreatureExperienceMap.TryGetValue(__instance.name.Replace("(Clone)", string.Empty), out int value))
-            {
-                exp = value * __instance.m_level;
-            }
+            int exp = ExperienceManager.GetExperienceAmount(__instance.name.Replace("(Clone", string.Empty)) * __instance.m_level;
             __result += $" [<color=orange>{exp * AlmanacClassesPlugin._ExperienceMultiplier.Value}</color>]";
         }
     }

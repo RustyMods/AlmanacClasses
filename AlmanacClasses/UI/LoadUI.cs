@@ -1044,21 +1044,12 @@ public static class LoadUI
             stringBuilder.Append($"$almanac_duration: <color=orange>{talent.m_duration.Value}</color>sec\n");
         }
 
-        if (talent.m_eitrCost != null)
-        {
-            stringBuilder.Append($"$se_eitr $almanac_cost: <color=orange>{talent.m_eitrCost.Value}</color>\n");
-        }
+        if (talent.m_eitrCost is { Value: > 0 }) stringBuilder.Append($"$se_eitr $almanac_cost: <color=orange>{talent.m_eitrCost.Value}</color>\n");
 
-        if (talent.m_staminaCost != null)
-        {
-            stringBuilder.Append($"$se_stamina $almanac_cost: <color=orange>{talent.m_staminaCost.Value}</color>\n");
-        }
+        if (talent.m_staminaCost is { Value: > 0 }) stringBuilder.Append($"$se_stamina $almanac_cost: <color=orange>{talent.m_staminaCost.Value}</color>\n");
 
-        if (talent.m_healthCost != null)
-        {
-            stringBuilder.Append($"$se_health $almanac_cost: <color=orange>{talent.m_healthCost.Value}</color>\n");
-        }
-        
+        if (talent.m_healthCost is { Value: > 0 }) stringBuilder.Append($"$se_health $almanac_cost: <color=orange>{talent.m_healthCost.Value}</color>\n");
+
         foreach (KeyValuePair<StatusEffectData.Modifier, ConfigEntry<float>> kvp in talent.m_modifiers)
         {
             string key = DefaultData.LocalizeModifiers[kvp.Key];
@@ -1067,26 +1058,25 @@ public static class LoadUI
                 case StatusEffectData.Modifier.MaxCarryWeight 
                     or StatusEffectData.Modifier.Vitality 
                     or StatusEffectData.Modifier.Stamina 
-                    or StatusEffectData.Modifier.Eitr:
+                    or StatusEffectData.Modifier.Eitr
+                    or StatusEffectData.Modifier.DamageAbsorb:
                     float amount = kvp.Value.Value * talent.m_level;
                     stringBuilder.Append($"{key}: <color=orange>{amount}</color>\n");
                     break;
-                case StatusEffectData.Modifier.Heal 
-                    or StatusEffectData.Modifier.DamageAbsorb:
+                case StatusEffectData.Modifier.Heal:
                     float value = Spells.ApplySkill(talent.m_skill, kvp.Value.Value * talent.m_level);
                     stringBuilder.Append($"{key}: <color=orange>{value}</color>\n");
                     break;
-                case StatusEffectData.Modifier.Speed
-                    or StatusEffectData.Modifier.Attack
+                case StatusEffectData.Modifier.Reflect
                     or StatusEffectData.Modifier.HealthRegen
                     or StatusEffectData.Modifier.StaminaRegen
                     or StatusEffectData.Modifier.RaiseSkills
                     or StatusEffectData.Modifier.Noise
-                    or StatusEffectData.Modifier.RunStaminaDrain
                     or StatusEffectData.Modifier.EitrRegen
-                    or StatusEffectData.Modifier.Reflect:
-                    float skilledPercentage = Spells.ApplySkill(talent.m_skill, kvp.Value.Value * talent.m_level) * 100;
-                    stringBuilder.Append($"{key}: <color=orange>{skilledPercentage}</color>%\n");
+                    or StatusEffectData.Modifier.Speed 
+                    or StatusEffectData.Modifier.Attack:
+                    float percentageLVL = (kvp.Value.Value * talent.m_level) * 100;
+                    stringBuilder.Append($"{key}: <color=orange>{percentageLVL}</color>%\n");
                     break;
                 default:
                     float percentage = kvp.Value.Value * 100;
