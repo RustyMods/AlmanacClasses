@@ -17,6 +17,8 @@ public class SpellBarMove : MonoBehaviour, IPointerClickHandler
         if (updateElement)
         {
             AlmanacClassesPlugin._SpellBookPos.Value = Input.mousePosition;
+            LoadUI.MenuInfoPanel.transform.position = AlmanacClassesPlugin._SpellBookPos.Value +
+                                                      AlmanacClassesPlugin._MenuTooltipPosition.Value;
         }
     }
     

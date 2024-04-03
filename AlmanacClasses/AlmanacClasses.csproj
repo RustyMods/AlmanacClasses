@@ -161,6 +161,7 @@
         <Compile Include="Patches\HudPatches.cs" />
         <Compile Include="Patches\HumanoidPatches.cs" />
         <Compile Include="Patches\InventoryGUIPatches.cs" />
+        <Compile Include="Patches\ItemDataPatches.cs" />
         <Compile Include="Patches\MenuPatches.cs" />
         <Compile Include="Patches\ObjectDBPatches.cs" />
         <Compile Include="Patches\PlayerControllerPatches.cs" />

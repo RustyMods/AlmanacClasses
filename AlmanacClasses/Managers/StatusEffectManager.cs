@@ -64,7 +64,7 @@ public abstract class StatusEffectManager
             private float m_damage;
             private float areaTimer;
             private float healTimer;
-            
+
             private bool ShouldAffect(StatusEffectData.Modifier modifier)
             {
                 if (!data.talent.m_modifiers.TryGetValue(modifier, out ConfigEntry<float> config)) return false;
@@ -361,7 +361,20 @@ public abstract class StatusEffectManager
 
             public override void Setup(Character character)
             {
-                base.Setup(character);
+                // base.Setup(character);
+                m_character = character;
+                if (data.talent.m_triggerStartEffects != null)
+                {
+                    if (data.talent.m_triggerStartEffects.Value is AlmanacClassesPlugin.Toggle.On)
+                    {
+                        TriggerStartEffects();
+                    }
+                }
+                else
+                {
+                    TriggerStartEffects();
+                }
+                
                 m_ttl = data.talent.m_duration?.Value ?? 0f;
                 if (data.talent.m_modifiers.TryGetValue(StatusEffectData.Modifier.DamageAbsorb, out ConfigEntry<float> config))
                 {

@@ -1,6 +1,7 @@
 ﻿using AlmanacClasses.Classes;
 using AlmanacClasses.Data;
 using HarmonyLib;
+using UnityEngine;
 
 namespace AlmanacClasses.Patches;
 
@@ -14,13 +15,15 @@ public static class HumanoidPatches
             if (!__instance.IsPlayer()) return;
             if (!__instance.GetSEMan().HaveStatusEffect("SE_QuickShot".GetStableHashCode())) return;
             ItemDrop.ItemData currentWeapon = __instance.GetCurrentWeapon();
-            if (currentWeapon.m_shared.m_skillType is Skills.SkillType.Bows or Skills.SkillType.Crossbows)
+            if (currentWeapon.m_shared.m_skillType is not Skills.SkillType.Bows) return;
+            if (!PlayerManager.m_playerTalents.TryGetValue("QuickShot", out Talent talent)) return;
+            if (talent.m_chance != null)
             {
-                __result = 1f;
+                __result /= (talent.m_chance.Value * talent.m_level) / 100f; 
             }
         }
     }
-    
+
     [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.Awake))]
     private static class Humanoid_Awake_Patch
     {

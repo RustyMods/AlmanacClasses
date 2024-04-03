@@ -21,7 +21,7 @@ namespace AlmanacClasses
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
-        internal const string ModVersion = "0.2.2";
+        internal const string ModVersion = "0.2.4";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
         private static readonly string ConfigFileName = ModGUID + ".cfg";
@@ -112,12 +112,14 @@ namespace AlmanacClasses
         public static ConfigEntry<int> _ResetCost = null!;
         public static ConfigEntry<Toggle> _DisplayExperience = null!;
         public static ConfigEntry<Vector2> _ExperienceBarPos = null!;
+        public static ConfigEntry<float> _ExperienceBarScale = null!;
         public static ConfigEntry<Toggle> _HudVisible = null!;
         public static ConfigEntry<Vector2> _SpellBookPos = null!;
         private static ConfigEntry<Toggle> _PanelBackground = null!;
         public static ConfigEntry<int> _ExperienceMultiplier = null!;
         public static ConfigEntry<int> _TalentPointPerLevel = null!;
         public static ConfigEntry<int> _TalentPointsPerTenLevel = null!;
+        public static ConfigEntry<Vector2> _MenuTooltipPosition = null!;
         #endregion
 
         public static ConfigEntry<int> _MaxEitr = null!;
@@ -126,7 +128,6 @@ namespace AlmanacClasses
         public static ConfigEntry<int> _EitrRatio = null!;
         public static ConfigEntry<int> _HealthRatio = null!;
         public static ConfigEntry<int> _StaminaRatio = null!;
-
         public static ConfigEntry<int> _DamageRatio = null!;
 
         #region Key Codes
@@ -192,7 +193,6 @@ namespace AlmanacClasses
             _MaxStamina = config("4 - Characteristics", "6. Max Stamina", 100,
                 new ConfigDescription("Set max amount of stamina that can be gained from characteristic points",
                     new AcceptableValueRange<int>(0, 500)));
-
             _DamageRatio = config("4 - Characteristics", "7. Damage Ratio", 10,
                 new ConfigDescription(
                     "Set the ratio of strength, dexterity, intelligence to increased damage output of, melee, ranged and magic damage",
@@ -249,9 +249,13 @@ namespace AlmanacClasses
             _DisplayExperience = config("2 - Settings", "Show Creature Experience", Toggle.Off,
                 "If on, creature hover names will display the amount of experience they give");
 
-            _ExperienceBarPos = config("2 - Settings", "XP Bar Postion", new Vector2(300f, 25f),
+            _ExperienceBarPos = config("2 - Settings", "XP Bar Position", new Vector2(300f, 25f),
                 "Set the position of the experience bar", false);
             _ExperienceBarPos.SettingChanged += LoadUI.OnChangeExperienceBarPosition;
+            _ExperienceBarScale = config("2 - Settings", "XP Bar Scale", 100f,
+                new ConfigDescription("Set the scale of the experience bar", new AcceptableValueRange<float>(0, 100)),
+                false);
+            _ExperienceBarScale.SettingChanged += LoadUI.OnExperienceBarScaleChange;
 
             _HudVisible = config("2 - Settings", "XP Bar Visible", Toggle.On, "If on, experience bar is visible on HUD",
                 false);
@@ -274,6 +278,9 @@ namespace AlmanacClasses
             _TalentPointsPerTenLevel = config("2 - Settings", "Talent Points Per Ten Levels", 7,
                 new ConfigDescription("Set extra talent points rewarded per 10 levels",
                     new AcceptableValueRange<int>(0, 10)));
+            _MenuTooltipPosition = config("2 - Settings", "Menu Tooltip Position", new Vector2(0f, 150f),
+                "Set position of spell bar tooltip, always attached to spell bar position", false);
+            _MenuTooltipPosition.SettingChanged += LoadUI.OnMenuInfoPanelConfigChange;
         }
 
         private void InitKeyCodeConfigs()

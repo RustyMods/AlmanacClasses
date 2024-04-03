@@ -185,8 +185,11 @@ public static class LoadUI
         ExpBarRect = ExperienceBarHUD.GetComponent<RectTransform>();
         ExpBarRect.SetAsLastSibling();
         ExpBarRect.anchoredPosition = AlmanacClassesPlugin._ExperienceBarPos.Value;
+        float scale = AlmanacClassesPlugin._ExperienceBarScale.Value / 100f;
+        ExpBarRect.localScale = new Vector3(scale, scale, scale);
         ExpHudFillBar = ExperienceBarHUD.transform.Find("FillBar").GetComponent<Image>();
         ExpHudText = ExperienceBarHUD.transform.Find("$text_experience").GetComponent<Text>();
+
         ExpHudFillBar.fillAmount = 0f;
         ExpHudText.text = "";
         // OriginalExpBarColor = ExpHudFillBar.color;
@@ -203,7 +206,7 @@ public static class LoadUI
         
         MenuInfoPanel = Object.Instantiate(LoadUI.InfoHoverElement, Hud.instance.transform, false);
         MenuInfoPanel.transform.SetAsFirstSibling();
-        MenuInfoPanel.transform.position = AlmanacClassesPlugin._SpellBookPos.Value + new Vector2(0f, 150f);
+        MenuInfoPanel.transform.position = AlmanacClassesPlugin._SpellBookPos.Value + AlmanacClassesPlugin._MenuTooltipPosition.Value;
         MenuInfoPanel.SetActive(false);
 
         GameObject HoverName = new GameObject("title");
@@ -218,7 +221,23 @@ public static class LoadUI
         text.raycastTarget = false;
 
         SpellBarHoverName = HoverName;
+    }
 
+    public static void OnExperienceBarScaleChange(object sender, EventArgs e)
+    {
+        if (sender is ConfigEntry<float> config)
+        {
+            float scale = config.Value / 100f;
+            ExpBarRect.localScale = new Vector3(scale, scale, scale);
+        }
+    }
+
+    public static void OnMenuInfoPanelConfigChange(object sender, EventArgs e)
+    {
+        if (sender is ConfigEntry<Vector2> config)
+        {
+            MenuInfoPanel.transform.position = AlmanacClassesPlugin._SpellBookPos.Value + config.Value;
+        }
     }
 
     public static void InitSkillTree(InventoryGui instance)
@@ -1142,7 +1161,8 @@ public static class LoadUI
 
         if (talent.m_chance != null)
         {
-            stringBuilder.Append($"$almanac_chance: <color=orange>{talent.m_chance.Value * talent.m_level}</color>%\n");
+            string type = talent.m_key == "QuickShot" ? "Speed Modifier" : "$almanac_chance"; 
+            stringBuilder.Append($"{type}: <color=orange>{talent.m_chance.Value * talent.m_level}</color>%\n");
         }
 
         if (talent.m_heal != null)

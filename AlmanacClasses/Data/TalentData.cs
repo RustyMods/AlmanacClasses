@@ -62,6 +62,8 @@ public class Talent
     public TalentDamages? m_talentDamages;
     public StatusEffect? m_effect;
 
+    public ConfigEntry<AlmanacClassesPlugin.Toggle>? m_triggerStartEffects;
+
     public void InitTalent()
     {
         if (LoadUI.ButtonMap.TryGetValue(m_buttonName, out Button button))

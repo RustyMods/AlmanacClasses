@@ -157,17 +157,6 @@ public static class TalentManager
             },
             new()
             {
-                m_key = "Core10",
-                m_name = "$almanac_wisdom",
-                m_description = $"+ {10 * level} $almanac_wisdom",
-                m_level = level,
-                m_type = TalentType.Characteristic,
-                m_characteristic = Characteristic.Wisdom,
-                m_characteristicValue = 10 * level,
-                m_buttonName = "$button_core_10"
-            },
-            new()
-            {
                 m_key = "Core6",
                 m_name = "$almanac_dexterity",
                 m_description = $"+ {10 * level} $almanac_dexterity",
@@ -260,10 +249,9 @@ public static class TalentManager
                 {
                     name = "SE_Sneaker",
                     m_name = "$talent_sneaky",
-                    m_startEffects = LoadedAssets.FX_DvergerPower,
                 },
                 m_buttonName = "$button_sneak",
-                m_triggerNow = true
+                m_triggerNow = true,
             },
             new()
             {
@@ -296,7 +284,8 @@ public static class TalentManager
                 m_eitrCost = AlmanacClassesPlugin._Plugin.config("General - Sailor", "Eitr Cost", 10, new ConfigDescription("Set eitr cost", new AcceptableValueRange<int>(0, 101))),
                 m_ttl = AlmanacClassesPlugin._Plugin.config("General - Sailor", "Cooldown", 50f, new ConfigDescription("Set cooldown", new AcceptableValueRange<float>(0, 101))),
                 m_buttonName = "$button_sail",
-                m_cost = 5
+                m_cost = 5,
+                m_triggerStartEffects = AlmanacClassesPlugin._Plugin.config("General - Sailor", "Visual Effects", AlmanacClassesPlugin.Toggle.On, "If on, activating ability triggers visual effects", false),
             },
             new()
             {
@@ -516,11 +505,13 @@ public static class TalentManager
                     m_name = "$talent_quick_shot",
                     m_startEffects = LoadedAssets.FX_DvergerPower,
                 },
+                m_chance = AlmanacClassesPlugin._Plugin.config("Ranger - Quick Shot", "Draw Speed Increase", 10f, new ConfigDescription("Set the draw speed multiplier", new AcceptableValueRange<float>(0f, 100f))),
                 m_buttonName = "$button_ranger_talent_5",
                 m_isAbility = true,
                 m_ttl = AlmanacClassesPlugin._Plugin.config("Ranger - Quick Shot", "Cooldown", 50f, new ConfigDescription("Set cooldown", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = AlmanacClassesPlugin._Plugin.config("Ranger - Quick Shot", "Stamina Cost", 20, new ConfigDescription("Set stamina cost to activate ability", new AcceptableValueRange<int>(0, 101))),
-                m_animation = "nonono"
+                m_animation = "nonono",
+                m_triggerStartEffects = AlmanacClassesPlugin._Plugin.config("Ranger - Quick Shot", "Visual Effects", AlmanacClassesPlugin.Toggle.On, "If on, activating ability triggers visual effects", false),
             },
             new()
             {
@@ -806,7 +797,8 @@ public static class TalentManager
                 m_isAbility = true,
                 m_buttonName = "$button_shaman_talent_4",
                 m_eitrCost = AlmanacClassesPlugin._Plugin.config("Shaman - Regeneration", "Eitr Cost", 10, new ConfigDescription("Set eitr cost to activate ability", new AcceptableValueRange<int>(0, 101))),
-                m_skill = Skills.SkillType.BloodMagic
+                m_skill = Skills.SkillType.BloodMagic,
+                m_triggerStartEffects = AlmanacClassesPlugin._Plugin.config("Shaman - Regeneration", "Visual Effects", AlmanacClassesPlugin.Toggle.On, "If on, activating ability triggers visual effects", false),
             },
             new()
             {
@@ -945,7 +937,8 @@ public static class TalentManager
                 m_eitrCost = AlmanacClassesPlugin._Plugin.config("Bard - Song of Damage", "Eitr Cost", 20, new ConfigDescription("Set eitr cost to activate ability", new AcceptableValueRange<int>(0, 101))),
                 m_isAbility = true,
                 m_ttl = AlmanacClassesPlugin._Plugin.config("Bard - Song of Damage", "Cooldown", 50f, new ConfigDescription("Set cooldown", new AcceptableValueRange<float>(0, 101))),
-                m_skill = Skills.SkillType.ElementalMagic
+                m_skill = Skills.SkillType.ElementalMagic,
+                m_triggerStartEffects = AlmanacClassesPlugin._Plugin.config("Bard - Song of Damage", "Visual Effects", AlmanacClassesPlugin.Toggle.On, "If on, activating ability triggers visual effects", false),
             },
             new ()
             {
@@ -974,7 +967,8 @@ public static class TalentManager
                 m_eitrCost = AlmanacClassesPlugin._Plugin.config("Bard - Song of Healing", "Eitr Cost", 25, new ConfigDescription("Set eitr cost to activate ability", new AcceptableValueRange<int>(0, 101))),
                 m_isAbility = true,
                 m_ttl = AlmanacClassesPlugin._Plugin.config("Bard - Song of Healing", "Cooldown", 50f, new ConfigDescription("Set cooldown", new AcceptableValueRange<float>(0, 101))),
-                m_skill = Skills.SkillType.BloodMagic
+                m_skill = Skills.SkillType.BloodMagic,
+                m_triggerStartEffects = AlmanacClassesPlugin._Plugin.config("Bard - Song of Healing", "Visual Effects", AlmanacClassesPlugin.Toggle.On, "If on, activating ability triggers visual effects", false),
             },
             new ()
             {
@@ -1004,7 +998,8 @@ public static class TalentManager
                 m_isAbility = true,
                 m_ttl = AlmanacClassesPlugin._Plugin.config("Bard - Song of Vitality", "Cooldown", 50f, new ConfigDescription("Set cooldown", new AcceptableValueRange<float>(0, 101))),
                 m_eitrCost = AlmanacClassesPlugin._Plugin.config("Bard - Song of Vitality", "Eitr Cost", 4, new ConfigDescription("Set eitr cost to activate ability", new AcceptableValueRange<int>(0, 101))),
-                m_skill = Skills.SkillType.BloodMagic
+                m_skill = Skills.SkillType.BloodMagic,
+                m_triggerStartEffects = AlmanacClassesPlugin._Plugin.config("Bard - Song of Vitality", "Visual Effects", AlmanacClassesPlugin.Toggle.On, "If on, activating ability triggers visual effects", false),
             },
             new()
             {
@@ -1033,7 +1028,8 @@ public static class TalentManager
                 m_eitrCost = AlmanacClassesPlugin._Plugin.config("Bard - Song of Speed", "Eitr Cost", 4, new ConfigDescription("Set eitr cost to activate ability", new AcceptableValueRange<int>(0, 101))),
                 m_isAbility = true,
                 m_ttl = AlmanacClassesPlugin._Plugin.config("Bard - Song of Speed", "Cooldown", 50f, new ConfigDescription("Set cooldown", new AcceptableValueRange<float>(0, 101))),
-                m_skill = Skills.SkillType.BloodMagic
+                m_skill = Skills.SkillType.BloodMagic,
+                m_triggerStartEffects = AlmanacClassesPlugin._Plugin.config("Bard - Song of Speed", "Visual Effects", AlmanacClassesPlugin.Toggle.On, "If on, activating ability triggers visual effects", false),
             },
             new()
             {
@@ -1065,7 +1061,8 @@ public static class TalentManager
                 },
                 m_cost = 5,
                 m_ttl = AlmanacClassesPlugin._Plugin.config("Bard - Song of Spirit", "Cooldown", 25f, new ConfigDescription("Set cooldown", new AcceptableValueRange<float>(0, 101))),
-                m_skill = Skills.SkillType.ElementalMagic
+                m_skill = Skills.SkillType.ElementalMagic,
+                m_triggerStartEffects = AlmanacClassesPlugin._Plugin.config("Bard - Song of Spirit", "Visual Effects", AlmanacClassesPlugin.Toggle.On, "If on, activating ability triggers visual effects", false),
             },
             new()
             {
@@ -1169,7 +1166,8 @@ public static class TalentManager
                 m_staminaCost = AlmanacClassesPlugin._Plugin.config("Rogue - Quick Step", "Stamina Cost", 10, new ConfigDescription("Set stamina cost to activate ability", new AcceptableValueRange<int>(0, 101))),
                 m_isAbility = true,
                 m_ttl = AlmanacClassesPlugin._Plugin.config("Rogue - Quick Step", "Cooldown", 50f, new ConfigDescription("Set cooldown", new AcceptableValueRange<float>(0, 101))),
-                m_skill = Skills.SkillType.Knives
+                m_skill = Skills.SkillType.Knives,
+                m_triggerStartEffects = AlmanacClassesPlugin._Plugin.config("Rogue - Quick Step", "Visual Effects", AlmanacClassesPlugin.Toggle.On, "If on, activating ability triggers visual effects", false),
             },
             new ()
             {
@@ -1199,7 +1197,8 @@ public static class TalentManager
                 m_staminaCost = AlmanacClassesPlugin._Plugin.config("Rogue - Relentless", "Stamina Cost", 10, new ConfigDescription("Set stamina cost to activate ability", new AcceptableValueRange<int>(0, 101))),
                 m_isAbility = true,
                 m_ttl = AlmanacClassesPlugin._Plugin.config("Rogue - Relentless", "Cooldown", 50f, new ConfigDescription("Set cooldown", new AcceptableValueRange<float>(0, 101))),
-                m_skill = Skills.SkillType.BloodMagic
+                m_skill = Skills.SkillType.BloodMagic,
+                m_triggerStartEffects = AlmanacClassesPlugin._Plugin.config("Rogue - Relentless", "Visual Effects", AlmanacClassesPlugin.Toggle.On, "If on, activating ability triggers visual effects", false),
             },
             new ()
             {
@@ -1228,7 +1227,8 @@ public static class TalentManager
                 m_staminaCost = AlmanacClassesPlugin._Plugin.config("Rogue - Retaliation", "Stamina Cost", 10, new ConfigDescription("Set stamina cost to activate ability", new AcceptableValueRange<int>(0, 101))),
                 m_isAbility = true,
                 m_ttl = AlmanacClassesPlugin._Plugin.config("Rogue - Retaliation", "Cooldown", 75f, new ConfigDescription("Set cooldown", new AcceptableValueRange<float>(0, 101))),
-                m_skill = Skills.SkillType.BloodMagic
+                m_skill = Skills.SkillType.BloodMagic,
+                m_triggerStartEffects = AlmanacClassesPlugin._Plugin.config("Rogue - Retaliation", "Visual Effects", AlmanacClassesPlugin.Toggle.On, "If on, activating ability triggers visual effects", false),
             },
             new ()
             {
@@ -1254,7 +1254,8 @@ public static class TalentManager
                 m_staminaCost = AlmanacClassesPlugin._Plugin.config("Rogue - Backstabbing", "Stamina Cost", 10, new ConfigDescription("Set stamina cost to activate ability", new AcceptableValueRange<int>(0, 101))),
                 m_isAbility = true,
                 m_ttl = AlmanacClassesPlugin._Plugin.config("Rogue - Backstabbing", "Cooldown", 20f, new ConfigDescription("Set cooldown", new AcceptableValueRange<float>(0, 101))),
-                m_skill = Skills.SkillType.Knives
+                m_skill = Skills.SkillType.Knives,
+                m_triggerStartEffects = AlmanacClassesPlugin._Plugin.config("Rogue - Backstabbing", "Visual Effects", AlmanacClassesPlugin.Toggle.On, "If on, activating ability triggers visual effects", false),
             },
             new ()
             {
@@ -1374,7 +1375,8 @@ public static class TalentManager
                 m_healthCost = AlmanacClassesPlugin._Plugin.config("Warrior - Hard Hitter", "Health Cost", 10, new ConfigDescription("Set health cost to activate ability", new AcceptableValueRange<int>(0, 101))),
                 m_isAbility = true,
                 m_ttl = AlmanacClassesPlugin._Plugin.config("Warrior - Hard Hitter", "Cooldown", 50f, new ConfigDescription("Set cooldown", new AcceptableValueRange<float>(0, 101))),
-                m_skill = Skills.SkillType.Swords
+                m_skill = Skills.SkillType.Swords,
+                m_triggerStartEffects = AlmanacClassesPlugin._Plugin.config("Warrior - Hard Hitter", "Visual Effects", AlmanacClassesPlugin.Toggle.On, "If on, activating ability triggers visual effects", false)
             },
             new ()
             {
@@ -1403,7 +1405,8 @@ public static class TalentManager
                 m_healthCost = AlmanacClassesPlugin._Plugin.config("Warrior - Bulk Up", "Health Cost", 10, new ConfigDescription("Set health cost to activate ability", new AcceptableValueRange<int>(0, 101))),
                 m_isAbility = true,
                 m_ttl = AlmanacClassesPlugin._Plugin.config("Warrior - Bulk Up", "Cooldown", 50f, new ConfigDescription("Set cooldown", new AcceptableValueRange<float>(0, 101))),
-                m_skill = Skills.SkillType.BloodMagic
+                m_skill = Skills.SkillType.BloodMagic,
+                m_triggerStartEffects = AlmanacClassesPlugin._Plugin.config("Warrior - Bulk Up", "Visual Effects", AlmanacClassesPlugin.Toggle.On, "If on, activating ability triggers visual effects", false)
             },
             new ()
             {
@@ -1443,7 +1446,8 @@ public static class TalentManager
                 m_healthCost = AlmanacClassesPlugin._Plugin.config("Warrior - Resistance", "Health Cost", 15, new ConfigDescription("Set health cost to activate ability", new AcceptableValueRange<int>(0, 101))),
                 m_isAbility = true,
                 m_ttl = AlmanacClassesPlugin._Plugin.config("Warrior - Resistance", "Cooldown", 50f, new ConfigDescription("Set cooldown", new AcceptableValueRange<float>(0, 101))),
-                m_skill = Skills.SkillType.BloodMagic
+                m_skill = Skills.SkillType.BloodMagic,
+                m_triggerStartEffects = AlmanacClassesPlugin._Plugin.config("Warrior - Resistance", "Visual Effects", AlmanacClassesPlugin.Toggle.On, "If on, activating ability triggers visual effects", false),
             },
             new()
             {
