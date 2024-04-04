@@ -21,7 +21,7 @@ namespace AlmanacClasses
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
-        internal const string ModVersion = "0.2.4";
+        internal const string ModVersion = "0.2.5";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
         private static readonly string ConfigFileName = ModGUID + ".cfg";

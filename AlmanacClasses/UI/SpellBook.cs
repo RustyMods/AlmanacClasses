@@ -6,7 +6,6 @@ using System.Text;
 using AlmanacClasses.Classes;
 using AlmanacClasses.Classes.Abilities;
 using AlmanacClasses.Data;
-using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,6 +20,7 @@ public static class SpellBook
     public static readonly List<AbilityData> m_abilities = new();
 
     private static RectTransform m_spellBarPos = null!;
+    private static readonly int Saturation = Shader.PropertyToID("_Saturation");
 
     public static void OnSpellBarPosChange(object sender, EventArgs e)
     {
@@ -30,7 +30,6 @@ public static class SpellBook
 
     public static bool IsAbilityInBook(Talent ability) => m_abilities.Any(talent => ability == talent.m_data);
     
-
     public static void LoadElements()
     {
         if (!Hud.instance) return;
@@ -41,6 +40,9 @@ public static class SpellBook
         m_spellBarPos.anchoredPosition = AlmanacClassesPlugin._SpellBookPos.Value;
         m_spellBar.AddComponent<SpellBarMove>();
         m_element = AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_element");
+        Image? grayMat = Utils.FindChild(m_element.transform, "$image_gray").GetComponent<Image>();
+        grayMat.material.shader = Shader.Find("Custom/icon");
+        grayMat.material.SetFloat(Saturation, -0.5f);
         m_element.AddComponent<SpellElementChange>();
         
         Text[] texts = m_element.GetComponentsInChildren<Text>();
@@ -54,7 +56,7 @@ public static class SpellBook
         {
             AbilityData ability = m_abilities[index];
             GameObject element = Object.Instantiate(m_element, m_spellBar.transform.Find("$part_content"));
-
+            
             if (element.TryGetComponent(out SpellElementChange component))
             {
                 component.data = ability;
@@ -63,13 +65,17 @@ public static class SpellBook
             
             ability.m_go = element;
             Utils.FindChild(element.transform, "$image_icon").GetComponent<Image>().sprite = ability.m_data.m_sprite;
+            Image? gray = Utils.FindChild(element.transform, "$image_gray").GetComponent<Image>();
+            gray.sprite = ability.m_data.m_sprite;
             if (AbilityManager.m_cooldownMap.TryGetValue(ability.m_data.m_name, out float cooldown))
             {
+                gray.fillAmount = cooldown;
                 Utils.FindChild(element.transform, "$image_fill").GetComponent<Image>().fillAmount = cooldown;
                 Utils.FindChild(element.transform, "$text_timer").GetComponent<Text>().text = ((int)((ability.m_data.m_ttl?.Value ?? 10f) * cooldown)).ToString(CultureInfo.CurrentCulture);
             }
             else
             {
+                gray.fillAmount = 0f;
                 Utils.FindChild(element.transform, "$image_fill").GetComponent<Image>().fillAmount = 0f;
                 Utils.FindChild(element.transform, "$text_timer").GetComponent<Text>().text = Localization.instance.Localize("$info_ready");
             }

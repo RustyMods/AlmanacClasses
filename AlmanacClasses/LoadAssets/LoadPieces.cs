@@ -19,6 +19,5 @@ public static class LoadPieces
         Transform book = altar.Prefab.transform.GetChild(0);
         book.gameObject.AddComponent<TalentBook>();
         altar.Prefab.AddComponent<AltarEffectFade>();
-        altar.SpecialProperties.NoConfig = true;
     }
 }
