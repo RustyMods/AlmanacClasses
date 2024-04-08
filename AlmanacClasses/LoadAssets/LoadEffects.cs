@@ -42,6 +42,8 @@ public static class LoadedAssets
     
     public static SE_Finder? SE_Finder;
     public static StatusEffect GP_Moder = null!;
+
+    public static EffectList FX_Experience = null!;
     
     public static void InitVFX()
     {
@@ -302,7 +304,29 @@ public static class LoadedAssets
                 }
             }
         };
-        
+
+        GameObject vfx_eitr = instance.GetPrefab("vfx_Potion_eitr_minor");
+        GameObject sfx_demister = instance.GetPrefab("sfx_demister_start");
+        FX_Experience = new EffectList()
+        {
+            m_effectPrefabs = new[]
+            {
+                new EffectList.EffectData()
+                {
+                    m_prefab = vfx_eitr,
+                    m_enabled = true,
+                    m_attach = true,
+                    m_scale = true
+                },
+                new EffectList.EffectData()
+                {
+                    m_prefab = sfx_demister,
+                    m_enabled = true,
+                    m_attach = true
+                }
+            }
+        };
+
     }
 
     private static void RegisterToZNetScene(GameObject prefab)

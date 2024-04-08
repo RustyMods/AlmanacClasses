@@ -273,7 +273,7 @@ public static class TalentManager
                 
                 m_animation = "gpower",
                 m_attribute = StatusEffect.StatusAttribute.SailingPower,
-                m_duration = AlmanacClassesPlugin._Plugin.config("General - Sailor", "Duration", 25f, new ConfigDescription("Set the base duration of effect", new AcceptableValueRange<float>(1f, 101f))),
+                m_duration = AlmanacClassesPlugin._Plugin.config("General - Sailor", "Duration", 25f, new ConfigDescription("Set the base duration of effect", new AcceptableValueRange<float>(1f, 1001f))),
                 m_statusEffect = new()
                 {
                     name = "SE_Sailor",
@@ -497,7 +497,7 @@ public static class TalentManager
                 m_level = level,
                 m_type = TalentType.StatusEffect,
                 m_cost = 5,
-                m_duration = AlmanacClassesPlugin._Plugin.config("Ranger - Quick Shot", "Duration", 20f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 101f))),
+                m_duration = AlmanacClassesPlugin._Plugin.config("Ranger - Quick Shot", "Duration", 20f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 1001f))),
                 
                 m_statusEffect = new()
                 {
@@ -505,13 +505,14 @@ public static class TalentManager
                     m_name = "$talent_quick_shot",
                     m_startEffects = LoadedAssets.FX_DvergerPower,
                 },
-                m_chance = AlmanacClassesPlugin._Plugin.config("Ranger - Quick Shot", "Draw Speed Increase", 10f, new ConfigDescription("Set the draw speed multiplier", new AcceptableValueRange<float>(0f, 100f))),
+                m_chance = AlmanacClassesPlugin._Plugin.config("Ranger - Quick Shot", "Draw Speed Increase", 60f, new ConfigDescription("Set the draw speed multiplier", new AcceptableValueRange<float>(0f, 100f))),
                 m_buttonName = "$button_ranger_talent_5",
                 m_isAbility = true,
                 m_ttl = AlmanacClassesPlugin._Plugin.config("Ranger - Quick Shot", "Cooldown", 50f, new ConfigDescription("Set cooldown", new AcceptableValueRange<float>(0f, 1001f))),
                 m_staminaCost = AlmanacClassesPlugin._Plugin.config("Ranger - Quick Shot", "Stamina Cost", 20, new ConfigDescription("Set stamina cost to activate ability", new AcceptableValueRange<int>(0, 101))),
                 m_animation = "nonono",
                 m_triggerStartEffects = AlmanacClassesPlugin._Plugin.config("Ranger - Quick Shot", "Visual Effects", AlmanacClassesPlugin.Toggle.On, "If on, activating ability triggers visual effects", false),
+                m_skill = Skills.SkillType.Crossbows
             },
             new()
             {
@@ -755,7 +756,7 @@ public static class TalentManager
                 },
                 m_animation = "staff_summon",
                 m_radius = 10f,
-                m_duration = AlmanacClassesPlugin._Plugin.config("Shaman - Protection", "Duration", 30f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 101f))),
+                m_duration = AlmanacClassesPlugin._Plugin.config("Shaman - Protection", "Duration", 30f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 1001f))),
 
                 m_statusEffect = new()
                 {
@@ -785,7 +786,7 @@ public static class TalentManager
                 },
                 m_animation = "roar",
                 m_radius = 10f,
-                m_duration = AlmanacClassesPlugin._Plugin.config("Shaman - Regeneration", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 101f))),
+                m_duration = AlmanacClassesPlugin._Plugin.config("Shaman - Regeneration", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 1001f))),
                 
                 m_statusEffect = new()
                 {
@@ -925,7 +926,7 @@ public static class TalentManager
                 },
                 m_animation = "dance",
                 m_radius = 10f,
-                m_duration = AlmanacClassesPlugin._Plugin.config("Bard - Song of Damage", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 101f))),
+                m_duration = AlmanacClassesPlugin._Plugin.config("Bard - Song of Damage", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 1001f))),
                 
                 m_statusEffect = new()
                 {
@@ -955,7 +956,7 @@ public static class TalentManager
                 },
                 m_animation = "dance",
                 m_radius = 10f,
-                m_duration = AlmanacClassesPlugin._Plugin.config("Bard - Song of Healing", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 101f))),
+                m_duration = AlmanacClassesPlugin._Plugin.config("Bard - Song of Healing", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 1001f))),
                 
                 m_statusEffect = new()
                 {
@@ -985,7 +986,7 @@ public static class TalentManager
                 },
                 m_animation = "dance",
                 m_radius = 10f,
-                m_duration = AlmanacClassesPlugin._Plugin.config("Bard - Song of Vitality", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 101f))),
+                m_duration = AlmanacClassesPlugin._Plugin.config("Bard - Song of Vitality", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 1001f))),
                 
                 m_statusEffect = new()
                 {
@@ -1016,7 +1017,7 @@ public static class TalentManager
                 },
                 m_animation = "dance",
                 m_radius = 10f,
-                m_duration = AlmanacClassesPlugin._Plugin.config("Bard - Song of Speed", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 101f))),
+                m_duration = AlmanacClassesPlugin._Plugin.config("Bard - Song of Speed", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 1001f))),
                 
                 m_statusEffect = new()
                 {
@@ -1043,7 +1044,7 @@ public static class TalentManager
                 m_animation = "dance",
                 m_radius = 20f,
                 m_damageInterval = 1f,
-                m_duration = AlmanacClassesPlugin._Plugin.config("Bard - Song of Spirit", "Duration", 10f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 101f))),
+                m_duration = AlmanacClassesPlugin._Plugin.config("Bard - Song of Spirit", "Duration", 10f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 1001f))),
                 
                 m_statusEffect = new()
                 {
@@ -1153,7 +1154,7 @@ public static class TalentManager
                     { StatusEffectData.Modifier.RunStaminaDrain , AlmanacClassesPlugin._Plugin.config("Rogue - Quick Step", "Run Stamina Drain", 0.5f, new ConfigDescription("Set amount of run stamina drain modified, multiplied by prestige level, 0.5 = 50%, 1 = 100%", new AcceptableValueRange<float>(0f, 1f)))}
                 },
                 m_animation = "challenge",
-                m_duration = AlmanacClassesPlugin._Plugin.config("Rogue - Quick Step", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 101f))),
+                m_duration = AlmanacClassesPlugin._Plugin.config("Rogue - Quick Step", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 1001f))),
                 
                 m_statusEffect = new()
                 {
@@ -1184,7 +1185,7 @@ public static class TalentManager
                     { StatusEffectData.Modifier.StaminaRegen , AlmanacClassesPlugin._Plugin.config("Rogue - Relentless", "Stamina Regen", 1.1f, new ConfigDescription("Set stamina regeneration amount, multiplied by prestige level, 1.1 = 110%, 1.5 = 150%, 2 = 200%", new AcceptableValueRange<float>(1f, 2f)))}
                 },
                 m_animation = "challenge",
-                m_duration = AlmanacClassesPlugin._Plugin.config("Rogue - Relentless", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 101f))),
+                m_duration = AlmanacClassesPlugin._Plugin.config("Rogue - Relentless", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 1001f))),
                 
                 m_statusEffect = new()
                 {
@@ -1214,7 +1215,7 @@ public static class TalentManager
                     { StatusEffectData.Modifier.Reflect , AlmanacClassesPlugin._Plugin.config("Rogue - Retaliation", "Reflect", 0.1f, new ConfigDescription("Set value of reflected damage, multiplied by prestige level, 0.1 = 10%, 0.5 = 50%, 1 = 100%", new AcceptableValueRange<float>(0f, 1f)))}
                 },
                 m_animation = "challenge",
-                m_duration = AlmanacClassesPlugin._Plugin.config("Rogue - Retaliation", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 101f))),
+                m_duration = AlmanacClassesPlugin._Plugin.config("Rogue - Retaliation", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 1001f))),
                 
                 m_statusEffect = new()
                 {
@@ -1241,7 +1242,7 @@ public static class TalentManager
                 
                 m_animation = "challenge",
                 m_chance = AlmanacClassesPlugin._Plugin.config("Rogue - Backstabbing", "Chance", 20f, new ConfigDescription("Set the chance to backstab on hit", new AcceptableValueRange<float>(0, 100f))),
-                m_duration = AlmanacClassesPlugin._Plugin.config("Rogue - Backstabbing", "Duration", 20f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 101f))),
+                m_duration = AlmanacClassesPlugin._Plugin.config("Rogue - Backstabbing", "Duration", 20f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 1001f))),
                 
                 m_statusEffect = new()
                 {
@@ -1362,7 +1363,7 @@ public static class TalentManager
                     { StatusEffectData.Modifier.HealthRegen , AlmanacClassesPlugin._Plugin.config("Warrior - Hard Hitter", "Health Regen", 1.1f,  new ConfigDescription("Set amount of health regeneration increase, multiplied by prestige level", new AcceptableValueRange<float>(1f, 2f)))}
                 },
                 m_animation = "flex",
-                m_duration = AlmanacClassesPlugin._Plugin.config("Warrior - Hard Hitter", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 101f))),
+                m_duration = AlmanacClassesPlugin._Plugin.config("Warrior - Hard Hitter", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 1001f))),
                 
                 m_statusEffect = new()
                 {
@@ -1392,7 +1393,7 @@ public static class TalentManager
                     { StatusEffectData.Modifier.Vitality , AlmanacClassesPlugin._Plugin.config("Warrior - Bulk Up", "Vitality", 30f, new ConfigDescription("Set amount of increased vitality, multiplied by prestige level", new AcceptableValueRange<float>(0f, 101f)))}
                 },
                 m_animation = "flex",
-                m_duration = AlmanacClassesPlugin._Plugin.config("Warrior - Bulk Up", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 101f))),
+                m_duration = AlmanacClassesPlugin._Plugin.config("Warrior - Bulk Up", "Duration", 50f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 1001f))),
                 
                 m_statusEffect = new()
                 {
@@ -1416,6 +1417,11 @@ public static class TalentManager
                 m_level = level,
                 m_type = TalentType.Passive,
                 m_buttonName = "$button_warrior_talent_4",
+                
+                m_modifiers = new()
+                {
+                    { StatusEffectData.Modifier.Attack , AlmanacClassesPlugin._Plugin.config("Warrior - Monkey Wrench", "Attack Reduction", 0.8f, new ConfigDescription("Set the amount of damage reduction holding a two-handed weapon with one hand", new AcceptableValueRange<float>(0f, 1f)))}
+                }
             },
             new ()
             {
@@ -1433,7 +1439,7 @@ public static class TalentManager
                     { HitData.DamageType.Pierce , AlmanacClassesPlugin._Plugin.config("Warrior - Resistance", "3. Pierce Resistance", HitData.DamageModifier.Resistant, "Set resistance to pierce")}
                 },
                 m_animation = "flex",
-                m_duration = AlmanacClassesPlugin._Plugin.config("Warrior - Resistance", "Duration", 10f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 101f))),
+                m_duration = AlmanacClassesPlugin._Plugin.config("Warrior - Resistance", "Duration", 10f, new ConfigDescription("Set duration of effect", new AcceptableValueRange<float>(1f, 1001f))),
                 
                 m_statusEffect = new()
                 {
@@ -1458,6 +1464,10 @@ public static class TalentManager
                 m_type = TalentType.Passive,
                 m_buttonName = "$button_warrior_talent_5",
                 m_cost = 5,
+                m_modifiers = new()
+                {
+                    { StatusEffectData.Modifier.Attack , AlmanacClassesPlugin._Plugin.config("Warrior - Dual Wield", "Attack Reduction", 0.9f, new ConfigDescription("Set the damage reduction bane of using dual wield", new AcceptableValueRange<float>(0f, 1f)))}
+                }
             },
             new()
             {

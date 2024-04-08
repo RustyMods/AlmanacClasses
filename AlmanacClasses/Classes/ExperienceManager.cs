@@ -1,10 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using AlmanacClasses.Classes.Abilities;
 using AlmanacClasses.FileSystem;
+using AlmanacClasses.LoadAssets;
 using BepInEx;
+using HarmonyLib;
 using ServerSync;
 using UnityEngine;
 using YamlDotNet.Serialization;
+using Object = UnityEngine.Object;
+using Random = System.Random;
 
 namespace AlmanacClasses.Classes;
 
@@ -82,7 +88,8 @@ public static class ExperienceManager
         AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo("Experience map written to disk:");
         AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo(FilePaths.ExperienceFilePath);
     }
-    public static Dictionary<string, int> CreatureExperienceMap = new()
+
+    private static Dictionary<string, int> CreatureExperienceMap = new()
     {
         { "Deer", 1 },
         { "Boar", 1 },
@@ -137,10 +144,9 @@ public static class ExperienceManager
         { "Surtling", 3}
     };
 
-    public static int GetExperienceAmount(string prefabName)
+    public static int GetExperienceAmount(Character instance)
     {
-        if (CreatureExperienceMap.Count == 0) return GetExpByBiome() * AlmanacClassesPlugin._ExperienceMultiplier.Value;
-        return (CreatureExperienceMap.TryGetValue(prefabName, out int amount) ? amount : GetExpByBiome()) * AlmanacClassesPlugin._ExperienceMultiplier.Value;
+        return (CreatureExperienceMap.TryGetValue(instance.name.Replace("(Clone)", string.Empty), out int amount) ? amount : GetExpByBiome()) * instance.m_level * AlmanacClassesPlugin._ExperienceMultiplier.Value;
     }
 
     private static int GetExpByBiome()
@@ -170,11 +176,57 @@ public static class ExperienceManager
         }
     }
 
-    public static void AddIncrementExperience(PlayerStatType stat, float amount)
+    public static void AddExperience(PlayerStatType stat, float amount)
     {
         if (!ExperienceMap.TryGetValue(stat, out int value)) return;
         int total = (int)(value * amount);
         PlayerManager.m_tempPlayerData.m_experience += total * AlmanacClassesPlugin._ExperienceMultiplier.Value;
+    }
+    
+    public static void AddExperience(Character instance)
+    {
+        if (!instance || instance.name.IsNullOrWhiteSpace()) return;
+        int amount = GetExperienceAmount(instance);
+        PlayerManager.m_tempPlayerData.m_experience += amount;
+    }
+
+    public static void AddExperienceRPCAll(Character instance)
+    {
+        try
+        {
+            if (instance.m_lastHit != null && instance.m_lastHit.GetAttacker() == Player.m_localPlayer)
+            {
+                List<Player> players = new();
+                Player.GetPlayersInRange(Player.m_localPlayer.transform.position, 30f, players);
+                int experience = ExperienceManager.GetExperienceAmount(instance);
+                foreach (Player player in players)
+                {
+                    if (!player.IsPlayer()) continue;
+                    long id = player.GetPlayerID();
+                    ZDOID zdoid = player.GetZDOID();
+                    ZRoutedRpc.instance.InvokeRoutedRPC(id, zdoid, nameof(ExperienceManager.RPC_AddExperience), experience);
+                }
+            }
+        }
+        catch
+        {
+            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to tell everyone to add experience");
+        }
+    }
+
+    public static void RPC_AddExperience(long sender, int amount)
+    {
+        AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Invoked RPC to add experience");
+        PlayerManager.AddExperience(amount);
+    }
+
+    [HarmonyPatch(typeof(ZNetScene), nameof(ZNetScene.Awake))]
+    private static class ZNetScene_Awake_Patch
+    {
+        private static void Postfix()
+        {
+            ZRoutedRpc.instance.Register<int>(nameof(RPC_AddExperience), RPC_AddExperience);
+        }
     }
     
     private static readonly Dictionary<PlayerStatType, int> ExperienceMap = new()
@@ -187,4 +239,115 @@ public static class ExperienceManager
         { PlayerStatType.ArrowsShot , 1},
         { PlayerStatType.ItemsPickedUp , 1},
     };
+
+    private static readonly int EmissionColor = Shader.PropertyToID("_EmissionColor");
+
+    public static void CreateExperienceOrb(float amount, string name, string displayName, Color color, Color32 emission, Color shellColor, Color lightColor, Sprite icon)
+    {
+        GameObject UpgradeItem = ZNetScene.instance.GetPrefab("StaminaUpgrade_Greydwarf");
+        GameObject item = Object.Instantiate(UpgradeItem, AlmanacClassesPlugin._Root.transform, false);
+        item.AddComponent<OrbBob>();
+        if (item.transform.Find("heart"))
+        {
+            Object.Destroy(item.transform.Find("heart").gameObject);
+        }
+
+        GameObject inner = item.transform.Find("model/inner").gameObject;
+        if (inner.TryGetComponent(out MeshRenderer innerRenderer))
+        {
+            Material[]? materials = innerRenderer.materials;
+            List<Material> newMaterials = new List<Material>();
+            foreach (var mat in materials)
+            {
+                Material newMat = new Material(mat)
+                {
+                    color = color
+                };
+                newMat.SetColor(EmissionColor, emission);
+                newMaterials.Add(newMat);
+            }
+
+            innerRenderer.materials = newMaterials.ToArray();
+            innerRenderer.sharedMaterials = newMaterials.ToArray();
+        }
+
+        GameObject sphere = item.transform.Find("model/Sphere").gameObject;
+        if (sphere.TryGetComponent(out MeshRenderer sphereRenderer))
+        {
+            Material[]? materials = sphereRenderer.materials;
+            List<Material> newMaterials = new List<Material>();
+            foreach (var mat in materials)
+            {
+                Material newMat = new Material(mat)
+                {
+                    color = shellColor
+                };
+                newMaterials.Add(newMat);
+            }
+
+            sphereRenderer.materials = newMaterials.ToArray();
+            sphereRenderer.sharedMaterials = newMaterials.ToArray();
+        }
+
+        if (item.transform.Find("Point light").TryGetComponent(out Light light))
+        {
+            light.color = lightColor;
+        }
+        item.name = name;
+        
+        StatusEffect exp = ScriptableObject.CreateInstance<SE_ExperienceOrb>();
+        exp.name = $"SE_{name}";
+        exp.m_ttl = amount + 1f;
+        exp.m_name = displayName;
+        exp.m_tooltip = "Adds <color=orange>1</color>xp/sec";
+        exp.m_startEffects = LoadedAssets.FX_Experience;
+        if (!ObjectDB.instance.m_StatusEffects.Contains(exp))
+        {
+            ObjectDB.instance.m_StatusEffects.Add(exp);
+        }
+
+        if (!item.TryGetComponent(out ItemDrop component)) return;
+        component.m_itemData.m_shared.m_consumeStatusEffect = ObjectDB.instance.GetStatusEffect($"SE_{name}".GetStableHashCode());
+        component.m_itemData.m_shared.m_consumeStatusEffect.m_ttl = amount;
+        component.m_itemData.m_shared.m_name = displayName;
+        component.m_itemData.m_shared.m_description = $"Adds <color=orange>{amount}</color> class experience";
+        component.m_itemData.m_shared.m_questItem = false;
+        component.m_itemData.m_shared.m_maxStackSize = 100;
+        component.m_itemData.m_shared.m_icons = new[] { icon };
+        component.m_itemData.m_shared.m_autoStack = true;
+
+        ObjectDB.instance.m_items.Add(item);
+        ObjectDB.instance.m_itemByHash[item.name.GetStableHashCode()] = item;
+        ZNetScene.instance.m_prefabs.Add(item);
+        ZNetScene.instance.m_namedPrefabs[item.name.GetStableHashCode()] = item;
+    }
+
+    public static void DropOrb(Character instance)
+    {
+        var number = UnityEngine.Random.Range(0, 100);
+        if (number > AlmanacClassesPlugin._ChanceForOrb.Value) return;
+        var biome = Player.m_localPlayer.GetCurrentBiome();
+        switch (biome)
+        {
+            case Heightmap.Biome.Swamp or Heightmap.Biome.Mountain:
+                Object.Instantiate(ZNetScene.instance.GetPrefab("ExperienceOrb_Magic"), instance.transform.position,
+                    Quaternion.identity);
+                break;
+            case Heightmap.Biome.Plains or Heightmap.Biome.Mistlands:
+                Object.Instantiate(ZNetScene.instance.GetPrefab("ExperienceOrb_Epic"), instance.transform.position,
+                    Quaternion.identity);
+                break;
+            case Heightmap.Biome.Ocean:
+                Object.Instantiate(ZNetScene.instance.GetPrefab("ExperienceOrb_Legendary"), instance.transform.position,
+                    Quaternion.identity);
+                break;
+            default:
+                Object.Instantiate(ZNetScene.instance.GetPrefab("ExperienceOrb_Simple"), instance.transform.position,
+                    Quaternion.identity);
+                break;
+                
+                
+        }
+        
+    }
 }

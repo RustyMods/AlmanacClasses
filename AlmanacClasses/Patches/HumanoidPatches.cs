@@ -94,6 +94,10 @@ public static class HumanoidPatches
             rightItem.m_shared.m_damages.m_poison += leftItem.m_shared.m_damages.m_poison / 2;
             rightItem.m_shared.m_damages.m_spirit += leftItem.m_shared.m_damages.m_spirit / 2;
 
+            if (!leftItem.m_shared.m_equipStatusEffect)
+                leftItem.m_shared.m_equipStatusEffect =
+                    ObjectDB.instance.GetStatusEffect("SE_DualWield".GetStableHashCode());
+
             isDualWielding = true;
             __result = true;
 
@@ -132,6 +136,11 @@ public static class HumanoidPatches
                 rightItem.m_shared.m_damages.m_lightning -= leftItem.m_shared.m_damages.m_lightning / 2;
                 rightItem.m_shared.m_damages.m_poison -= leftItem.m_shared.m_damages.m_poison / 2;
                 rightItem.m_shared.m_damages.m_spirit -= leftItem.m_shared.m_damages.m_spirit / 2;
+
+                if (leftItem.m_shared.m_equipStatusEffect && leftItem.m_shared.m_equipStatusEffect.name == "SE_DualWield")
+                {
+                    leftItem.m_shared.m_equipStatusEffect = null;
+                }
 
                 isDualWielding = false;
             }

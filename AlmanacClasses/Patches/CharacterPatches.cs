@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using AlmanacClasses.Classes;
 using AlmanacClasses.Classes.Abilities;
 using AlmanacClasses.Data;
@@ -23,8 +24,8 @@ public static class CharacterPatches
             if (!__instance.m_nview) return;
             if (!__instance.m_nview.IsValid()) return;
             if (__instance.m_nview.GetZDO().GetBool(Classes.Abilities.SpawnSystem.FriendlyKey)) return;
-            int exp = ExperienceManager.GetExperienceAmount(__instance.name.Replace("(Clone", string.Empty)) * __instance.m_level;
-            __result += $" [<color=orange>{exp * AlmanacClassesPlugin._ExperienceMultiplier.Value}</color>]";
+            int exp = ExperienceManager.GetExperienceAmount(__instance);
+            __result += $" [<color=orange>{exp}</color>]";
         }
     }
     
@@ -65,16 +66,12 @@ public static class CharacterPatches
             if (!__instance.m_nview) return;
             if (!__instance.m_nview.IsValid()) return;
             if (__instance.m_nview.GetZDO().GetBool(Classes.Abilities.SpawnSystem.FriendlyKey)) return;
-            IncrementClassExperience(__instance);
+            
+            // ExperienceManager.AddExperienceRPCAll(__instance);
+            ExperienceManager.AddExperience(__instance);
+            ExperienceManager.DropOrb(__instance);
             CheckDoubleLoot(__instance);
         }
-    }
-
-    private static void IncrementClassExperience(Character instance)
-    {
-        if (!instance || instance.name.IsNullOrWhiteSpace()) return;
-        int amount = ExperienceManager.GetExperienceAmount(instance.name.Replace("(Clone)", String.Empty));
-        PlayerManager.m_tempPlayerData.m_experience += amount * instance.m_level;
     }
 
     private static void CheckDoubleLoot(Character instance)

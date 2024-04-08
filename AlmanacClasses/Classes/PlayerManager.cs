@@ -124,4 +124,7 @@ public static class PlayerManager
     
     public static int GetPlayerLevel(int experience) => (int)Math.Pow(experience / 100f, 0.5f);
     public static int GetRequiredExperience(int level) => (int)Math.Pow(level, 2) * 100;
+
+    public static void AddExperience(int amount) => m_tempPlayerData.m_experience += amount;
+    public static int GetExperience() => m_tempPlayerData.m_experience;
 }

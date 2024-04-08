@@ -9,6 +9,6 @@ public static class PlayerProfilePatches
     [HarmonyPatch(typeof(PlayerProfile), nameof(PlayerProfile.IncrementStat))]
     private static class PlayerProfile_IncrementStat_Patch
     {
-        private static void Postfix(PlayerStatType stat, float amount) => ExperienceManager.AddIncrementExperience(stat, amount);
+        private static void Postfix(PlayerStatType stat, float amount) => ExperienceManager.AddExperience(stat, amount);
     }
 }

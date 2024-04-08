@@ -1040,7 +1040,25 @@ public static class LoadUI
             case TalentType.Characteristic:
                 string key = DefaultData.LocalizeCharacteristics[talent.m_characteristic];
                 int value = talent.m_characteristicValue * talent.m_level;
-                stringBuilder.Append($"+ <color=orange>{value}</color> {key}");
+                stringBuilder.Append($"+ <color=orange>{value}</color> {key}\n");
+                switch (talent.m_characteristic)
+                {
+                    case Characteristic.Constitution:
+                        stringBuilder.Append($"Increases base vitality");
+                        break;
+                    case Characteristic.Dexterity:
+                        stringBuilder.Append($"Increases base stamina and ranged damage");
+                        break;
+                    case Characteristic.Intelligence:
+                        stringBuilder.Append($"Increases magic damage");
+                        break;
+                    case Characteristic.Strength:
+                        stringBuilder.Append($"Increases melee damage and carry weight");
+                        break;
+                    case Characteristic.Wisdom:
+                        stringBuilder.Append($"Increases skill experience gain and base eitr");
+                        break;
+                }
                 return Localization.instance.Localize(stringBuilder.ToString());
             default:
                 stringBuilder.Append(talent.m_description);

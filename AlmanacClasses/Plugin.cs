@@ -21,7 +21,7 @@ namespace AlmanacClasses
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
-        internal const string ModVersion = "0.2.5";
+        internal const string ModVersion = "0.2.7";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
         private static readonly string ConfigFileName = ModGUID + ".cfg";
@@ -120,6 +120,7 @@ namespace AlmanacClasses
         public static ConfigEntry<int> _TalentPointPerLevel = null!;
         public static ConfigEntry<int> _TalentPointsPerTenLevel = null!;
         public static ConfigEntry<Vector2> _MenuTooltipPosition = null!;
+        public static ConfigEntry<int> _ChanceForOrb = null!;
         #endregion
 
         public static ConfigEntry<int> _MaxEitr = null!;
@@ -281,6 +282,10 @@ namespace AlmanacClasses
             _MenuTooltipPosition = config("2 - Settings", "Menu Tooltip Position", new Vector2(0f, 150f),
                 "Set position of spell bar tooltip, always attached to spell bar position", false);
             _MenuTooltipPosition.SettingChanged += LoadUI.OnMenuInfoPanelConfigChange;
+
+            _ChanceForOrb = config("2 - Settings", "Experience Orb Drop Rate", 1,
+                new ConfigDescription("Set the drop chance to drop experience orbs",
+                    new AcceptableValueRange<int>(0, 100)));
         }
 
         private void InitKeyCodeConfigs()

@@ -123,9 +123,13 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="API\API.cs" />
         <Compile Include="Classes\Abilities\AbilityManager.cs" />
         <Compile Include="Classes\Abilities\SE_Bleed.cs" />
+        <Compile Include="Classes\Abilities\SE_DualWield.cs" />
+        <Compile Include="Classes\Abilities\SE_ExperienceOrb.cs" />
         <Compile Include="Classes\Abilities\SE_Hunter.cs" />
+        <Compile Include="Classes\Abilities\SE_MonkeyWrench.cs" />
         <Compile Include="Classes\Abilities\Spells.cs" />
         <Compile Include="Classes\Abilities\SpawnSystem.cs" />
         <Compile Include="Classes\Abilities\TimedFinder.cs" />
@@ -145,6 +149,7 @@
         <Compile Include="LoadAssets\LoadEffects.cs" />
         <Compile Include="LoadAssets\LoadPieces.cs" />
         <Compile Include="LoadAssets\LoadTwoHanded.cs" />
+        <Compile Include="LoadAssets\OrbBob.cs" />
         <Compile Include="Managers\AnimationManager.cs" />
         <Compile Include="Managers\CommandsManager.cs" />
         <Compile Include="Managers\LocalizationManager.cs" />
@@ -193,6 +198,7 @@
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
         <EmbeddedResource Include="translations\English.yml" />
+        <EmbeddedResource Include="translations\Korean.yml" />
         <Content Include="Tutorials\README.md" />
         <Content Include="UpdateManifest.ps1" />
     </ItemGroup>

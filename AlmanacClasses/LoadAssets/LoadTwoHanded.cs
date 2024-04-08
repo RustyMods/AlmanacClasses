@@ -7,12 +7,25 @@ public static class LoadTwoHanded
 {
     private static readonly Dictionary<ItemDrop, TwoHandedData> TwoHandedWeapons = new();
 
+    private static readonly List<string> WarfareItems = new()
+    {
+        "DualAxeKrom_TW",
+        "DualHammerRageHatred_TW",
+        "DualSpearSvigaFrekk_TW",
+        "DualSwordSkadi_TW",
+        "DualHammerStormstrike_TW",
+        "DualSwordScimitar_TW",
+        "DualaxeDemonic_TW",
+    };
+
     public static void InitTwoHandedWeapons()
     {
         List<ItemDrop> items = ObjectDB.instance.GetAllItems(ItemDrop.ItemData.ItemType.TwoHandedWeapon, "");
         foreach (ItemDrop item in items)
         {
             if (item.m_itemData.m_shared.m_icons.Length <= 0) continue;
+            if (item.m_itemData.m_shared.m_itemType is ItemDrop.ItemData.ItemType.Tool) continue;
+            if (WarfareItems.Contains(item.name)) continue;
             if (item.m_itemData.m_shared.m_skillType is Skills.SkillType.Swords or Skills.SkillType.Axes or Skills.SkillType.Polearms || item.m_itemData.m_shared.m_name == "$item_stafffireball")
             {
                 TwoHandedData data = new()
@@ -42,18 +55,14 @@ public static class LoadTwoHanded
             switch (kvp.Key.m_itemData.m_shared.m_skillType)
             {
                 case Skills.SkillType.Axes:
-                    kvp.Key.m_itemData.m_shared.m_attack.m_attackType = Attack.AttackType.Horizontal;
-                    kvp.Key.m_itemData.m_shared.m_attack.m_attackAnimation = "swing_axe";
-                    kvp.Key.m_itemData.m_shared.m_secondaryAttack.m_attackType = Attack.AttackType.Vertical;
-                    kvp.Key.m_itemData.m_shared.m_secondaryAttack.m_attackAnimation = "axe_secondary";
+                    ChangeToOneHandedAxe(kvp.Key.m_itemData);
                     break;
                 case Skills.SkillType.Swords or Skills.SkillType.Polearms:
-                    kvp.Key.m_itemData.m_shared.m_attack.m_attackType = Attack.AttackType.Horizontal;
-                    kvp.Key.m_itemData.m_shared.m_attack.m_attackAnimation = "swing_longsword";
-                    kvp.Key.m_itemData.m_shared.m_secondaryAttack.m_attackType = Attack.AttackType.Horizontal;
-                    kvp.Key.m_itemData.m_shared.m_secondaryAttack.m_attackAnimation = "sword_secondary";
+                    ChangeToOneHandedSword(kvp.Key.m_itemData);
                     break;
             }
+            
+            AddEquipStatusEffect(kvp.Key.m_itemData);
         }
 
         if (!Player.m_localPlayer) return;
@@ -68,19 +77,37 @@ public static class LoadTwoHanded
             switch (item.m_shared.m_skillType)
             {
                 case Skills.SkillType.Axes:
-                    item.m_shared.m_attack.m_attackType = Attack.AttackType.Horizontal;
-                    item.m_shared.m_attack.m_attackAnimation = "swing_axe";
-                    item.m_shared.m_secondaryAttack.m_attackType = Attack.AttackType.Vertical;
-                    item.m_shared.m_secondaryAttack.m_attackAnimation = "axe_secondary";
+                    ChangeToOneHandedAxe(item);
                     break;
                 case Skills.SkillType.Swords or Skills.SkillType.Polearms:
-                    item.m_shared.m_attack.m_attackType = Attack.AttackType.Horizontal;
-                    item.m_shared.m_attack.m_attackAnimation = "swing_longsword";
-                    item.m_shared.m_secondaryAttack.m_attackType = Attack.AttackType.Horizontal;
-                    item.m_shared.m_secondaryAttack.m_attackAnimation = "sword_secondary";
+                    ChangeToOneHandedSword(item);
                     break;
             }
+            
+            AddEquipStatusEffect(item);
         }
+    }
+
+    private static void ChangeToOneHandedAxe(ItemDrop.ItemData item)
+    {
+        item.m_shared.m_attack.m_attackType = Attack.AttackType.Horizontal;
+        item.m_shared.m_attack.m_attackAnimation = "swing_axe";
+        item.m_shared.m_secondaryAttack.m_attackType = Attack.AttackType.Vertical;
+        item.m_shared.m_secondaryAttack.m_attackAnimation = "axe_secondary";
+    }
+
+    private static void ChangeToOneHandedSword(ItemDrop.ItemData item)
+    {
+        item.m_shared.m_attack.m_attackType = Attack.AttackType.Horizontal;
+        item.m_shared.m_attack.m_attackAnimation = "swing_longsword";
+        item.m_shared.m_secondaryAttack.m_attackType = Attack.AttackType.Horizontal;
+        item.m_shared.m_secondaryAttack.m_attackAnimation = "sword_secondary";
+    }
+
+    private static void AddEquipStatusEffect(ItemDrop.ItemData item)
+    {
+        if (item.m_shared.m_equipStatusEffect) return;
+        item.m_shared.m_equipStatusEffect = ObjectDB.instance.GetStatusEffect("SE_MonkeyWrench".GetStableHashCode());
     }
 
     public static void ResetTwoHandedWeapons()
@@ -94,6 +121,10 @@ public static class LoadTwoHanded
             kvp.Key.m_itemData.m_shared.m_attack.m_attackAnimation = kvp.Value.m_attackAnimation;
             kvp.Key.m_itemData.m_shared.m_secondaryAttack.m_attackType = kvp.Value.m_secondaryAttackType;
             kvp.Key.m_itemData.m_shared.m_secondaryAttack.m_attackAnimation = kvp.Value.m_secondaryAttackAnimation;
+            if (kvp.Key.m_itemData.m_shared.m_equipStatusEffect && kvp.Key.m_itemData.m_shared.m_equipStatusEffect.name == "SE_MonkeyWrench")
+            {
+                kvp.Key.m_itemData.m_shared.m_equipStatusEffect = null;
+            }
         }
 
         if (!Player.m_localPlayer) return;
@@ -112,6 +143,10 @@ public static class LoadTwoHanded
             item.m_shared.m_attack.m_attackAnimation = data.m_attackAnimation;
             item.m_shared.m_secondaryAttack.m_attackType = data.m_secondaryAttackType;
             item.m_shared.m_secondaryAttack.m_attackAnimation = data.m_secondaryAttackAnimation;
+            if (item.m_shared.m_equipStatusEffect && item.m_shared.m_equipStatusEffect.name == "SE_MonkeyWrench")
+            {
+                item.m_shared.m_equipStatusEffect = null;
+            }
         }
     }
 
