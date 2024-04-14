@@ -20,7 +20,7 @@ public static class SpellBook
     public static readonly List<AbilityData> m_abilities = new();
 
     private static RectTransform m_spellBarPos = null!;
-    private static readonly int Saturation = Shader.PropertyToID("_Saturation");
+    // private static readonly int Saturation = Shader.PropertyToID("_Saturation");
 
     public static void OnSpellBarPosChange(object sender, EventArgs e)
     {
@@ -40,9 +40,9 @@ public static class SpellBook
         m_spellBarPos.anchoredPosition = AlmanacClassesPlugin._SpellBookPos.Value;
         m_spellBar.AddComponent<SpellBarMove>();
         m_element = AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_element");
-        Image? grayMat = Utils.FindChild(m_element.transform, "$image_gray").GetComponent<Image>();
-        grayMat.material.shader = Shader.Find("Custom/icon");
-        grayMat.material.SetFloat(Saturation, -0.5f);
+        // Image? grayMat = Utils.FindChild(m_element.transform, "$image_gray").GetComponent<Image>();
+        // grayMat.material.shader = Shader.Find("Custom/icon");
+        // grayMat.material.SetFloat(Saturation, -0.5f);
         m_element.AddComponent<SpellElementChange>();
         
         Text[] texts = m_element.GetComponentsInChildren<Text>();

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using AlmanacClasses.Classes;
+﻿using AlmanacClasses.Classes;
 using AlmanacClasses.Classes.Abilities;
 using AlmanacClasses.Data;
 using BepInEx;

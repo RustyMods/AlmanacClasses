@@ -152,6 +152,7 @@
         <Compile Include="LoadAssets\OrbBob.cs" />
         <Compile Include="Managers\AnimationManager.cs" />
         <Compile Include="Managers\CommandsManager.cs" />
+        <Compile Include="Managers\ItemEffectReplacer.cs" />
         <Compile Include="Managers\LocalizationManager.cs" />
         <Compile Include="Managers\MaterialReplacer.cs" />
         <Compile Include="Managers\PieceManager.cs" />
