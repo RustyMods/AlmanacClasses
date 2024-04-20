@@ -26,6 +26,11 @@ public static class ButtonPatches
             }
             else
             {
+                if (talent.m_hasAlternate)
+                {
+                    Talent? alt = TalentManager.GetAltTalentByButton(__instance.name);
+                    if (alt is { m_altActive: true }) talent = alt;
+                }
                 LoadUI.TalentName.text = Localization.instance.Localize(talent.m_name);
                 LoadUI.TalentDescription.text = LoadUI.GetTooltip(talent);
                 LoadUI.TalentCost.text = Localization.instance.Localize($"$almanac_cost: <color=orange>{talent.m_cost}</color>");

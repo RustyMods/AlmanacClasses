@@ -44,6 +44,7 @@ public static class LoadedAssets
     public static StatusEffect GP_Moder = null!;
 
     public static EffectList FX_Experience = null!;
+    public static EffectList FX_BattleFury = null!;
     
     public static void InitVFX()
     {
@@ -327,6 +328,27 @@ public static class LoadedAssets
             }
         };
 
+        GameObject vfx_potion_stamina = instance.GetPrefab("vfx_Potion_stamina_medium");
+        GameObject sfx_boar_love = instance.GetPrefab("sfx_boar_love");
+        FX_BattleFury = new EffectList()
+        {
+            m_effectPrefabs = new[]
+            {
+                new EffectList.EffectData()
+                {
+                    m_prefab = vfx_potion_stamina,
+                    m_enabled = true,
+                    m_attach = true,
+                    m_scale = true
+                },
+                new EffectList.EffectData()
+                {
+                    m_prefab = sfx_boar_love,
+                    m_enabled = true,
+                    m_attach = true
+                }
+            }
+        };
     }
 
     private static void RegisterToZNetScene(GameObject prefab)

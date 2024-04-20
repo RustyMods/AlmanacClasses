@@ -32,6 +32,11 @@ public static class PlayerPatches
         }
     }
 
+    private static string initialFoodItem = "";
+    private static float initialFood;
+    private static float initialStamina;
+    private static float initialEitr;
+
     [HarmonyPatch(typeof(Player), nameof(Player.EatFood))]
     private static class Player_EatFood_Patch
     {
@@ -39,9 +44,27 @@ public static class PlayerPatches
         {
             if (!__instance.CanEat(item, false)) return;
             if (!PlayerManager.m_playerTalents.TryGetValue("CoreChef", out Talent ability)) return;
+            initialFoodItem = item.m_shared.m_name;
+            initialFood = item.m_shared.m_food;
+            initialStamina = item.m_shared.m_foodStamina;
+            initialEitr = item.m_shared.m_foodEitr;
             item.m_shared.m_food *= AlmanacClassesPlugin._MasterChefIncrease.Value * ability.m_level;
             item.m_shared.m_foodStamina *= AlmanacClassesPlugin._MasterChefIncrease.Value * ability.m_level;
             item.m_shared.m_foodEitr *= AlmanacClassesPlugin._MasterChefIncrease.Value * ability.m_level;
+        }
+    }
+
+    [HarmonyPatch(typeof(Player), nameof(Player.EatFood))]
+    private static class Player_EatFood_Patch2
+    {
+        private static void Postfix(ref ItemDrop.ItemData item, ref bool __result)
+        {
+            if (!__result) return;
+            if (!PlayerManager.m_playerTalents.TryGetValue("CoreChef", out Talent ability)) return;
+            if (initialFoodItem != item.m_shared.m_name) return;
+            item.m_shared.m_food = initialFood;
+            item.m_shared.m_foodStamina = initialStamina;
+            item.m_shared.m_foodEitr = initialEitr;
         }
     }
 

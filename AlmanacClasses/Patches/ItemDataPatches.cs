@@ -1,6 +1,7 @@
 ﻿using AlmanacClasses.Classes;
 using AlmanacClasses.Data;
 using HarmonyLib;
+using UnityEngine;
 
 namespace AlmanacClasses.Patches;
 
@@ -17,7 +18,7 @@ public static class ItemDataPatches
             if (!PlayerManager.m_playerTalents.TryGetValue("QuickShot", out Talent talent)) return;
             if (talent.m_chance != null)
             {
-                __result *= (talent.m_chance.Value * talent.m_level) / 100f; 
+                __result = Mathf.Clamp(__result * (talent.m_chance.Value * talent.m_level / 100f),0f, 10f); 
             }
         }
     }

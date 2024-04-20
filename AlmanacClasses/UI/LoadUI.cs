@@ -58,8 +58,8 @@ public static class LoadUI
     private static Button CenterButton = null!;
     public static bool m_initLineFillSet;
     public static readonly Dictionary<string, Button> ButtonMap = new();
-    private static readonly Dictionary<Button, Dictionary<string, Image>> ButtonFillLineMap = new();
-    private static readonly Dictionary<Button, float> ButtonCoreLineAmountMap = new();
+    public static readonly Dictionary<Button, Dictionary<string, Image>> ButtonFillLineMap = new();
+    public static readonly Dictionary<Button, float> ButtonCoreLineAmountMap = new();
     private static readonly List<Button> CheckedTalents = new();
     #region All Fill Lines Images
     #region Line Up
@@ -914,6 +914,132 @@ public static class LoadUI
         SetButton(WarriorTalents, "$button_warrior_talent_5", new(){{"$button_warrior_talent_2", LineCoreWarrior}}, 1f, "DualWield");
     }
 
+    public static void ChangeButton(Talent talent, bool revert = false)
+    {
+        if (!ButtonMap.TryGetValue(talent.m_buttonName, out Button button)) return;
+        if (revert)
+        {
+            Talent? alt = TalentManager.GetAltTalentByButton(talent.m_buttonName);
+            if (alt != null)
+            {
+                if (PlayerManager.m_playerTalents.ContainsKey(alt.m_key))
+                {
+                    PlayerManager.m_playerTalents.Remove(alt.m_key);
+                }
+
+                alt.m_altActive = false;
+            }
+            RemapButton(talent.m_buttonName, ButtonFillLineMap[button], 1f, talent.m_key);
+        }
+        else
+        {
+            Talent? original = TalentManager.GetTalentByButton(talent.m_buttonName);
+            if (original != null)
+            {
+                if (PlayerManager.m_playerTalents.ContainsKey(original.m_key))
+                {
+                    PlayerManager.m_playerTalents.Remove(original.m_key);
+                }
+            }
+            RemapButton(talent.m_buttonName, ButtonFillLineMap[button], 1f, talent.m_key);
+            talent.m_altActive = true;
+        }
+    }
+
+    private static void RemapButton(string name, Dictionary<string, Image> lines, float amount, string key)
+    {
+        if (!ButtonMap.TryGetValue(name, out Button button)) return;
+        Transform? checkmark = Utils.FindChild(button.transform, "Checkmark");
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(() =>
+        {
+            if (CheckedTalents.Contains(button)) return;
+            
+            if (EndTalents.Keys.Contains(name))
+            {
+                if (!CanBuyEndAbility(name))
+                {
+                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_need_connected_talents");
+                    return;
+                }
+            }
+            Dictionary<string, Image> validatedLines = new();
+            foreach (Button talent in CheckedTalents)
+            {
+                if (lines.TryGetValue(talent.name, out Image line))
+                {
+                    validatedLines[talent.name] = line;
+                }
+            }
+
+            if (validatedLines.Count == 0)
+            {
+                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_need_previous_talent");
+                return;
+            }
+            
+            if (TalentManager.AllTalents.TryGetValue(key, out Talent ability))
+            {
+                int cost = ability.m_cost;
+                if (cost > TalentManager.GetAvailableTalentPoints())
+                {
+                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_not_enough_tp");
+                    return;
+                }
+                PlayerManager.m_playerTalents[ability.m_key] = ability;
+                PlayerManager.m_tempPlayerData.m_boughtTalents.Add(ability.m_key);
+                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_purchased");
+                if (ability.m_key == "MonkeyWrench")
+                {
+                    LoadTwoHanded.ModifyTwoHandedWeapons();
+                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_two_handed");
+                }
+                CharacteristicManager.ReloadCharacteristics();
+                TalentBook.ShowUI();
+                if (ability.m_triggerNow)
+                {
+                    StatusEffect effect = ObjectDB.instance.GetStatusEffect(ability.m_statusEffect.name.GetStableHashCode());
+                    if (effect)
+                    {
+                        if (!Player.m_localPlayer.GetSEMan().HaveStatusEffect(effect.name))
+                        {
+                            Player.m_localPlayer.GetSEMan().AddStatusEffect(effect);
+                        }
+                    }
+                }
+                else if (ability.m_isAbility)
+                {
+                    if (SpellBook.IsAbilityInBook(ability))
+                    {
+                        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_spell_in_book");
+                        return;
+                    }
+                    if (SpellBook.m_abilities.Count > 7)
+                    {
+                        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_spell_book_full");
+                        return;
+                    }
+                    SpellBook.m_abilities.Add(new AbilityData()
+                    {
+                        m_data = ability
+                    });
+                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_added_spell");
+                }
+            }
+            else
+            {
+                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_failed_to_get_talent");
+                return;
+            }
+            checkmark.gameObject.SetActive(true);
+            foreach (KeyValuePair<string, Image> line in validatedLines)
+            {
+                line.Value.fillAmount = line.Value.transform.parent.name == "$line_core" ? amount : 1f;
+            }
+            CheckedTalents.Add(button);
+        });   
+    }
+
     private static void SetButton(Transform parent, string name, Dictionary<string, Image> lines, float amount, string key)
     {
         Button? button = parent.Find(name).GetComponent<Button>();
@@ -1039,7 +1165,7 @@ public static class LoadUI
         {
             case TalentType.Characteristic:
                 string key = DefaultData.LocalizeCharacteristics[talent.m_characteristic];
-                int value = talent.m_characteristicValue * talent.m_level;
+                int value = talent.m_characteristicValue;
                 stringBuilder.Append($"+ <color=orange>{value}</color> {key}\n");
                 switch (talent.m_characteristic)
                 {

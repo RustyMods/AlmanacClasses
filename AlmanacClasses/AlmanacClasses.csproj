@@ -130,6 +130,7 @@
         <Compile Include="Classes\Abilities\SE_ExperienceOrb.cs" />
         <Compile Include="Classes\Abilities\SE_Hunter.cs" />
         <Compile Include="Classes\Abilities\SE_MonkeyWrench.cs" />
+        <Compile Include="Classes\Abilities\SE_Survivor.cs" />
         <Compile Include="Classes\Abilities\Spells.cs" />
         <Compile Include="Classes\Abilities\SpawnSystem.cs" />
         <Compile Include="Classes\Abilities\TimedFinder.cs" />
@@ -189,7 +190,10 @@
         <Compile Include="VersionHandshake.cs" />
     </ItemGroup>
     <ItemGroup>
-        <EmbeddedResource Include="..\..\..\bundles_custom\classesbundle">
+        <Content Include="..\..\..\bundles_custom\classesbundle">
+          <Link>assets\classesbundle</Link>
+        </Content>
+        <EmbeddedResource Include="..\..\..\bundles_2024\classesbundle">
           <Link>assets\classesbundle</Link>
         </EmbeddedResource>
         <Content Include=".gitignore" />

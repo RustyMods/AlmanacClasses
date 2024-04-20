@@ -7,7 +7,6 @@ namespace AlmanacClasses.API;
 
 public static class ClassesAPI
 {
-    public static bool installed;
     private static readonly MethodInfo? API_AddExperience;
     private static readonly MethodInfo? API_GetLevel;
     private static readonly MethodInfo? API_GetCharacteristic;
@@ -42,7 +41,6 @@ public static class ClassesAPI
         API_AddExperience = api.GetMethod("AddExperience", BindingFlags.Public | BindingFlags.Static);
         API_GetLevel = api.GetMethod("GetLevel", BindingFlags.Public | BindingFlags.Static);
         API_GetCharacteristic = api.GetMethod("GetCharacteristic", BindingFlags.Public | BindingFlags.Static);
-        installed = true;
     }
 }
 

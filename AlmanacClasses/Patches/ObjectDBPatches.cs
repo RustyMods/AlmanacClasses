@@ -86,6 +86,30 @@ public static class ObjectDBPatches
             {
                 __instance.m_StatusEffects.Add(dualWield);
             }
+
+            StatusEffect survivor = ScriptableObject.CreateInstance<SE_Survivor>();
+            survivor.name = "SE_Survivor";
+            survivor.m_name = "$talent_survivor";
+            survivor.m_tooltip = "Reduces incoming damage";
+            survivor.m_icon = SpriteManager.HourGlass_Icon;
+            survivor.m_ttl = 100f;
+            survivor.m_startEffects = LoadedAssets.VFX_SongOfSpirit;
+
+            if (!__instance.m_StatusEffects.Contains(survivor))
+            {
+                __instance.m_StatusEffects.Add(survivor);
+            }
+
+            StatusEffect battleFury = ScriptableObject.CreateInstance<StatusEffect>();
+            battleFury.name = "SE_BattleFury";
+            battleFury.m_name = "Battle Fury";
+            battleFury.m_ttl = 2f;
+            battleFury.m_startEffects = LoadedAssets.FX_BattleFury;
+
+            if (!__instance.m_StatusEffects.Contains(battleFury))
+            {
+                __instance.m_StatusEffects.Add(battleFury);
+            }
             
             ExperienceManager.CreateExperienceOrb(10, "ExperienceOrb_Simple", "Simple Orb", new Color(1f, 0.9f, 0f, 1f), new Color32(255, 0, 0, 255), new Color(1f, 0.5f, 0.5f, 0.6f), new Color(1f, 0.7f, 0.5f, 1f), SpriteManager.HourGlass_Icon);
             ExperienceManager.CreateExperienceOrb(25, "ExperienceOrb_Magic", "Magic Orb", new Color(0.3f, 1f, 0f, 1f), new Color32(255, 255, 0, 255), new Color(0f, 0.5f, 0.5f, 0.6f), new Color(0.5f, 1f, 0f, 1f), SpriteManager.HourGlass_Icon);

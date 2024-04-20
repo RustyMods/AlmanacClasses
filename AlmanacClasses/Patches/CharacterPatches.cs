@@ -3,6 +3,7 @@ using AlmanacClasses.Classes.Abilities;
 using AlmanacClasses.Data;
 using BepInEx;
 using HarmonyLib;
+using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace AlmanacClasses.Patches;
@@ -69,6 +70,7 @@ public static class CharacterPatches
             ExperienceManager.AddExperience(__instance);
             ExperienceManager.DropOrb(__instance);
             CheckDoubleLoot(__instance);
+            CheckBattleFury(__instance);
         }
     }
 
@@ -83,6 +85,43 @@ public static class CharacterPatches
         if (random <= percentage)
         {
             CharacterDrop.DropItems(characterDrop.GenerateDropList(), instance.GetCenterPoint() + characterDrop.transform.TransformVector(characterDrop.m_spawnOffset), 0.5f);
+        }
+    }
+
+    private static void CheckBattleFury(Character instance)
+    {
+        if (!PlayerManager.m_playerTalents.TryGetValue("BattleFury", out Talent talent)) return;
+        if (Vector3.Distance(instance.GetCenterPoint(), Player.m_localPlayer.GetCenterPoint()) < 50f) return;
+        float chance = talent.m_chance?.Value ?? 0f * talent.m_level;
+        float random = Random.Range(0, 101);
+        if (random > chance) return;
+        Player.m_localPlayer.AddStamina(random);
+        if (AlmanacClassesPlugin._BattleFuryFX.Value is AlmanacClassesPlugin.Toggle.Off) return;
+        Player.m_localPlayer.GetSEMan().AddStatusEffect("SE_BattleFury".GetStableHashCode());
+    }
+    
+    [HarmonyPatch(typeof(Character), nameof(Character.GetHealth))]
+    private static class Player_GetHealth_Patch
+    {
+        private static void Postfix(Character __instance, ref float __result)
+        {
+            if (!__instance) return;
+            if (__instance != Player.m_localPlayer) return;
+            if (__result > 0.0) return;
+            if (PlayerManager.m_playerTalents.TryGetValue("Survivor", out Talent talent))
+            {
+                if (__instance.GetSEMan().HaveStatusEffect("SE_Survivor".GetStableHashCode())) return;
+                float chance = talent.m_chance?.Value ?? 0f * talent.m_level;
+                float random = Random.Range(0, 101f);
+                if (random < chance)
+                {
+                    float quarter = __instance.GetMaxHealth() / 4f;
+                    __instance.Heal(quarter);
+                    __result = quarter;
+                    if (AlmanacClassesPlugin._SurvivorFX.Value is AlmanacClassesPlugin.Toggle.Off) return;
+                    __instance.GetSEMan().AddStatusEffect("SE_Survivor".GetStableHashCode());
+                }
+            }
         }
     }
 }

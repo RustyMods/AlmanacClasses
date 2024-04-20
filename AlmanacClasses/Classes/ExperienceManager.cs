@@ -313,8 +313,10 @@ public static class ExperienceManager
         component.m_itemData.m_shared.m_description = $"Adds <color=orange>{amount}</color> class experience";
         component.m_itemData.m_shared.m_questItem = false;
         component.m_itemData.m_shared.m_maxStackSize = 100;
-        component.m_itemData.m_shared.m_icons = new[] { icon };
+        // component.m_itemData.m_shared.m_icons = new[] { icon };
         component.m_itemData.m_shared.m_autoStack = true;
+        component.m_itemData.m_shared.m_weight = 0f;
+        component.m_autoPickup = true;
 
         ObjectDB.instance.m_items.Add(item);
         ObjectDB.instance.m_itemByHash[item.name.GetStableHashCode()] = item;

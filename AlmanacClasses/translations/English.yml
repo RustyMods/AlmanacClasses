@@ -144,7 +144,10 @@ talent_resist: "Resistant"
 talent_resist_desc: "Reduces all physical damage for a short period of time"
 talent_dual: "Dual Wield"
 talent_dual_desc: "Allows to dual wield one-handed weapons\n (<color=orange>Stamina cost increased while dual wielding</color>)"
-
+talent_battle_fury: "Battle Fury"
+talent_battle_fury_desc: "Chance to recover stamina from a kill"
+talent_survivor: "Survivor"
+talent_survivor_desc: "Chance to heal instead of dying"
 
 almanac_class_altar_info: 
   "Welcome to the wonderful world of almanac class system 

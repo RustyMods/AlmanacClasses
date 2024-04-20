@@ -54,6 +54,38 @@ public static class PlayerManager
             }
         }
         CharacteristicManager.ReloadCharacteristics();
+        CheckAltTalents();
+    }
+
+    private static void CheckAltTalents()
+    {
+        if (m_playerTalents.ContainsKey("MonkeyWrench") && m_playerTalents.ContainsKey("BattleFury"))
+        {
+            if (AlmanacClassesPlugin._UseBattleFury.Value is AlmanacClassesPlugin.Toggle.On)
+            {
+                m_playerTalents.Remove("MonkeyWrench");
+                m_tempPlayerData.m_boughtTalents.Remove("MonkeyWrench");
+            }
+            else
+            {
+                m_playerTalents.Remove("BattleFury");
+                m_tempPlayerData.m_boughtTalents.Remove("BattleFury");
+            }
+        }
+
+        if (m_playerTalents.ContainsKey("DualWield") && m_playerTalents.ContainsKey("Survivor"))
+        {
+            if (AlmanacClassesPlugin._UseSurvivor.Value is AlmanacClassesPlugin.Toggle.On)
+            {
+                m_playerTalents.Remove("DualWield");
+                m_tempPlayerData.m_boughtTalents.Remove("DualWield");
+            }
+            else
+            {
+                m_playerTalents.Remove("Survivor");
+                m_tempPlayerData.m_boughtTalents.Remove("Survivor");
+            }
+        }
     }
 
     public static void SavePlayerData()

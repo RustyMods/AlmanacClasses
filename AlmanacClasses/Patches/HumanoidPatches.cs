@@ -19,7 +19,7 @@ public static class HumanoidPatches
             if (!PlayerManager.m_playerTalents.TryGetValue("QuickShot", out Talent talent)) return;
             if (talent.m_chance != null)
             {
-                __result /= (talent.m_chance.Value * talent.m_level) / 100f; 
+                __result = Mathf.Clamp(__result / (talent.m_chance.Value * talent.m_level / 100f), 0f, 1f); 
             }
         }
     }

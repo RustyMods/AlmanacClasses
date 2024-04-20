@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using AlmanacClasses.Classes;
 using AlmanacClasses.Classes.Abilities;
 using AlmanacClasses.FileSystem;
 using AlmanacClasses.LoadAssets;
@@ -21,7 +22,7 @@ namespace AlmanacClasses
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
-        internal const string ModVersion = "0.2.9";
+        internal const string ModVersion = "0.3.1";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
         private static readonly string ConfigFileName = ModGUID + ".cfg";
@@ -167,6 +168,11 @@ namespace AlmanacClasses
         public static ConfigEntry<float> _MasterChefIncrease = null!;
         public static ConfigEntry<float> _LumberjackIncrease = null!;
 
+        public static ConfigEntry<Toggle> _UseBattleFury = null!;
+        public static ConfigEntry<Toggle> _BattleFuryFX = null!;
+        public static ConfigEntry<Toggle> _UseSurvivor = null!;
+        public static ConfigEntry<float> _SurvivorLength = null!;
+        public static ConfigEntry<Toggle> _SurvivorFX = null!;
         private void InitConfigs()
         {
             _serverConfigLocked = config("1 - General", "Lock Configuration", Toggle.On,
@@ -237,6 +243,45 @@ namespace AlmanacClasses
             _HunterDeepNorth = config("Ranger - Hunter", "8. Deep North", "", "Set the affected creature by the ability");
             _HunterOcean = config("Ranger - Hunter", "9. Ocean", "Serpent", "Set the affected creature by the ability");
 
+            _UseBattleFury = config("Warrior - Battle Fury", "Enabled", Toggle.Off,
+                "If on, battle fury replaces monkey wrench", false);
+            _UseBattleFury.SettingChanged += OnBattleFuryChange;
+            _BattleFuryFX = config("Warrior - Battle Fury", "Visual Effects", Toggle.On,
+                "If on, visual effects are active", false);
+
+            _UseSurvivor = config("Warrior - Survivor", "Enabled", Toggle.Off, "If on, survivor replaces dual wield", false);
+            _UseSurvivor.SettingChanged += OnSurvivorChange;
+            _SurvivorLength = config("Warrior - Survivor", "Duration", 100f,
+                new ConfigDescription("Set duration of survivor damage reduction",
+                    new AcceptableValueRange<float>(1f, 1000f)));
+            _SurvivorFX = config("Warrior - Survivor", "Visual Effects", Toggle.On, "If on, visual effects are active",
+                false);
+        }
+
+        private static void OnSurvivorChange(object sender, EventArgs e)
+        {
+            if (_UseSurvivor.Value is Toggle.On)
+            {
+                LoadUI.ChangeButton(TalentManager.AllTalents["Survivor"]);
+            }
+            else
+            {
+                LoadUI.ChangeButton(TalentManager.AllTalents["DualWield"], true);
+            }
+            LoadUI.ResetTalents(true);
+        }
+
+        private static void OnBattleFuryChange(object sender, EventArgs e)
+        {
+            if (_UseBattleFury.Value is Toggle.On)
+            {
+                LoadUI.ChangeButton(TalentManager.AllTalents["BattleFury"]);
+            }
+            else
+            {
+                LoadUI.ChangeButton(TalentManager.AllTalents["MonkeyWrench"], true);
+            }
+            LoadUI.ResetTalents(true);
         }
 
         private void InitSettingsConfigs()

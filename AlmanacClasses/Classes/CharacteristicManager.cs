@@ -56,11 +56,11 @@ public static class CharacteristicManager
     private static Dictionary<Characteristic, int> GetCharacteristics()
     {
         Dictionary<Characteristic, int> characteristics = new(DefaultData.defaultCharacteristics);
-        foreach (KeyValuePair<string, Talent> talent in PlayerManager.m_playerTalents)
+        foreach (KeyValuePair<string, Talent> kvp in PlayerManager.m_playerTalents)
         {
-            if (talent.Value.m_type is not TalentType.Characteristic) continue;
-            if (talent.Value.m_characteristic is Characteristic.None) continue;
-            characteristics[talent.Value.m_characteristic] += talent.Value.m_characteristicValue;
+            if (kvp.Value.m_type is not TalentType.Characteristic) continue;
+            if (kvp.Value.m_characteristic is Characteristic.None) continue;
+            characteristics[kvp.Value.m_characteristic] += kvp.Value.m_characteristicValue;
         }
 
         return characteristics;

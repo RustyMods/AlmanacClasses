@@ -35,8 +35,9 @@ public static class TalentManager
             talent.Value.m_level = level;
             if (talent.Value.m_type is TalentType.Characteristic)
             {
+                talent.Value.m_characteristicValue = 10 * level;
                 talent.Value.m_description =
-                    $"+ <color=orange>{talent.Value.m_characteristicValue * talent.Value.m_level}</color> {DefaultData.LocalizeCharacteristics[talent.Value.m_characteristic]}";
+                    $"+ <color=orange>{talent.Value.m_characteristicValue}</color> {DefaultData.LocalizeCharacteristics[talent.Value.m_characteristic]}";
             }
         }
 
@@ -45,18 +46,9 @@ public static class TalentManager
             talent.Value.m_level = level;
             if (talent.Value.m_type is TalentType.Characteristic)
             {
+                talent.Value.m_characteristicValue = 10 * level;
                 talent.Value.m_description =
-                    $"+ <color=orange>{talent.Value.m_characteristicValue * talent.Value.m_level}</color> {DefaultData.LocalizeCharacteristics[talent.Value.m_characteristic]}";
-            }
-        }
-
-        foreach (AbilityData? talent in SpellBook.m_abilities)
-        {
-            talent.m_data.m_level = level;
-            if (talent.m_data.m_type is TalentType.Characteristic)
-            {
-                talent.m_data.m_description =
-                    $"+ <color=orange>{talent.m_data.m_characteristicValue * talent.m_data.m_level}</color> {DefaultData.LocalizeCharacteristics[talent.m_data.m_characteristic]}";
+                    $"+ <color=orange>{talent.Value.m_characteristicValue}</color> {DefaultData.LocalizeCharacteristics[talent.Value.m_characteristic]}";
             }
         }
     }
@@ -64,6 +56,11 @@ public static class TalentManager
     public static Talent? GetTalentByButton(string buttonName)
     {
         return AllTalents.Values.ToList().Find(x => x.m_buttonName == buttonName);
+    }
+
+    public static Talent? GetAltTalentByButton(string buttonName)
+    {
+        return (from talent in AllTalents where talent.Value.m_enableAlt != null && talent.Value.m_buttonName == buttonName select talent.Value).FirstOrDefault();
     }
 
     private static int GetTotalPlayerTalents(int level)
@@ -1421,7 +1418,20 @@ public static class TalentManager
                 m_modifiers = new()
                 {
                     { StatusEffectData.Modifier.Attack , AlmanacClassesPlugin._Plugin.config("Warrior - Monkey Wrench", "Attack Reduction", 0.8f, new ConfigDescription("Set the amount of damage reduction holding a two-handed weapon with one hand", new AcceptableValueRange<float>(0f, 1f)))}
-                }
+                },
+                m_hasAlternate = true,
+            },
+            new()
+            {
+                m_key  = "BattleFury",
+                m_name = "$talent_battle_fury",
+                m_description = "$talent_battle_fury_desc",
+                m_level = level,
+                m_type = TalentType.Passive,
+                m_buttonName = "$button_warrior_talent_4",
+                m_originalAbility = "MonkeyWrench",
+                m_enableAlt = AlmanacClassesPlugin._UseBattleFury,
+                m_chance = AlmanacClassesPlugin._Plugin.config("Warrior - Battle Fury", "Chance", 20f, new ConfigDescription("Chance to restore stamina after kill", new AcceptableValueRange<float>(0f, 100f))),
             },
             new ()
             {
@@ -1467,7 +1477,21 @@ public static class TalentManager
                 m_modifiers = new()
                 {
                     { StatusEffectData.Modifier.Attack , AlmanacClassesPlugin._Plugin.config("Warrior - Dual Wield", "Attack Reduction", 0.9f, new ConfigDescription("Set the damage reduction bane of using dual wield", new AcceptableValueRange<float>(0f, 1f)))}
-                }
+                },
+                m_hasAlternate = true,
+            },
+            new ()
+            {
+                m_key = "Survivor",
+                m_name = "$talent_survivor",
+                m_description = "$talent_survivor_desc",
+                m_level = level,
+                m_type = TalentType.Passive,
+                m_cost = 5,
+                m_originalAbility = "DualWield",
+                m_buttonName = "$button_warrior_talent_5",
+                m_enableAlt = AlmanacClassesPlugin._UseSurvivor,
+                m_chance = AlmanacClassesPlugin._Plugin.config("Warrior - Survivor", "Chance", 20f, new ConfigDescription("Set chance to not die and regain health upon death", new AcceptableValueRange<float>(0f, 100f)))
             },
             new()
             {

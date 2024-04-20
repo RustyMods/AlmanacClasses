@@ -4,6 +4,7 @@ using AlmanacClasses.Classes;
 using AlmanacClasses.Classes.Abilities;
 using AlmanacClasses.Managers;
 using AlmanacClasses.UI;
+using BepInEx;
 using BepInEx.Configuration;
 using UnityEngine;
 using UnityEngine.UI;
@@ -63,6 +64,10 @@ public class Talent
     public StatusEffect? m_effect;
 
     public ConfigEntry<AlmanacClassesPlugin.Toggle>? m_triggerStartEffects;
+    public string m_originalAbility = "";
+    public bool m_altActive = false;
+    public bool m_hasAlternate = false;
+    public ConfigEntry<AlmanacClassesPlugin.Toggle>? m_enableAlt;
 
     public void InitTalent()
     {
@@ -107,6 +112,11 @@ public class Talent
         
         m_effect = effect;
         TalentManager.AllTalents[m_key] = this;
+        if (m_originalAbility.IsNullOrWhiteSpace()) return;
+        if (m_enableAlt is { Value: AlmanacClassesPlugin.Toggle.On })
+        {
+            LoadUI.ChangeButton(this);
+        };
     }
 }
 
