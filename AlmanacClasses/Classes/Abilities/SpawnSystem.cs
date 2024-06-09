@@ -11,23 +11,7 @@ public static class SpawnSystem
     private static readonly List<Humanoid> SpawnedCreatures = new();
     public static readonly int FriendlyKey = "FriendlyKey".GetStableHashCode();
 
-    public static void TriggerShamanSpawn(GameObject creature, int level)
-    {
-        if (!creature) return;
-        if (!creature.GetComponent<Humanoid>()) return;
-        StartSpawnAnimation();
-        AlmanacClassesPlugin._Plugin.StartCoroutine(DelayedMultipleSpawn(creature, "Friendly " + creature.name.Replace("_", string.Empty), level));
-    }
-    
-    public static void TriggerHunterSpawn(GameObject creature, int level)
-    {
-        if (!creature) return;
-        if (!creature.GetComponent<Humanoid>()) return;
-        StartSpawnAnimation();
-        AlmanacClassesPlugin._Plugin.StartCoroutine(DelayedSpawn(creature, "Friendly " + creature.name.Replace("_", " "), level));
-    }
-
-    private static IEnumerator DelayedMultipleSpawn(GameObject creature, string name, int level)
+    public static IEnumerator DelayedMultipleSpawn(GameObject creature, string name, int level, float delay)
     {
         yield return new WaitForSeconds(0.5f);
         foreach (Humanoid? humanoid in SpawnedCreatures)
@@ -58,14 +42,14 @@ public static class SpawnSystem
             ++count;
         }
 
-        yield return new WaitForSeconds(15f * level);
+        yield return new WaitForSeconds(delay * level);
         foreach (Humanoid? humanoid in SpawnedCreatures)
         {
             humanoid.SetHealth(0);
         }
         SpawnedCreatures.Clear();
     }
-    private static IEnumerator DelayedSpawn(GameObject creature, string name, int level)
+    public static IEnumerator DelayedSpawn(GameObject creature, string name, int level, float delay)
     {
         yield return new WaitForSeconds(0.5f);
         Vector3 location = SetSpawnLocation();
@@ -79,7 +63,7 @@ public static class SpawnSystem
         SetSpawnBaseAI(critter);
         RemoveCharacterDrops(critter);
 
-        yield return new WaitForSeconds(50f * level);
+        yield return new WaitForSeconds(delay * level);
         DestroySpawnedCreature();
     }
 
@@ -106,7 +90,7 @@ public static class SpawnSystem
         znv.GetZDO().Set(ZDOVars.s_tamedName, name);
     }
     
-    private static void StartSpawnAnimation()
+    public static void StartSpawnAnimation()
     {
         if (Player.m_localPlayer.InEmote()) Player.m_localPlayer.StopEmote();
         Player.m_localPlayer.m_zanim.SetTrigger("staff_summon");
@@ -170,18 +154,5 @@ public static class SpawnSystem
         {
             characterDrop.m_drops = new();
         }
-    }
-
-    public enum SpawnOptions
-    {
-        Neck, Boar, Greyling, Eikthyr,
-        Greydwarf, Greydwarf_Elite, Greywarf_Shaman,
-        Troll, Skeleton, Ghost, gd_king,
-        Skeleton_Poison, Wraith, Leech, Draugr, Draugr_ranged,
-        Draugr_Elite, Bonemass, Wolf, Ulv, Fenring, Fenring_Cultist,
-        StoneGolem, Hatchling, Dragon, Bat, Goblin, GoblinShaman, GoblinBrute,
-        GoblinBrute_Hildir, GoblinBruteBros, GoblinShaman_Hildir, 
-        GoblinKing, Deathsquito, Seeker, SeekerBrute, SeekerBrood, 
-        Gjall, Tick, Serpent, Surtling, Fenring_Cultist_Hildir, Skeleton_Hildir
     }
 }

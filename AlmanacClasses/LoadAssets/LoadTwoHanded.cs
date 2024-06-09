@@ -25,7 +25,7 @@ public static class LoadTwoHanded
         {
             if (item.m_itemData.m_shared.m_icons.Length <= 0) continue;
             if (item.m_itemData.m_shared.m_itemType is ItemDrop.ItemData.ItemType.Tool) continue;
-            if (WarfareItems.Contains(item.name)) continue;
+            if (item.name.StartsWith("Dual") || item.name is "AxeBerzekr" or "KnifeSkillAndHati") continue;
             if (item.m_itemData.m_shared.m_skillType is Skills.SkillType.Swords or Skills.SkillType.Axes or Skills.SkillType.Polearms || item.m_itemData.m_shared.m_name == "$item_stafffireball")
             {
                 TwoHandedData data = new()

@@ -22,7 +22,7 @@ namespace AlmanacClasses
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
-        internal const string ModVersion = "0.3.1";
+        internal const string ModVersion = "0.4.0";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
         private static readonly string ConfigFileName = ModGUID + ".cfg";
@@ -41,6 +41,7 @@ namespace AlmanacClasses
             Localizer.Load(); 
 
             _Plugin = this;
+            
             _Root = new GameObject("almanac_classes_root");
             DontDestroyOnLoad(_Root);
             _Root.SetActive(false);
@@ -49,8 +50,7 @@ namespace AlmanacClasses
             FilePaths.CreateFolders();
             LoadPieces.LoadClassAltar();
             
-            KG_Managers.AnimationReplaceManager.AddAnimationSet("classesbundle", "SpellCasting");
-            KG_Managers.AnimationReplaceManager.AddAnimationSet("classesbundle", "StoneThrow");
+            AnimationManager.LoadCustomAnimations();
             
             Assembly assembly = Assembly.GetExecutingAssembly();
             _harmony.PatchAll(assembly);
@@ -59,12 +59,16 @@ namespace AlmanacClasses
 
         public void Update()
         {
+            float dt = Time.deltaTime;
+            
             TalentBook.UpdateTalentBookUI();
             AbilityManager.CheckInput();
             
             SpellElementChange.UpdateSpellMouseElement();
             ExperienceBarMove.UpdateElement();
             SpellBarMove.UpdateElement();
+            
+            PlayerManager.UpdatePassiveEffects(dt);
         }
 
         #region Utils
@@ -117,20 +121,20 @@ namespace AlmanacClasses
         public static ConfigEntry<Toggle> _HudVisible = null!;
         public static ConfigEntry<Vector2> _SpellBookPos = null!;
         private static ConfigEntry<Toggle> _PanelBackground = null!;
-        public static ConfigEntry<int> _ExperienceMultiplier = null!;
+        public static ConfigEntry<float> _ExperienceMultiplier = null!;
         public static ConfigEntry<int> _TalentPointPerLevel = null!;
         public static ConfigEntry<int> _TalentPointsPerTenLevel = null!;
         public static ConfigEntry<Vector2> _MenuTooltipPosition = null!;
         public static ConfigEntry<int> _ChanceForOrb = null!;
+        public static ConfigEntry<int> _MaxLevel = null!;
         #endregion
+        
+        public static ConfigEntry<float> _EitrRatio = null!;
+        public static ConfigEntry<float> _HealthRatio = null!;
+        public static ConfigEntry<float> _StaminaRatio = null!;
+        public static ConfigEntry<float> _DamageRatio = null!;
 
-        public static ConfigEntry<int> _MaxEitr = null!;
-        public static ConfigEntry<int> _MaxHealth = null!;
-        public static ConfigEntry<int> _MaxStamina = null!;
-        public static ConfigEntry<int> _EitrRatio = null!;
-        public static ConfigEntry<int> _HealthRatio = null!;
-        public static ConfigEntry<int> _StaminaRatio = null!;
-        public static ConfigEntry<int> _DamageRatio = null!;
+        public static ConfigEntry<int> _StatsCost = null!;
 
         #region Key Codes
         public static ConfigEntry<KeyCode> _SpellAlt = null!;
@@ -143,36 +147,6 @@ namespace AlmanacClasses
         public static ConfigEntry<KeyCode> _Spell7 = null!;
         public static ConfigEntry<KeyCode> _Spell8 = null!;
         #endregion
-        #region Ranger
-        public static ConfigEntry<Classes.Abilities.SpawnSystem.SpawnOptions> _RangerMeadowSpawn = null!;
-        public static ConfigEntry<Classes.Abilities.SpawnSystem.SpawnOptions> _RangerBlackForestSpawn = null!;
-        public static ConfigEntry<Classes.Abilities.SpawnSystem.SpawnOptions> _RangerSwampSpawn = null!;
-        public static ConfigEntry<Classes.Abilities.SpawnSystem.SpawnOptions> _RangerMountainSpawn = null!;
-        public static ConfigEntry<Classes.Abilities.SpawnSystem.SpawnOptions> _RangerPlainsSpawn = null!;
-        public static ConfigEntry<Classes.Abilities.SpawnSystem.SpawnOptions> _RangerMistLandsSpawn = null!;
-        public static ConfigEntry<Classes.Abilities.SpawnSystem.SpawnOptions> _RangerAshlandSpawn = null!;
-        public static ConfigEntry<Classes.Abilities.SpawnSystem.SpawnOptions> _RangerDeepNorthSpawn = null!;
-        public static ConfigEntry<Classes.Abilities.SpawnSystem.SpawnOptions> _RangerOceanSpawn = null!;
-
-        public static ConfigEntry<string> _HunterMeadows = null!;
-        public static ConfigEntry<string> _HunterBlackForest = null!;
-        public static ConfigEntry<string> _HunterSwamp = null!;
-        public static ConfigEntry<string> _HunterMountain = null!;
-        public static ConfigEntry<string> _HunterPlains = null!;
-        public static ConfigEntry<string> _HunterMistLands = null!;
-        public static ConfigEntry<string> _HunterAshLands = null!;
-        public static ConfigEntry<string> _HunterDeepNorth = null!;
-        public static ConfigEntry<string> _HunterOcean = null!;
-        #endregion
-        public static ConfigEntry<Classes.Abilities.SpawnSystem.SpawnOptions> _ShamanSpawn = null!;
-        public static ConfigEntry<float> _MasterChefIncrease = null!;
-        public static ConfigEntry<float> _LumberjackIncrease = null!;
-
-        public static ConfigEntry<Toggle> _UseBattleFury = null!;
-        public static ConfigEntry<Toggle> _BattleFuryFX = null!;
-        public static ConfigEntry<Toggle> _UseSurvivor = null!;
-        public static ConfigEntry<float> _SurvivorLength = null!;
-        public static ConfigEntry<Toggle> _SurvivorFX = null!;
         private void InitConfigs()
         {
             _serverConfigLocked = config("1 - General", "Lock Configuration", Toggle.On,
@@ -182,111 +156,15 @@ namespace AlmanacClasses
             InitSettingsConfigs();
             InitKeyCodeConfigs();
 
-            _EitrRatio = config("4 - Characteristics", "1. Eitr Ratio", 2,
-                new ConfigDescription("Set the amount of wisdom points required for 1 eitr", new AcceptableValueRange<int>(1, 10)));
-            _HealthRatio = config("4 - Characteristics", "3. Health Ratio", 1,
-                new ConfigDescription("Set the amount of constitution points for 1 health",
-                    new AcceptableValueRange<int>(1, 10)));
-            _StaminaRatio = config("4 - Characteristics", "5. Stamina Ratio", 3,
-                new ConfigDescription("Set the amount of dexterity points for 1 stamina",
-                    new AcceptableValueRange<int>(1, 10)));
-
-            _MaxEitr = config("4 - Characteristics", "2. Max Eitr", 100,
-                new ConfigDescription("Set max amount of eitr that can be gained from characteristic points",
-                    new AcceptableValueRange<int>(0, 500)));
-            _MaxHealth = config("4 - Characteristics", "4. Max Health", 100,
-                new ConfigDescription("Set max amount of health that can be gained from characteristic points",
-                    new AcceptableValueRange<int>(0, 500)));
-            _MaxStamina = config("4 - Characteristics", "6. Max Stamina", 100,
-                new ConfigDescription("Set max amount of stamina that can be gained from characteristic points",
-                    new AcceptableValueRange<int>(0, 500)));
-            _DamageRatio = config("4 - Characteristics", "7. Damage Ratio", 10,
-                new ConfigDescription(
-                    "Set the ratio of strength, dexterity, intelligence to increased damage output of, melee, ranged and magic damage",
-                    new AcceptableValueRange<int>(0, 20)));
-            
-            _RangerMeadowSpawn = config("Ranger - Creature Mask", "1. Meadows",
-                Classes.Abilities.SpawnSystem.SpawnOptions.Neck, "Set friendly spawn");
-            _RangerBlackForestSpawn = config("Ranger - Creature Mask", "2. Black Forest",
-                Classes.Abilities.SpawnSystem.SpawnOptions.Greydwarf, "Set friendly spawn");
-            _RangerSwampSpawn = config("Ranger - Creature Mask", "3. Swamp",
-                Classes.Abilities.SpawnSystem.SpawnOptions.Draugr, "Set friendly spawn");
-            _RangerMountainSpawn = config("Ranger - Creature Mask", "4. Mountain",
-                Classes.Abilities.SpawnSystem.SpawnOptions.Ulv, "Set friendly spawn");
-            _RangerPlainsSpawn = config("Ranger - Creature Mask", "5. Plains",
-                Classes.Abilities.SpawnSystem.SpawnOptions.Deathsquito, "Set friendly spawn");
-            _RangerMistLandsSpawn = config("Ranger - Creature Mask", "6. Mistlands",
-                Classes.Abilities.SpawnSystem.SpawnOptions.Tick, "Set friendly spawn");
-            _RangerAshlandSpawn = config("Ranger - Creature Mask", "7. Ashlands",
-                Classes.Abilities.SpawnSystem.SpawnOptions.Surtling, "Set friendly spawn");
-            _RangerDeepNorthSpawn = config("Ranger - Creature Mask", "8. Deep North",
-                Classes.Abilities.SpawnSystem.SpawnOptions.Fenring_Cultist, "Set friendly spawn");
-            _RangerOceanSpawn = config("Ranger - Creature Mask", "9. Ocean",
-                Classes.Abilities.SpawnSystem.SpawnOptions.Serpent, "Set friendly spawn");
-
-            _ShamanSpawn = config("Shaman - Ghastly Ambitions", "Creature", Classes.Abilities.SpawnSystem.SpawnOptions.Ghost,
-                "Set friendly spawn");
-            _MasterChefIncrease = config("General - Master Chef", "Food Boost", 1.1f,
-                new ConfigDescription("Set the modifier for food benefit, multiplied by prestige level",
-                    new AcceptableValueRange<float>(1f, 2f)));
-            _LumberjackIncrease = config("General - Lumberjack", "Chop Damage Boost", 1.1f,
-                new ConfigDescription("Set the amount of chop damage increase, multiplied by prestige level",
-                    new AcceptableValueRange<float>(1f, 2f)));
-
-            _HunterMeadows = config("Ranger - Hunter", "1. Meadows", "Deer", "Set the affected creature by the ability");
-            _HunterBlackForest = config("Ranger - Hunter", "2. Black Forest", "Greydwarf", "Set the affected creature by the ability");
-            _HunterSwamp = config("Ranger - Hunter", "3. Swamp", "Draugr", "Set the affected creature by the ability");
-            _HunterMountain = config("Ranger - Hunter", "4. Mountains", "Wolf", "Set the affected creature by the ability");
-            _HunterPlains = config("Ranger - Hunter", "5. Plains", "Lox", "Set the affected creature by the ability");
-            _HunterMistLands = config("Ranger - Hunter", "6. Mistlands", "Hare", "Set the affected creature by the ability");
-            _HunterAshLands = config("Ranger - Hunter", "7. Ashlands", "Surtling", "Set the affected creature by the ability");
-            _HunterDeepNorth = config("Ranger - Hunter", "8. Deep North", "", "Set the affected creature by the ability");
-            _HunterOcean = config("Ranger - Hunter", "9. Ocean", "Serpent", "Set the affected creature by the ability");
-
-            _UseBattleFury = config("Warrior - Battle Fury", "Enabled", Toggle.Off,
-                "If on, battle fury replaces monkey wrench", false);
-            _UseBattleFury.SettingChanged += OnBattleFuryChange;
-            _BattleFuryFX = config("Warrior - Battle Fury", "Visual Effects", Toggle.On,
-                "If on, visual effects are active", false);
-
-            _UseSurvivor = config("Warrior - Survivor", "Enabled", Toggle.Off, "If on, survivor replaces dual wield", false);
-            _UseSurvivor.SettingChanged += OnSurvivorChange;
-            _SurvivorLength = config("Warrior - Survivor", "Duration", 100f,
-                new ConfigDescription("Set duration of survivor damage reduction",
-                    new AcceptableValueRange<float>(1f, 1000f)));
-            _SurvivorFX = config("Warrior - Survivor", "Visual Effects", Toggle.On, "If on, visual effects are active",
-                false);
+            _EitrRatio = config("4 - Characteristics", "1. Eitr Ratio", 2f, new ConfigDescription("Set the amount of wisdom points required for 1 eitr", new AcceptableValueRange<float>(1f, 10f)));
+            _HealthRatio = config("4 - Characteristics", "3. Health Ratio", 1f, new ConfigDescription("Set the amount of constitution points for 1 health", new AcceptableValueRange<float>(1f, 10f)));
+            _StaminaRatio = config("4 - Characteristics", "5. Stamina Ratio", 3f, new ConfigDescription("Set the amount of dexterity points for 1 stamina", new AcceptableValueRange<float>(1f, 10f)));
+            _DamageRatio = config("4 - Characteristics", "6. Damage Ratio", 10f, new ConfigDescription("Set the ratio of strength, dexterity, intelligence to increased damage output of, melee, ranged and magic damage", new AcceptableValueRange<float>(0f, 20f)));
+            _StatsCost = config("4 - Characteristics", "7. Purchase Cost", 3, new ConfigDescription("Set the cost to unlock talent", new AcceptableValueRange<int>(1, 10)));
         }
-
-        private static void OnSurvivorChange(object sender, EventArgs e)
-        {
-            if (_UseSurvivor.Value is Toggle.On)
-            {
-                LoadUI.ChangeButton(TalentManager.AllTalents["Survivor"]);
-            }
-            else
-            {
-                LoadUI.ChangeButton(TalentManager.AllTalents["DualWield"], true);
-            }
-            LoadUI.ResetTalents(true);
-        }
-
-        private static void OnBattleFuryChange(object sender, EventArgs e)
-        {
-            if (_UseBattleFury.Value is Toggle.On)
-            {
-                LoadUI.ChangeButton(TalentManager.AllTalents["BattleFury"]);
-            }
-            else
-            {
-                LoadUI.ChangeButton(TalentManager.AllTalents["MonkeyWrench"], true);
-            }
-            LoadUI.ResetTalents(true);
-        }
-
         private void InitSettingsConfigs()
         {
-            _PrestigeThreshold = config("2 - Settings", "Prestige Threshold", 60,
+            _PrestigeThreshold = config("2 - Settings", "Prestige Threshold", 30,
                 new ConfigDescription("Minimum amount of talent points needed to spend to access prestige",
                     new AcceptableValueRange<int>(1, 101)));
             _ResetCost = config("2 - Settings", "Reset Cost", 999,
@@ -313,11 +191,11 @@ namespace AlmanacClasses
             
             _PanelBackground = config("2 - Settings", "UI Background", Toggle.On,
                 "If on, panel is visible, else transparent", false);
-            _PanelBackground.SettingChanged += OnPanelBackgroundToggle;
+            _PanelBackground.SettingChanged += (sender, args) => LoadUI.PanelBackground.color = _PanelBackground.Value is Toggle.On ? Color.white : Color.clear;
 
-            _ExperienceMultiplier = config("2 - Settings", "Experience Multiplier", 1,
+            _ExperienceMultiplier = config("2 - Settings", "Experience Multiplier", 1f,
                 new ConfigDescription("Set experience multiplier to easily increase experience gains",
-                    new AcceptableValueRange<int>(1, 10)));
+                    new AcceptableValueRange<float>(-1f, 10f)));
             _TalentPointPerLevel = config("2 - Settings", "Talent Points Per Level", 3,
                 new ConfigDescription("Set amount of talent points rewarded per level",
                     new AcceptableValueRange<int>(1, 10)));
@@ -331,31 +209,23 @@ namespace AlmanacClasses
             _ChanceForOrb = config("2 - Settings", "Experience Orb Drop Rate", 1,
                 new ConfigDescription("Set the drop chance to drop experience orbs",
                     new AcceptableValueRange<int>(0, 100)));
+            _MaxLevel = config("2 - Settings", "Max Level", 100, "Set the max level a player can attain");
         }
 
         private void InitKeyCodeConfigs()
         {
-            _SpellAlt = config("3 - Spell Keys", "Alt Key", KeyCode.None, "Set the alt key code, If None, then it ignores", false);
-            _SpellAlt.SettingChanged += OnSpellAltKeyChange;
-            _Spell1 = config("3 - Spell Keys", "Spell 1", KeyCode.Keypad1, "Set the key code for spell 1", false);
-            _Spell2 = config("3 - Spell Keys", "Spell 2", KeyCode.Keypad2, "Set the key code for spell 2", false);
-            _Spell3 = config("3 - Spell Keys", "Spell 3", KeyCode.Keypad3, "Set the key code for spell 3", false);
-            _Spell4 = config("3 - Spell Keys", "Spell 4", KeyCode.Keypad4, "Set the key code for spell 4", false);
-            _Spell5 = config("3 - Spell Keys", "Spell 5", KeyCode.Keypad5, "Set the key code for spell 5", false);
-            _Spell6 = config("3 - Spell Keys", "Spell 6", KeyCode.Keypad6, "Set the key code for spell 6", false);
-            _Spell7 = config("3 - Spell Keys", "Spell 7", KeyCode.Keypad7, "Set the key code for spell 7", false);
-            _Spell8 = config("3 - Spell Keys", "Spell 8", KeyCode.Keypad8, "Set the key code for spell 8", false);
+            _SpellAlt = config("3 - Spell Keys", "Alt Key", KeyCode.LeftAlt, "Set the alt key code, If None, then it ignores", false);
+            _SpellAlt.SettingChanged += (sender, args) => LoadUI.SpellBarHotKeyTooltip.text = $"Spell Book Alt Key: <color=orange>{_SpellAlt.Value}</color>";
+            _Spell1 = config("3 - Spell Keys", "Spell 1", KeyCode.Alpha1, "Set the key code for spell 1", false);
+            _Spell2 = config("3 - Spell Keys", "Spell 2", KeyCode.Alpha2, "Set the key code for spell 2", false);
+            _Spell3 = config("3 - Spell Keys", "Spell 3", KeyCode.Alpha3, "Set the key code for spell 3", false);
+            _Spell4 = config("3 - Spell Keys", "Spell 4", KeyCode.Alpha4, "Set the key code for spell 4", false);
+            _Spell5 = config("3 - Spell Keys", "Spell 5", KeyCode.Alpha5, "Set the key code for spell 5", false);
+            _Spell6 = config("3 - Spell Keys", "Spell 6", KeyCode.Alpha6, "Set the key code for spell 6", false);
+            _Spell7 = config("3 - Spell Keys", "Spell 7", KeyCode.Alpha7, "Set the key code for spell 7", false);
+            _Spell8 = config("3 - Spell Keys", "Spell 8", KeyCode.Alpha8, "Set the key code for spell 8", false);
         }
 
-        private static void OnPanelBackgroundToggle(object sender, EventArgs e)
-        {
-            LoadUI.PanelBackground.color = _PanelBackground.Value is Toggle.On ? Color.white : Color.clear;
-        }
-
-        private static void OnSpellAltKeyChange(object sender, EventArgs e)
-        {
-            LoadUI.SpellBarHotKeyTooltip.text = $"Spell Book Alt Key: <color=orange>{_SpellAlt.Value}</color>";
-        }
         #region Config Utils
         public ConfigEntry<T> config<T>(string group, string name, T value, ConfigDescription description,
             bool synchronizedSetting = true)

@@ -25,6 +25,8 @@ public static class LoadedAssets
     public static EffectList UnSummonEffects = null!;
     public static EffectList TrapArmedEffects = null!;
     public static EffectList FX_MusicNotes = null!;
+
+    public static EffectList FX_Electric = null!;
     
     public static EffectList ShieldHitEffects = null!;
     public static EffectList ShieldBreakEffects = null!;
@@ -45,7 +47,12 @@ public static class LoadedAssets
 
     public static EffectList FX_Experience = null!;
     public static EffectList FX_BattleFury = null!;
+
+    public static EffectList FX_Heal = null!;
+    public static EffectList FX_RogueBleed = null!;
     
+    private static readonly int EmissionColor = Shader.PropertyToID("_EmissionColor");
+
     public static void InitVFX()
     {
         ZNetScene instance = ZNetScene.instance;
@@ -93,6 +100,23 @@ public static class LoadedAssets
                 colorMin = Color.red,
                 colorMax = Color.red
             };
+        }
+
+        foreach (var renderer in bleed.GetComponentsInChildren<Renderer>())
+        {
+            List<Material> materials = new();
+            foreach (var material in renderer.materials)
+            {
+                Material mat = new Material(material)
+                {
+                    color = Color.red
+                };
+                if (mat.HasProperty(EmissionColor)) mat.SetColor(EmissionColor, Color.red);
+                materials.Add(mat);
+            }
+
+            renderer.materials = materials.ToArray();
+            renderer.sharedMaterials = materials.ToArray();
         }
         RegisterToZNetScene(bleed);
 
@@ -202,17 +226,18 @@ public static class LoadedAssets
             aoe.m_hitParent = false;
             aoe.m_hitFriendly = false;
         }
-        if (customLightning.transform.Find("AOE_AREA").TryGetComponent(out Aoe component))
-        {
-            component.m_useTriggers = true;
-            component.m_triggerEnterOnly = true;
-            component.m_blockable = true;
-            component.m_dodgeable = true;
-            component.m_hitProps = false;
-            component.m_hitOwner = false;
-            component.m_hitParent = false;
-            component.m_hitFriendly = false;
-        }
+        Object.Destroy(customLightning.transform.Find("AOE_AREA").gameObject);
+        // if (customLightning.transform.Find("AOE_AREA").TryGetComponent(out Aoe component))
+        // {
+        //     component.m_useTriggers = true;
+        //     component.m_triggerEnterOnly = true;
+        //     component.m_blockable = true;
+        //     component.m_dodgeable = true;
+        //     component.m_hitProps = false;
+        //     component.m_hitOwner = false;
+        //     component.m_hitParent = false;
+        //     component.m_hitFriendly = false;
+        // }
         RegisterToZNetScene(customLightning);
 
         lightning_AOE = customLightning;
@@ -281,8 +306,9 @@ public static class LoadedAssets
                 }
             }
         };
-        
-        GameObject FX_TalentPower = Object.Instantiate(instance.GetPrefab("fx_DvergerMage_Support_start"), AlmanacClassesPlugin._Root.transform, false);
+
+        GameObject fx_dverger_support_start = instance.GetPrefab("fx_DvergerMage_Support_start");
+        GameObject FX_TalentPower = Object.Instantiate(fx_dverger_support_start, AlmanacClassesPlugin._Root.transform, false);
         FX_TalentPower.name = "fx_TalentPower";
         ParticleSystem spark = FX_TalentPower.transform.Find("sparks").GetComponent<ParticleSystem>();
         ParticleSystem.MainModule mainModule = spark.main;
@@ -302,6 +328,40 @@ public static class LoadedAssets
                     m_attach = true,
                     m_inheritParentScale = true,
                     m_inheritParentRotation = true
+                }
+            }
+        };
+
+        GameObject fx_healing =
+            Object.Instantiate(fx_dverger_support_start, AlmanacClassesPlugin._Root.transform, false);
+        fx_healing.name = "fx_shaman_heal";
+        
+        foreach (var renderer in fx_healing.GetComponentsInChildren<Renderer>())
+        {
+            List<Material> newMats = new();
+            foreach (var material in renderer.materials)
+            {
+                var mat = new Material(material)
+                {
+                    color = Color.green
+                };
+                if (mat.HasProperty(EmissionColor)) mat.SetColor(EmissionColor, Color.green);
+                newMats.Add(mat);
+            }
+
+            renderer.materials = newMats.ToArray();
+            renderer.sharedMaterials = newMats.ToArray();
+        }
+        RegisterToZNetScene(fx_healing);
+        FX_Heal = new EffectList()
+        {
+            m_effectPrefabs = new[]
+            {
+                new EffectList.EffectData()
+                {
+                    m_prefab = fx_healing,
+                    m_attach = true,
+                    m_follow = true
                 }
             }
         };
@@ -349,6 +409,36 @@ public static class LoadedAssets
                 }
             }
         };
+
+        GameObject FX_Lightning = instance.GetPrefab("fx_Lightning");
+        FX_Electric = new EffectList()
+        {
+            m_effectPrefabs = new[]
+            {
+                new EffectList.EffectData()
+                {
+                    m_prefab = FX_Lightning,
+                    m_enabled = true,
+                    m_attach = true,
+                    m_scale = true,
+                    m_multiplyParentVisualScale = true
+                }
+            }
+        };
+
+        GameObject fx_CharredStone_Destruction = instance.GetPrefab("fx_CharredStone_Destruction");
+        FX_RogueBleed = new EffectList()
+        {
+            m_effectPrefabs = new[]
+            {
+                new EffectList.EffectData()
+                {
+                    m_prefab = fx_CharredStone_Destruction,
+                    m_enabled = true,
+                    m_multiplyParentVisualScale = true
+                }
+            }
+        };
     }
 
     private static void RegisterToZNetScene(GameObject prefab)
@@ -375,12 +465,27 @@ public static class LoadedAssets
         VFX.name = name;
         RegisterToZNetScene(VFX);
 
-        ParticleSystem[] FX_PS = VFX.GetComponentsInChildren<ParticleSystem>();
-        foreach (ParticleSystem ps in FX_PS)
+        foreach (var renderer in VFX.GetComponentsInChildren<Renderer>())
         {
-            ParticleSystem.MainModule mainModule = ps.main;
-            mainModule.startColor = color;
+            List<Material> newMats = new();
+            foreach (var mat in renderer.materials)
+            {
+                Material material = new Material(mat);
+                material.color = color;
+                // material.SetColor(EmissionColor, color);
+                newMats.Add(material);
+            }
+
+            renderer.materials = newMats.ToArray();
+            renderer.sharedMaterials = newMats.ToArray();
         }
+
+        // ParticleSystem[] FX_PS = VFX.GetComponentsInChildren<ParticleSystem>();
+        // foreach (ParticleSystem ps in FX_PS)
+        // {
+        //     ParticleSystem.MainModule mainModule = ps.main;
+        //     mainModule.startColor = color;
+        // }
         
         effects.Add(new EffectList.EffectData()
         {

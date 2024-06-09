@@ -24,7 +24,9 @@ public static class AttackPatches
         if (!PlayerManager.m_playerTalents.TryGetValue("LuckyShot", out Talent talent)) return;
         ItemDrop.ItemData projectile = character.GetAmmoItem();
         if (projectile == null) return;
-        int percentage = (int)((talent.m_chance?.Value ?? 20f) * talent.m_level);
+        if (talent.m_values == null) return;
+
+        int percentage = (int)talent.GetChance(talent.GetLevel());
         int random = Random.Range(0, 101);
         if (random <= percentage)
         {
@@ -46,14 +48,18 @@ public static class AttackPatches
 
     private static void ModifyAttackAnimation(Attack instance, Humanoid character)
     {
-        if (!PlayerManager.m_playerTalents.TryGetValue("DualWield", out Talent ability)) return;
+        if (!PlayerManager.m_playerTalents.ContainsKey("DualWield")) return;
         ItemDrop.ItemData right = character.GetRightItem();
         ItemDrop.ItemData left = character.GetLeftItem();
         if (right == null || left == null) return;
         if (right.m_shared.m_itemType is not ItemDrop.ItemData.ItemType.OneHandedWeapon) return;
         if (left.m_shared.m_itemType is not ItemDrop.ItemData.ItemType.OneHandedWeapon) return;
         string normalAttack = instance.m_attackAnimation;
-        instance.m_attackAnimation = normalAttack.EndsWith("_secondary") ? "dual_knives_secondary" : "dual_knives";
-        instance.m_attackChainLevels = normalAttack.EndsWith("_secondary") ? 1 : 3;
+
+        bool hasKnife = right.m_shared.m_skillType is Skills.SkillType.Knives || left.m_shared.m_skillType is Skills.SkillType.Knives;
+        bool hasAxes = right.m_shared.m_skillType is Skills.SkillType.Axes || left.m_shared.m_skillType is Skills.SkillType.Axes;
+        // instance.m_attackAnimation = normalAttack.EndsWith("_secondary") ? "dual_knives_secondary" : "dual_knives";
+        instance.m_attackAnimation = normalAttack.EndsWith("_secondary") ? hasAxes ? "dualaxes_secondary" : "dual_knives_secondary" : hasKnife ? "dual_knives" : "dualaxes";
+        instance.m_attackChainLevels = normalAttack.EndsWith("_secondary") ? 1 : 4;
     }
 }

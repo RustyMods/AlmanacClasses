@@ -15,40 +15,38 @@ public static class ButtonPatches
         private static void Postfix(Selectable __instance)
         {
             if (!__instance) return;
-            if (!LoadUI.TalentButtons.Contains(__instance)) return;
-            Talent? talent = TalentManager.GetTalentByButton(__instance.name);
-            if (talent == null)
+            if (!LoadUI.IsTalentButton(__instance)) return;
+            if (!TalentManager.m_talentsByButton.TryGetValue(__instance.name, out Talent talent))
             {
-                LoadUI.TalentName.text = __instance.name;
-                LoadUI.TalentDescription.text = __instance.name + "_desc";
-                LoadUI.TalentCost.text = Localization.instance.Localize("$almanac_cost: [<color=orange>value</color>]");
+                if (__instance.name == "$button_center")
+                {
+                    if (LoadUI.SelectedTalent != null)
+                    {
+                        LoadUI.TalentName.text = Localization.instance.Localize(LoadUI.SelectedTalent.GetName() + " LVL " + LoadUI.SelectedTalent.GetLevel() + $" --> <color=#FF5733>{LoadUI.SelectedTalent.GetLevel() + 1}</color>");
+                        LoadUI.TalentDescription.text = LoadUI.SelectedTalent.GetPrestigeTooltip();
+                        LoadUI.TalentCost.text = Localization.instance.Localize($"$almanac_cost: <color=orange>{LoadUI.SelectedTalent.GetCost()}</color>");
+                        LoadUI.ActivePassive.text = Localization.instance.Localize(LoadUI.SelectedTalent.GetTalentType());
+                        return;
+                    }
+                }
+                LoadUI.TalentName.text = Localization.instance.Localize(__instance.name);
+                LoadUI.TalentDescription.text = Localization.instance.Localize(__instance.name + "_desc");
+                LoadUI.TalentCost.text = "";
                 LoadUI.ActivePassive.text = "";
             }
             else
             {
-                if (talent.m_hasAlternate)
+                if (TalentManager.m_altTalentsByButton.TryGetValue(__instance.name, out Talent alt))
                 {
-                    Talent? alt = TalentManager.GetAltTalentByButton(__instance.name);
-                    if (alt is { m_altActive: true }) talent = alt;
+                    if (alt.m_alt?.Value is AlmanacClassesPlugin.Toggle.On)
+                    {
+                        talent = alt;
+                    }
                 }
-                LoadUI.TalentName.text = Localization.instance.Localize(talent.m_name);
-                LoadUI.TalentDescription.text = LoadUI.GetTooltip(talent);
-                LoadUI.TalentCost.text = Localization.instance.Localize($"$almanac_cost: <color=orange>{talent.m_cost}</color>");
-                switch (talent.m_type)
-                {
-                    case TalentType.Ability or TalentType.StatusEffect or TalentType.Finder:
-                        LoadUI.ActivePassive.text = Localization.instance.Localize("$almanac_ability");
-                        break;
-                    case TalentType.Characteristic:
-                        LoadUI.ActivePassive.text = Localization.instance.Localize("$almanac_characteristic");
-                        break;
-                    case TalentType.Passive or TalentType.Comfort:
-                        LoadUI.ActivePassive.text = Localization.instance.Localize("$almanac_passive");
-                        break;
-                    default:
-                        LoadUI.ActivePassive.text = "";
-                        break;
-                } 
+                LoadUI.TalentName.text = Localization.instance.Localize(talent.GetName() + " LVL " + talent.m_level);
+                LoadUI.TalentDescription.text = Localization.instance.Localize(talent.GetTooltip());
+                LoadUI.TalentCost.text = Localization.instance.Localize($"$almanac_cost: <color=orange>{talent.GetCost()}</color>");
+                LoadUI.ActivePassive.text = Localization.instance.Localize(talent.GetTalentType());
             }
         }
     }
@@ -58,9 +56,9 @@ public static class ButtonPatches
     {
         private static void Postfix(Selectable __instance)
         {
-            if (!LoadUI.TalentButtons.Contains(__instance)) return;
+            if (!LoadUI.IsTalentButton(__instance)) return;
             LoadUI.TalentName.text = Localization.instance.Localize("$info_hover");
-            var desc = 
+            string desc = 
                 "[<color=orange>L.Alt</color>] + [<color=orange>Mouse0</color>] - $info_move_spellbar" 
                 + "\n"
                 + "[<color=orange>Mouse0</color>] - $info_swap_ability"
@@ -75,6 +73,6 @@ public static class ButtonPatches
     [HarmonyPatch(typeof(Selectable), nameof(Selectable.OnSelect))]
     private static class Button_OnSelect_Patch
     {
-        private static bool Prefix(Selectable __instance) => !LoadUI.TalentButtons.Contains(__instance);
+        private static bool Prefix(Selectable __instance) => !LoadUI.IsTalentButton(__instance);
     }
 }

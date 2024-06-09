@@ -1,5 +1,4 @@
 ﻿using AlmanacClasses.Classes;
-using AlmanacClasses.Data;
 using HarmonyLib;
 using UnityEngine;
 
@@ -13,12 +12,8 @@ public static class SE_Rested_Patches
     {
         private static void Postfix(ref int __result)
         {
-            int amount = 0;
-            if (PlayerManager.m_playerTalents.TryGetValue("CoreComfort2", out Talent comfort2))
-            {
-                amount += (comfort2.m_comfortAmount?.Value ?? 2) * comfort2.m_level;
-            }
-            __result += amount;
+            if (!PlayerManager.m_playerTalents.TryGetValue("Comfort", out Talent talent)) return;
+            __result += (int)talent.GetAddedComfort(talent.GetLevel());
         }
     }
 }

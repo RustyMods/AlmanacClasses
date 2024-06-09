@@ -1,7 +1,5 @@
 ﻿using AlmanacClasses.Classes;
-using AlmanacClasses.Data;
 using HarmonyLib;
-using UnityEngine;
 
 namespace AlmanacClasses.Patches;
 
@@ -16,10 +14,12 @@ public static class ItemDataPatches
             if (__instance.m_shared.m_skillType is not Skills.SkillType.Crossbows) return;
             if (!Player.m_localPlayer.GetSEMan().HaveStatusEffect("SE_QuickShot".GetStableHashCode())) return;
             if (!PlayerManager.m_playerTalents.TryGetValue("QuickShot", out Talent talent)) return;
-            if (talent.m_chance != null)
-            {
-                __result = Mathf.Clamp(__result * (talent.m_chance.Value * talent.m_level / 100f),0f, 10f); 
-            }
+            __result /= talent.GetSpeedModifier(talent.GetLevel());
+            
+            // if (talent.m_chance != null)
+            // {
+            //     __result = Mathf.Clamp(__result * (talent.m_chance.Value * talent.m_level / 100f),0f, 10f); 
+            // }
         }
     }
 }

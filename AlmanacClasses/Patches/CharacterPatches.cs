@@ -1,5 +1,7 @@
 ﻿using AlmanacClasses.Classes;
 using AlmanacClasses.Classes.Abilities;
+using AlmanacClasses.Classes.Abilities.Core;
+using AlmanacClasses.Classes.Abilities.Rogue;
 using AlmanacClasses.Data;
 using BepInEx;
 using HarmonyLib;
@@ -50,8 +52,9 @@ public static class CharacterPatches
             if (!hit.GetAttacker().IsPlayer()) return;
             if (hit.GetAttacker() != Player.m_localPlayer) return;
             if (!PlayerManager.m_playerTalents.TryGetValue("RogueBleed", out Talent ability)) return;
+            if (!hit.GetAttacker().GetSEMan().HaveStatusEffect(ability.m_statusEffectHash)) return;
             if (__instance.m_nview.IsValid()) __instance.m_nview.ClaimOwnership();
-            Spells.TriggerBleeding(__instance);
+            BleedTrigger.TriggerBleeding(__instance);
         }
     }
 
@@ -69,34 +72,20 @@ public static class CharacterPatches
             // ExperienceManager.AddExperienceRPCAll(__instance);
             ExperienceManager.AddExperience(__instance);
             ExperienceManager.DropOrb(__instance);
-            CheckDoubleLoot(__instance);
+            Pickpocket.CheckDoubleLoot(__instance);
             CheckBattleFury(__instance);
-        }
-    }
-
-    private static void CheckDoubleLoot(Character instance)
-    {
-        if (instance.m_lastHit == null || !instance.m_localPlayerHasHit) return;
-        if (!PlayerManager.m_playerTalents.TryGetValue("CoreMerchant", out Talent ability)) return;
-        if (instance.m_baseAI == null || instance.m_baseAI.CanSeeTarget(instance.m_lastHit.GetAttacker())) return;
-        if (!instance.TryGetComponent(out CharacterDrop characterDrop)) return;
-        int percentage = (int)((ability.m_chance?.Value ?? 20f) * ability.m_level);
-        int random = Random.Range(0, 101);
-        if (random <= percentage)
-        {
-            CharacterDrop.DropItems(characterDrop.GenerateDropList(), instance.GetCenterPoint() + characterDrop.transform.TransformVector(characterDrop.m_spawnOffset), 0.5f);
         }
     }
 
     private static void CheckBattleFury(Character instance)
     {
         if (!PlayerManager.m_playerTalents.TryGetValue("BattleFury", out Talent talent)) return;
-        if (Vector3.Distance(instance.GetCenterPoint(), Player.m_localPlayer.GetCenterPoint()) < 50f) return;
-        float chance = talent.m_chance?.Value ?? 0f * talent.m_level;
+        if (instance.m_lastHit is null or { m_ranged: true }) return;
+        float chance = talent.GetChance(talent.GetLevel());
         float random = Random.Range(0, 101);
         if (random > chance) return;
         Player.m_localPlayer.AddStamina(random);
-        if (AlmanacClassesPlugin._BattleFuryFX.Value is AlmanacClassesPlugin.Toggle.Off) return;
+        // if (AlmanacClassesPlugin._BattleFuryFX.Value is AlmanacClassesPlugin.Toggle.Off) return;
         Player.m_localPlayer.GetSEMan().AddStatusEffect("SE_BattleFury".GetStableHashCode());
     }
     
@@ -111,14 +100,14 @@ public static class CharacterPatches
             if (PlayerManager.m_playerTalents.TryGetValue("Survivor", out Talent talent))
             {
                 if (__instance.GetSEMan().HaveStatusEffect("SE_Survivor".GetStableHashCode())) return;
-                float chance = talent.m_chance?.Value ?? 0f * talent.m_level;
+                float chance = talent.GetChance(talent.GetLevel());
                 float random = Random.Range(0, 101f);
                 if (random < chance)
                 {
                     float quarter = __instance.GetMaxHealth() / 4f;
                     __instance.Heal(quarter);
                     __result = quarter;
-                    if (AlmanacClassesPlugin._SurvivorFX.Value is AlmanacClassesPlugin.Toggle.Off) return;
+                    // if (AlmanacClassesPlugin._SurvivorFX.Value is AlmanacClassesPlugin.Toggle.Off) return;
                     __instance.GetSEMan().AddStatusEffect("SE_Survivor".GetStableHashCode());
                 }
             }

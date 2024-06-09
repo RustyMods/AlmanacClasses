@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using AlmanacClasses.Data;
-using AlmanacClasses.LoadAssets;
+using AlmanacClasses.Classes.Abilities.Ranger;
+using AlmanacClasses.Classes.Abilities.Sage;
+using AlmanacClasses.Classes.Abilities.Shaman;
 using AlmanacClasses.Managers;
 using AlmanacClasses.UI;
 using BepInEx;
@@ -46,206 +46,137 @@ public static class AbilityManager
     {
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell1.Value))
         {
-            AbilityData? ability = SpellBook.m_abilities[0];
+            if (!SpellBook.m_abilities.TryGetValue(0, out AbilityData ability)) return;
             CastTalent(ability.m_data);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell2.Value))
         {
-            if (SpellBook.m_abilities.ElementAtOrDefault(1) == null) return;
-            var ability = SpellBook.m_abilities[1];
+            if (!SpellBook.m_abilities.TryGetValue(1, out AbilityData ability)) return;
             CastTalent(ability.m_data);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell3.Value))
         {
-            var ability = SpellBook.m_abilities[2];
+            if (!SpellBook.m_abilities.TryGetValue(2, out AbilityData ability)) return;
             CastTalent(ability.m_data);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell4.Value))
         {
-            var ability = SpellBook.m_abilities[3];
+            if (!SpellBook.m_abilities.TryGetValue(3, out AbilityData ability)) return;
             CastTalent(ability.m_data);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell5.Value))
         {
-            var ability = SpellBook.m_abilities[4];
+            if (!SpellBook.m_abilities.TryGetValue(4, out AbilityData ability)) return;
             CastTalent(ability.m_data);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell6.Value))
         {
-            var ability = SpellBook.m_abilities[5];
+            if (!SpellBook.m_abilities.TryGetValue(5, out AbilityData ability)) return;
             CastTalent(ability.m_data);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell7.Value))
         {
-            var ability = SpellBook.m_abilities[6];
+            if (!SpellBook.m_abilities.TryGetValue(6, out AbilityData ability)) return;
             CastTalent(ability.m_data);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell8.Value))
         {
-            var ability = SpellBook.m_abilities[7];
+            if (!SpellBook.m_abilities.TryGetValue(7, out AbilityData ability)) return;
             CastTalent(ability.m_data);
         }
     }
 
     private static void CastTalent(Talent ability)
     {
-        if (m_castedSpells.Contains(ability.m_name))
+        if (m_castedSpells.Contains(ability.m_key))
         {
-            if (!m_cooldownMap.TryGetValue(ability.m_name, out float cooldown)) return;
-            Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"{ability.m_name} $msg_casted, $msg_wait {(int)(cooldown * (ability.m_ttl?.Value ?? 10f))} $msg_seconds");
+            if (!m_cooldownMap.TryGetValue(ability.m_key, out float cooldown)) return;
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"{ability.m_key} $msg_casted, $msg_wait {(int)(cooldown * (ability.m_cooldown?.Value ?? 10f))} $msg_seconds");
             return;
         }
+        if (!CheckCost(ability)) return;
 
-        bool flag1 = CheckAbilityName(ability);
-        bool flag2 = CheckEffect(ability);
-        if (flag1 || flag2)
-        {
-            PlayerManager.m_tempPlayerData.m_experience += (ability.m_level * 10) * AlmanacClassesPlugin._ExperienceMultiplier.Value;
-            AlmanacClassesPlugin._Plugin.StartCoroutine(CoolDown(ability));
-        }
+        bool se = CheckStatusEffect(ability);
+        bool action = CheckAbilityName(ability);
+        if (!se && !action) return;
+        AnimationManager.DoAnimation(ability.m_animation);
+        AlmanacClassesPlugin._Plugin.StartCoroutine(CoolDown(ability));
     }
 
     private static IEnumerator CoolDown(Talent ability)
     {
-        m_castedSpells.Add(ability.m_name);
-        m_cooldownMap[ability.m_name] = 1f;
+        m_castedSpells.Add(ability.m_key);
+        m_cooldownMap[ability.m_key] = 1f;
         float count = 0;
-        while (count < ability.m_ttl?.Value)
+        while (count < ability.m_cooldown?.Value)
         {
-            m_cooldownMap[ability.m_name] -= 1f / ability.m_ttl.Value;
+            m_cooldownMap[ability.m_key] -= 1f / ability.m_cooldown.Value;
             yield return new WaitForSeconds(1f);
             ++count;
         }
 
-        m_castedSpells.Remove(ability.m_name);
-        m_cooldownMap.Remove(ability.m_name);
+        m_castedSpells.Remove(ability.m_key);
+        m_cooldownMap.Remove(ability.m_key);
+    }
+
+    private static bool CheckStatusEffect(Talent talent)
+    {
+        if (talent.m_type is not TalentType.StatusEffect) return false;
+        if (talent.m_statusEffectHash == 0) return false;
+        if (Player.m_localPlayer.GetSEMan().HaveStatusEffect(talent.m_statusEffectHash)) return false;
+        Player.m_localPlayer.GetSEMan().AddStatusEffect(talent.m_statusEffectHash);
+        return true;
     }
 
     private static bool CheckAbilityName(Talent talent)
     {
-        if (talent.m_ability.IsNullOrWhiteSpace()) return false;
-        if (!CheckCost(talent)) return false;
-        HitData.DamageTypes damages = TalentManager.GetDamages(talent);
+        if (talent.m_type is not TalentType.Ability) return false;
+        HitData.DamageTypes damages = talent.GetDamages(talent.GetLevel());
         switch (talent.m_ability)
         {
-            // case "TriggerBlink":
-            //     return Spells.TriggerBlink();
-            //     break;
             case "TriggerStoneThrow":
-                Spells.TriggerStoneThrow(damages);
+                StoneThrow.TriggerStoneThrow(damages);
                 break;
             case "TriggerRootBeam":
-                Spells.TriggerRootBeam(damages);
+                RootBeam.TriggerRootBeam(damages);
                 break;
             case "TriggerMeteor":
-                Spells.TriggerMeteor(damages);
+                MeteorStrike.TriggerMeteor(damages);
                 break;
             case "TriggerLightningAOE":
-                return Spells.TriggerLightningAOE(damages);
+                if (!CallOfLightning.TriggerLightningAOE(damages)) return false;
+                break;
             case "TriggerGoblinBeam":
-                Spells.TriggerGoblinBeam(damages);
+                GoblinBeam.TriggerGoblinBeam(damages);
                 break;
             case "TriggerHunterSpawn":
-                GameObject rangerCreature = GetCreatureByBiome();
-                if (!rangerCreature) break;
-                SpawnSystem.TriggerHunterSpawn(rangerCreature, talent.m_level);
+                GameObject? rangerCreature = talent.GetCreatures(Player.m_localPlayer.GetCurrentBiome());
+                if (rangerCreature == null) break;
+                RangerSpawn.TriggerHunterSpawn(rangerCreature, talent);
                 break;
             case "TriggerShamanSpawn":
-                GameObject creature = ZNetScene.instance.GetPrefab(AlmanacClassesPlugin._ShamanSpawn.Value.ToString());
-                if (!creature) break;
-                SpawnSystem.TriggerShamanSpawn(creature, talent.m_level);
+                GameObject? creature = talent.GetCreature();
+                if (creature == null) break;
+                ShamanSpawn.TriggerShamanSpawn(creature, talent);
                 break;
             case "TriggerSpawnTrap":
-                Spells.TriggerSpawnTrap(damages);
+                RangerTrap.TriggerSpawnTrap(damages, talent.GetLength());
                 break;
             case "TriggerHeal":
-                float amount = (talent.m_heal?.Value ?? 200f) * talent.m_level;
-                Spells.TriggerHeal(amount, talent.m_radius);
+                float amount = 200f;
+                if (!ShamanHeal.TriggerHeal(amount)) return false;
                 break;
             case "TriggerIceBreath":
-                Spells.TriggerIceBreath(damages);
+                IceBreath.TriggerIceBreath(damages);
                 break;
         }
-        Player.m_localPlayer.RaiseSkill(talent.m_skill);
-        return true;
-    }
-
-    private static GameObject GetCreatureByBiome()
-    {
-        Heightmap.Biome biome = WorldGenerator.instance.GetBiome(Player.m_localPlayer.transform.position);
-        GameObject creature;
-        switch (biome)
-        {
-            case Heightmap.Biome.Meadows:
-                GameObject Neck = ZNetScene.instance.GetPrefab(AlmanacClassesPlugin._RangerMeadowSpawn.Value.ToString());
-                creature = Neck;
-                break;
-            case Heightmap.Biome.BlackForest:
-                GameObject Greydwarf = ZNetScene.instance.GetPrefab(AlmanacClassesPlugin._RangerBlackForestSpawn.Value.ToString());
-                creature = Greydwarf;
-                break;
-            case Heightmap.Biome.Swamp:
-                GameObject Draugr = ZNetScene.instance.GetPrefab(AlmanacClassesPlugin._RangerSwampSpawn.Value.ToString());
-                creature = Draugr;
-                break;
-            case Heightmap.Biome.Mountain:
-                GameObject Ulv = ZNetScene.instance.GetPrefab(AlmanacClassesPlugin._RangerMountainSpawn.Value.ToString());
-                creature = Ulv;
-                break;
-            case Heightmap.Biome.Plains:
-                GameObject Deathsquito = ZNetScene.instance.GetPrefab(AlmanacClassesPlugin._RangerPlainsSpawn.Value.ToString());
-                creature = Deathsquito;
-                break;
-            case Heightmap.Biome.Mistlands:
-                GameObject Seeker = ZNetScene.instance.GetPrefab(AlmanacClassesPlugin._RangerMistLandsSpawn.Value.ToString());
-                creature = Seeker;
-                break;
-            case Heightmap.Biome.Ocean:
-                GameObject Serpent = ZNetScene.instance.GetPrefab(AlmanacClassesPlugin._RangerOceanSpawn.Value.ToString());
-                creature = Serpent;
-                break;
-            case Heightmap.Biome.AshLands:
-                GameObject Surtling = ZNetScene.instance.GetPrefab(AlmanacClassesPlugin._RangerAshlandSpawn.Value.ToString());
-                creature = Surtling;
-                break;
-            case Heightmap.Biome.DeepNorth:
-                GameObject cultist = ZNetScene.instance.GetPrefab(AlmanacClassesPlugin._RangerDeepNorthSpawn.Value.ToString());
-                creature = cultist;
-                break;
-            default:
-                GameObject SkeletonFriendly = LoadedAssets.SkeletonFriendly;
-                creature = SkeletonFriendly;
-                break;
-        }
-
-        return creature;
-    }
-
-    private static bool CheckEffect(Talent talent)
-    {
-        if (talent.m_effect == null) return false;
-        if (!CheckCost(talent)) return false;
-        if (talent.m_radius > 0)
-        {
-            List<Player> players = new();
-            Player.GetPlayersInRange(Player.m_localPlayer.transform.position, talent.m_radius, players);
-            foreach (Player? player in players)
-            {
-                player.GetSEMan().AddStatusEffect(talent.m_effect.name.GetStableHashCode());
-            }
-        }
-        else
-        {
-            Player.m_localPlayer.GetSEMan().AddStatusEffect(talent.m_effect);
-        }
-
         return true;
     }
 
@@ -254,19 +185,6 @@ public static class AbilityManager
         if (!CheckEitrCost(talent)) return false;
         if (!CheckStaminaCost(talent)) return false;
         if (!CheckHealthCost(talent)) return false;
-        
-        if (!talent.m_animation.IsNullOrWhiteSpace())
-        {
-            if (AnimationManager.IsEmote(talent.m_animation))
-            {
-                if (Player.m_localPlayer.InEmote()) Player.m_localPlayer.StopEmote();
-                Player.m_localPlayer.StartEmote(talent.m_animation);
-            }
-            else
-            {
-                Player.m_localPlayer.m_zanim.SetTrigger(talent.m_animation);
-            }
-        }
         return true;
     }
 

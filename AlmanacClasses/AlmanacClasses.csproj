@@ -125,32 +125,63 @@
     <ItemGroup>
         <Compile Include="API\API.cs" />
         <Compile Include="Classes\Abilities\AbilityManager.cs" />
-        <Compile Include="Classes\Abilities\SE_Bleed.cs" />
-        <Compile Include="Classes\Abilities\SE_DualWield.cs" />
-        <Compile Include="Classes\Abilities\SE_ExperienceOrb.cs" />
-        <Compile Include="Classes\Abilities\SE_Hunter.cs" />
-        <Compile Include="Classes\Abilities\SE_MonkeyWrench.cs" />
-        <Compile Include="Classes\Abilities\SE_Survivor.cs" />
-        <Compile Include="Classes\Abilities\Spells.cs" />
+        <Compile Include="Classes\Abilities\Bard\SE_SongOfAttrition.cs" />
+        <Compile Include="Classes\Abilities\Bard\SE_SongOfDamage.cs" />
+        <Compile Include="Classes\Abilities\Bard\SE_SongOfHealing.cs" />
+        <Compile Include="Classes\Abilities\Bard\SE_SongOfSpeed.cs" />
+        <Compile Include="Classes\Abilities\Bard\SE_SongOfVitality.cs" />
+        <Compile Include="Classes\Abilities\Core\AirBender.cs" />
+        <Compile Include="Classes\Abilities\Core\Pickpocket.cs" />
+        <Compile Include="Classes\Abilities\Core\SE_Characteristics.cs" />
+        <Compile Include="Classes\Abilities\Core\SE_ExperienceOrb.cs" />
+        <Compile Include="Classes\Abilities\Core\SE_PackMule.cs" />
+        <Compile Include="Classes\Abilities\Core\SE_Resourceful.cs" />
+        <Compile Include="Classes\Abilities\Core\SE_Sneaky.cs" />
+        <Compile Include="Classes\Abilities\Core\Trader.cs" />
+        <Compile Include="Classes\Abilities\Ranger\RangerSpawn.cs" />
+        <Compile Include="Classes\Abilities\Ranger\RangerTrap.cs" />
+        <Compile Include="Classes\Abilities\Ranger\SE_Hunter.cs" />
+        <Compile Include="Classes\Abilities\Ranger\SE_LuckyShot.cs" />
+        <Compile Include="Classes\Abilities\Ranger\SE_QuickShot.cs" />
+        <Compile Include="Classes\Abilities\Ranger\SE_SlowDown.cs" />
+        <Compile Include="Classes\Abilities\Rogue\SE_Bleed.cs" />
+        <Compile Include="Classes\Abilities\Rogue\SE_RogueBackstab.cs" />
+        <Compile Include="Classes\Abilities\Rogue\SE_RogueBleed.cs" />
+        <Compile Include="Classes\Abilities\Rogue\SE_RogueReflect.cs" />
+        <Compile Include="Classes\Abilities\Rogue\SE_RogueSpeed.cs" />
+        <Compile Include="Classes\Abilities\Rogue\SE_RogueStamina.cs" />
+        <Compile Include="Classes\Abilities\Sage\CallOfLightning.cs" />
+        <Compile Include="Classes\Abilities\Sage\GoblinBeam.cs" />
+        <Compile Include="Classes\Abilities\Sage\IceBreath.cs" />
+        <Compile Include="Classes\Abilities\Sage\MeteorStrike.cs" />
+        <Compile Include="Classes\Abilities\Sage\StoneThrow.cs" />
+        <Compile Include="Classes\Abilities\Shaman\RootBeam.cs" />
+        <Compile Include="Classes\Abilities\Shaman\SE_ShamanRegeneration.cs" />
+        <Compile Include="Classes\Abilities\Shaman\ShamanSpawn.cs" />
+        <Compile Include="Classes\Abilities\Shaman\ShamanHeal.cs" />
+        <Compile Include="Classes\Abilities\Shaman\SE_ShamanShield.cs" />
         <Compile Include="Classes\Abilities\SpawnSystem.cs" />
-        <Compile Include="Classes\Abilities\TimedFinder.cs" />
+        <Compile Include="Classes\Abilities\Warrior\SE_BattleFury.cs" />
+        <Compile Include="Classes\Abilities\Warrior\SE_DualWield.cs" />
+        <Compile Include="Classes\Abilities\Warrior\SE_MonkeyWrench.cs" />
+        <Compile Include="Classes\Abilities\Warrior\SE_Survivor.cs" />
+        <Compile Include="Classes\Abilities\Warrior\SE_WarriorResistance.cs" />
+        <Compile Include="Classes\Abilities\Warrior\SE_WarriorStrength.cs" />
+        <Compile Include="Classes\Abilities\Warrior\SE_WarriorVitality.cs" />
         <Compile Include="Classes\CharacteristicManager.cs" />
         <Compile Include="Classes\ExperienceManager.cs" />
         <Compile Include="Classes\PlayerManager.cs" />
-        <Compile Include="Classes\TalentManager.cs" />
+        <Compile Include="Classes\Talents.cs" />
         <Compile Include="Data\DefaultData.cs" />
         <Compile Include="Data\StatusEffectData.cs" />
-        <Compile Include="Data\TalentData.cs" />
         <Compile Include="FileSystem\FilePaths.cs" />
         <Compile Include="FileSystem\SyncManager.cs" />
         <Compile Include="FileSystem\Watcher.cs" />
         <Compile Include="LoadAssets\AltarEffectFade.cs" />
         <Compile Include="LoadAssets\AnimationReplacer.cs" />
-        <Compile Include="LoadAssets\FoodModifications.cs" />
         <Compile Include="LoadAssets\LoadEffects.cs" />
         <Compile Include="LoadAssets\LoadPieces.cs" />
         <Compile Include="LoadAssets\LoadTwoHanded.cs" />
-        <Compile Include="LoadAssets\OrbBob.cs" />
         <Compile Include="Managers\AnimationManager.cs" />
         <Compile Include="Managers\CommandsManager.cs" />
         <Compile Include="Managers\ItemEffectReplacer.cs" />
@@ -164,6 +195,7 @@
         <Compile Include="Patches\AttackPatches.cs" />
         <Compile Include="Patches\ButtonPatches.cs" />
         <Compile Include="Patches\CharacterPatches.cs" />
+        <Compile Include="Patches\ForagerPatches.cs" />
         <Compile Include="Patches\GamePatches.cs" />
         <Compile Include="Patches\HudPatches.cs" />
         <Compile Include="Patches\HumanoidPatches.cs" />
@@ -190,9 +222,6 @@
         <Compile Include="VersionHandshake.cs" />
     </ItemGroup>
     <ItemGroup>
-        <Content Include="..\..\..\bundles_custom\classesbundle">
-          <Link>assets\classesbundle</Link>
-        </Content>
         <EmbeddedResource Include="..\..\..\bundles_2024\classesbundle">
           <Link>assets\classesbundle</Link>
         </EmbeddedResource>

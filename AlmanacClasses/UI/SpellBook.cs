@@ -18,7 +18,7 @@ public static class SpellBook
 {
     private static GameObject m_spellBar = null!;
     private static GameObject m_element = null!;
-    public static readonly List<AbilityData> m_abilities = new();
+    public static readonly Dictionary<int, AbilityData> m_abilities = new();
 
     private static RectTransform m_spellBarPos = null!;
     private static readonly int Saturation = Shader.PropertyToID("_Saturation");
@@ -29,7 +29,7 @@ public static class SpellBook
         LoadUI.MenuInfoPanel.transform.position = AlmanacClassesPlugin._SpellBookPos.Value + new Vector2(0f, 150f);
     }
 
-    public static bool IsAbilityInBook(Talent ability) => m_abilities.Any(talent => ability == talent.m_data);
+    public static bool IsAbilityInBook(Talent ability) => m_abilities.Any(talent => ability == talent.Value.m_data);
     
     public static void LoadElements()
     {
@@ -60,36 +60,59 @@ public static class SpellBook
     {
         if (!Player.m_localPlayer || Player.m_localPlayer.IsDead() || Minimap.IsOpen()) return;
         DestroyElements();
-        for (int index = 0; index < m_abilities.Count; index++)
+
+        foreach (KeyValuePair<int, AbilityData> kvp in m_abilities)
         {
-            AbilityData ability = m_abilities[index];
             GameObject element = Object.Instantiate(m_element, m_spellBar.transform.Find("$part_content"));
-            
             if (element.TryGetComponent(out SpellElementChange component))
             {
-                component.data = ability;
-                component.index = index;
+                component.data = kvp.Value;
+                component.index = kvp.Key;
             }
             
-            ability.m_go = element;
-            Utils.FindChild(element.transform, "$image_icon").GetComponent<Image>().sprite = ability.m_data.m_sprite;
+            kvp.Value.m_go = element;
+            Sprite? icon = kvp.Value.m_data.GetSprite();
+            Utils.FindChild(element.transform, "$image_icon").GetComponent<Image>().sprite = icon;
             Image? gray = Utils.FindChild(element.transform, "$image_gray").GetComponent<Image>();
-            gray.sprite = ability.m_data.m_sprite;
-            if (AbilityManager.m_cooldownMap.TryGetValue(ability.m_data.m_name, out float cooldown))
+            Image? fill = Utils.FindChild(element.transform, "$image_fill").GetComponent<Image>();
+            Text timer = Utils.FindChild(element.transform, "$text_timer").GetComponent<Text>();
+            gray.sprite = icon;
+            gray.color = Color.clear;
+            
+            if (AbilityManager.m_cooldownMap.TryGetValue(kvp.Value.m_data.m_key, out float cooldown))
             {
-                gray.fillAmount = cooldown;
-                Utils.FindChild(element.transform, "$image_fill").GetComponent<Image>().fillAmount = cooldown;
-                Utils.FindChild(element.transform, "$text_timer").GetComponent<Text>().text = ((int)((ability.m_data.m_ttl?.Value ?? 10f) * cooldown)).ToString(CultureInfo.CurrentCulture);
+                if (kvp.Value.m_data.m_statusEffectHash != 0)
+                {
+                    if (Player.m_localPlayer.GetSEMan().HaveStatusEffect(kvp.Value.m_data.m_statusEffectHash))
+                    {
+                        StatusEffect effect = Player.m_localPlayer.GetSEMan().GetStatusEffect(kvp.Value.m_data.m_statusEffectHash);
+                        float time = effect.GetRemaningTime();
+                        float normal = Mathf.Clamp01(time / effect.m_ttl);
+                        if (time > 0)
+                        {
+                            gray.color = new Color(0f, 0f, 0f, 1f);
+                            gray.fillAmount = normal;
+                        }
+                        else
+                        {
+                            gray.color = Color.clear;
+                            gray.fillAmount = 0f;
+                        }
+                    }
+                }
+                
+                fill.fillAmount = cooldown;
+                timer.text = ((int)((kvp.Value.m_data.m_cooldown?.Value ?? 10f) * cooldown)).ToString(CultureInfo.CurrentCulture);
             }
             else
             {
                 gray.fillAmount = 0f;
-                Utils.FindChild(element.transform, "$image_fill").GetComponent<Image>().fillAmount = 0f;
-                Utils.FindChild(element.transform, "$text_timer").GetComponent<Text>().text = Localization.instance.Localize("$info_ready");
+                fill.fillAmount = 0f;
+                timer.text = Localization.instance.Localize("$info_ready");
             }
 
             string keyCode = "";
-            switch (index)
+            switch (kvp.Key)
             {
                 case 0:
                     keyCode = AlmanacClassesPlugin._Spell1.Value.ToString();
@@ -123,9 +146,8 @@ public static class SpellBook
 
     public static void DestroyElements()
     {
-        foreach (AbilityData? ability in m_abilities)
+        foreach (AbilityData? ability in m_abilities.Values.Where(ability => ability.m_go))
         {
-            if (!ability.m_go) continue;
             Object.Destroy(ability.m_go);
         }
     }
@@ -137,17 +159,17 @@ public static class SpellBook
         {
             if (!Player.m_localPlayer) return;
             StringBuilder stringBuilder = new StringBuilder();
-            foreach (AbilityData talent in m_abilities)
+            foreach (AbilityData talent in m_abilities.Values)
             {
                 Talent data = talent.m_data;
-                stringBuilder.Append($"<color=orange>{data.m_name}</color>\n");
-                stringBuilder.Append(LoadUI.GetTooltip(data));
+                stringBuilder.Append($"<color=orange>{data.GetName()}</color>\n");
+                stringBuilder.Append(data.GetTooltip());
                 stringBuilder.Append("\n");
             }
-            TextsDialog.TextInfo text = new TextsDialog.TextInfo("Spell Book", Localization.instance.Localize(stringBuilder.ToString()));
+            TextsDialog.TextInfo text = new TextsDialog.TextInfo("$title_spell_book", Localization.instance.Localize(stringBuilder.ToString()));
             if (GetPassives(out string output))
             {
-                TextsDialog.TextInfo passive = new TextsDialog.TextInfo("Passive Abilities", output);
+                TextsDialog.TextInfo passive = new TextsDialog.TextInfo("$title_passive_abilities", output);
                 __instance.m_texts.Insert(0, passive);
             }
             __instance.m_texts.Insert(0, text);
@@ -169,8 +191,8 @@ public static class SpellBook
             {
                 if (kvp.Value.m_type is not TalentType.Passive) continue;
                 Talent data = kvp.Value;
-                stringBuilder.Append($"<color=orange>{data.m_name}</color>\n");
-                stringBuilder.Append(LoadUI.GetTooltip(kvp.Value));
+                stringBuilder.Append($"<color=orange>{data.GetName()}</color>\n");
+                stringBuilder.Append(data.GetTooltip());
                 stringBuilder.Append("\n");
                 ++count;
             }

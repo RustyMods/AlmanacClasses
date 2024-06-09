@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using AlmanacClasses.Classes;
 
 namespace AlmanacClasses.Data;
 
@@ -29,6 +30,7 @@ public static class DefaultData
 
     public static readonly Dictionary<Characteristic, int> defaultCharacteristics = new()
     {
+        { Characteristic.None , 0},
         { Characteristic.Constitution, 0 },
         { Characteristic.Intelligence, 0 },
         { Characteristic.Strength, 0 },

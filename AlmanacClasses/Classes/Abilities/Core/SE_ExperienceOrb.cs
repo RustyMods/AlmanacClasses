@@ -1,4 +1,4 @@
-﻿namespace AlmanacClasses.Classes.Abilities;
+﻿namespace AlmanacClasses.Classes.Abilities.Core;
 
 public class SE_ExperienceOrb : StatusEffect
 {

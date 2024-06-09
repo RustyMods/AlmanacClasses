@@ -21,7 +21,7 @@ namespace KG_Managers
         {
             Assembly execAssembly = Assembly.GetExecutingAssembly();
             string resourceName = execAssembly.GetManifestResourceNames().Single(str => str.EndsWith(filename));
-            using Stream stream = execAssembly.GetManifestResourceStream(resourceName);
+            using Stream? stream = execAssembly.GetManifestResourceStream(resourceName);
             return AssetBundle.LoadFromStream(stream);
         }
         

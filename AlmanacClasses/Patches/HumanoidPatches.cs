@@ -17,10 +17,9 @@ public static class HumanoidPatches
             ItemDrop.ItemData currentWeapon = __instance.GetCurrentWeapon();
             if (currentWeapon.m_shared.m_skillType is not Skills.SkillType.Bows) return;
             if (!PlayerManager.m_playerTalents.TryGetValue("QuickShot", out Talent talent)) return;
-            if (talent.m_chance != null)
-            {
-                __result = Mathf.Clamp(__result / (talent.m_chance.Value * talent.m_level / 100f), 0f, 1f); 
-            }
+            __result *= talent.GetSpeedModifier(talent.GetLevel());
+            
+            // __result = Mathf.Clamp(__result / talent.GetSpeed(), 0f, 1f);
         }
     }
 
@@ -58,8 +57,9 @@ public static class HumanoidPatches
         {
             if (!__instance.IsPlayer()) return true;
             if (__instance.GetRightItem() == null) return true;
+            if (item.m_shared.m_name == "$item_spear_chitin") return true;
             if (item.m_shared.m_itemType != ItemDrop.ItemData.ItemType.OneHandedWeapon) return true;
-            if (!PlayerManager.m_playerTalents.TryGetValue("DualWield", out Talent ability)) return true;
+            if (!PlayerManager.m_playerTalents.ContainsKey("DualWield")) return true;
             if (__instance.GetLeftItem() != null)
             {
                 __instance.UnequipItem(__instance.GetLeftItem(), false);

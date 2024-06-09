@@ -1,71 +1,45 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using AlmanacClasses.Data;
-using AlmanacClasses.Managers;
 
 namespace AlmanacClasses.Classes;
 
 public static class CharacteristicManager
 {
     public static Dictionary<Characteristic, int> m_tempCharacteristics = new(DefaultData.defaultCharacteristics);
-    
-    public static bool InitCharacteristics(out StatusEffect? effect)
+    public static void ResetCharacteristics() => m_tempCharacteristics = new Dictionary<Characteristic, int>(DefaultData.defaultCharacteristics);
+    public static void AddCharacteristic(Characteristic type, int value) => m_tempCharacteristics[type] += value;
+
+    public static void UpdateCharacteristics()
     {
-        effect = null;
-        StatusEffectManager.Data SE_Characteristic = new()
+        ResetCharacteristics();
+        foreach (KeyValuePair<string, Talent> kvp in PlayerManager.m_playerTalents.Where(kvp => kvp.Value.m_type is TalentType.Characteristic))
         {
-            name = "SE_Characteristic",
-            m_name = "Characteristics",
-            m_icon = SpriteManager.HourGlass_Icon,
-            m_isCharacteristic = true,
-        };
-        SE_Characteristic.talent = new();
-        if (!SE_Characteristic.Init(out StatusEffect? statusEffect))
-        {
-            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to initialize SE_Characteristics");
-            return false;
+            AddCharacteristic(kvp.Value.GetCharacteristicType(), kvp.Value.GetCharacteristic(kvp.Value.GetLevel()));
         }
-
-        effect = statusEffect;
-        
-        return true;
     }
+    public static int GetCharacteristic(Characteristic type) => m_tempCharacteristics.TryGetValue(type, out int value) ? value : 0;
 
-    public static void AddCharacteristicsEffect(Player player)
+    public static float GetHealthRatio() => GetCharacteristic(Characteristic.Constitution) / AlmanacClassesPlugin._HealthRatio.Value;
+    public static float GetStaminaRatio() => GetCharacteristic(Characteristic.Dexterity) / AlmanacClassesPlugin._StaminaRatio.Value;
+    public static float GetEitrRatio() => GetCharacteristic(Characteristic.Wisdom) / AlmanacClassesPlugin._EitrRatio.Value;
+    public static float GetStrengthModifier() => GetDamageRatio(Characteristic.Strength);
+    public static float GetIntelligenceModifier() => GetDamageRatio(Characteristic.Intelligence);
+    private static float GetDamageRatio(Characteristic type)
     {
-        SEMan SE_Man = player.GetSEMan();
-        if (SE_Man.HaveStatusEffect("SE_Characteristic")) return;
-        SE_Man.AddStatusEffect("SE_Characteristic".GetStableHashCode());
+        int characteristic = GetCharacteristic(type);
+        float output = characteristic / AlmanacClassesPlugin._DamageRatio.Value;
+        return 1 + output / 100f;
     }
 
-    public static void ReloadCharacteristics()
-    {
-        if (!ObjectDB.instance || !Player.m_localPlayer) return;
-        m_tempCharacteristics.Clear();
-        m_tempCharacteristics = GetCharacteristics();
-        StatusEffect characteristics = ObjectDB.instance.GetStatusEffect("SE_Characteristic".GetStableHashCode());
-        if (!characteristics) return;
-        if (Player.m_localPlayer.GetSEMan().HaveStatusEffect(characteristics.name))
-        {
-            Player.m_localPlayer.GetSEMan().RemoveStatusEffect(characteristics);
-        }
+}
 
-        if (!InitCharacteristics(out StatusEffect? effect)) return;
-        Player.m_localPlayer.GetSEMan().AddStatusEffect(effect);
-    }
-
-    private static Dictionary<Characteristic, int> GetCharacteristics()
-    {
-        Dictionary<Characteristic, int> characteristics = new(DefaultData.defaultCharacteristics);
-        foreach (KeyValuePair<string, Talent> kvp in PlayerManager.m_playerTalents)
-        {
-            if (kvp.Value.m_type is not TalentType.Characteristic) continue;
-            if (kvp.Value.m_characteristic is Characteristic.None) continue;
-            characteristics[kvp.Value.m_characteristic] += kvp.Value.m_characteristicValue;
-        }
-
-        return characteristics;
-    }
-
-    public static int GetCharacteristic(Characteristic type) => m_tempCharacteristics[type];
-
+public enum Characteristic
+{
+    None,
+    Constitution,
+    Intelligence,
+    Strength,
+    Dexterity,
+    Wisdom,
 }

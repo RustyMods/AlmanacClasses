@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using BepInEx;
 
 namespace AlmanacClasses.Managers;
 
@@ -22,7 +23,6 @@ public static class AnimationManager
         "unarmed_kick", "jump", "knife_stab0", "knife_stab1",
         "knife_secondary", "mace_secondary", "dual_knives0", "dual_knives1",
         "dual_knives2", "staff_fireball0", "staff_fireball1", "equip_hip"
-            
     };
     
     private static readonly List<string> emotes = new()
@@ -34,5 +34,30 @@ public static class AnimationManager
         "laugh", "roar", "shrug"
     };
 
-    public static bool IsEmote(string input) => emotes.Contains(input);
+    private static bool IsEmote(string input) => emotes.Contains(input);
+
+    public static void DoAnimation(string animation)
+    {
+        if (animation.IsNullOrWhiteSpace()) return;
+        if (IsEmote(animation))
+        {
+            if (Player.m_localPlayer.InEmote()) Player.m_localPlayer.StopEmote();
+            Player.m_localPlayer.StartEmote(animation);
+        }
+        else
+        {
+            Player.m_localPlayer.m_zanim.SetTrigger(animation);
+        }
+    }
+
+    public static void LoadCustomAnimations()
+    {
+        KG_Managers.AnimationReplaceManager.AddAnimationSet("classesbundle", "LutePlay");
+        KG_Managers.AnimationReplaceManager.AddAnimationSet("classesbundle", "StoneThrow");
+        KG_Managers.AnimationReplaceManager.AddAnimationSet("classesbundle", "Heal");
+        KG_Managers.AnimationReplaceManager.AddAnimationSet("classesbundle", "LightningStrike");
+        KG_Managers.AnimationReplaceManager.AddAnimationSet("classesbundle", "MeteorStrike");
+        KG_Managers.AnimationReplaceManager.AddAnimationSet("classesbundle", "SetTrap");
+        KG_Managers.AnimationReplaceManager.AddAnimationSet("classesbundle", "Summon");
+    }
 }

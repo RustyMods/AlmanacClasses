@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using AlmanacClasses.Classes.Abilities;
+using AlmanacClasses.Classes.Abilities.Core;
 using AlmanacClasses.FileSystem;
 using AlmanacClasses.LoadAssets;
 using BepInEx;
@@ -10,7 +10,6 @@ using ServerSync;
 using UnityEngine;
 using YamlDotNet.Serialization;
 using Object = UnityEngine.Object;
-using Random = System.Random;
 
 namespace AlmanacClasses.Classes;
 
@@ -91,6 +90,7 @@ public static class ExperienceManager
 
     private static Dictionary<string, int> CreatureExperienceMap = new()
     {
+        { "TentaRoot", 0},
         { "Deer", 1 },
         { "Boar", 1 },
         { "Neck", 1 },
@@ -146,7 +146,7 @@ public static class ExperienceManager
 
     public static int GetExperienceAmount(Character instance)
     {
-        return (CreatureExperienceMap.TryGetValue(instance.name.Replace("(Clone)", string.Empty), out int amount) ? amount : GetExpByBiome()) * instance.m_level * AlmanacClassesPlugin._ExperienceMultiplier.Value;
+        return (int)((CreatureExperienceMap.TryGetValue(instance.name.Replace("(Clone)", string.Empty), out int amount) ? amount : GetExpByBiome()) * instance.m_level * AlmanacClassesPlugin._ExperienceMultiplier.Value);
     }
 
     private static int GetExpByBiome()
@@ -180,7 +180,7 @@ public static class ExperienceManager
     {
         if (!ExperienceMap.TryGetValue(stat, out int value)) return;
         int total = (int)(value * amount);
-        PlayerManager.m_tempPlayerData.m_experience += total * AlmanacClassesPlugin._ExperienceMultiplier.Value;
+        PlayerManager.m_tempPlayerData.m_experience += (int)(total * AlmanacClassesPlugin._ExperienceMultiplier.Value);
     }
     
     public static void AddExperience(Character instance)
@@ -188,30 +188,6 @@ public static class ExperienceManager
         if (!instance || instance.name.IsNullOrWhiteSpace()) return;
         int amount = GetExperienceAmount(instance);
         PlayerManager.m_tempPlayerData.m_experience += amount;
-    }
-
-    public static void AddExperienceRPCAll(Character instance)
-    {
-        try
-        {
-            if (instance.m_lastHit != null && instance.m_lastHit.GetAttacker() == Player.m_localPlayer)
-            {
-                List<Player> players = new();
-                Player.GetPlayersInRange(Player.m_localPlayer.transform.position, 30f, players);
-                int experience = ExperienceManager.GetExperienceAmount(instance);
-                foreach (Player player in players)
-                {
-                    if (!player.IsPlayer()) continue;
-                    long id = player.GetPlayerID();
-                    ZDOID zdoid = player.GetZDOID();
-                    ZRoutedRpc.instance.InvokeRoutedRPC(id, zdoid, nameof(ExperienceManager.RPC_AddExperience), experience);
-                }
-            }
-        }
-        catch
-        {
-            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to tell everyone to add experience");
-        }
     }
 
     public static void RPC_AddExperience(long sender, int amount)
@@ -236,7 +212,7 @@ public static class ExperienceManager
         { PlayerStatType.Logs , 1},
         { PlayerStatType.MineHits , 1},
         { PlayerStatType.CreatureTamed , 10},
-        { PlayerStatType.ArrowsShot , 1},
+        // { PlayerStatType.ArrowsShot , 1},
         { PlayerStatType.ItemsPickedUp , 1},
     };
 
@@ -246,7 +222,6 @@ public static class ExperienceManager
     {
         GameObject UpgradeItem = ZNetScene.instance.GetPrefab("StaminaUpgrade_Greydwarf");
         GameObject item = Object.Instantiate(UpgradeItem, AlmanacClassesPlugin._Root.transform, false);
-        item.AddComponent<OrbBob>();
         if (item.transform.Find("heart"))
         {
             Object.Destroy(item.transform.Find("heart").gameObject);
@@ -326,9 +301,9 @@ public static class ExperienceManager
 
     public static void DropOrb(Character instance)
     {
-        var number = UnityEngine.Random.Range(0, 100);
+        var number = Random.Range(0, 100);
         if (number > AlmanacClassesPlugin._ChanceForOrb.Value) return;
-        var biome = Player.m_localPlayer.GetCurrentBiome();
+        Heightmap.Biome biome = Player.m_localPlayer.GetCurrentBiome();
         switch (biome)
         {
             case Heightmap.Biome.Swamp or Heightmap.Biome.Mountain:
@@ -347,9 +322,6 @@ public static class ExperienceManager
                 Object.Instantiate(ZNetScene.instance.GetPrefab("ExperienceOrb_Simple"), instance.transform.position,
                     Quaternion.identity);
                 break;
-                
-                
         }
-        
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using AlmanacClasses.Classes;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -23,14 +24,14 @@ public class SpellElementChange : MonoBehaviour, IPointerEnterHandler
             if (!TalentBook.IsTalentBookVisible())
             {
                 LoadUI.MenuInfoPanel.SetActive(!element);
-                Utils.FindChild(LoadUI.MenuInfoPanel.transform, "$text_name").GetComponent<Text>().text = Localization.instance.Localize($"<color=orange>{data.m_data.m_name}</color>");
-                Utils.FindChild(LoadUI.MenuInfoPanel.transform, "$text_description").GetComponent<Text>().text = LoadUI.GetTooltip(data.m_data);
+                Utils.FindChild(LoadUI.MenuInfoPanel.transform, "$text_name").GetComponent<Text>().text = Localization.instance.Localize($"<color=orange>{data.m_data.GetName()}</color>");
+                Utils.FindChild(LoadUI.MenuInfoPanel.transform, "$text_description").GetComponent<Text>().text = data.m_data.GetTooltip();
             }
             else
             {
                 if (title) Destroy(title);
                 title = Instantiate(LoadUI.SpellBarHoverName, Hud.instance.transform, false);
-                title.GetComponent<Text>().text = Localization.instance.Localize($"<color=orange>{data.m_data.m_name}</color>");
+                title.GetComponent<Text>().text = Localization.instance.Localize($"<color=orange>{data.m_data.GetName()}</color>");
                 title.transform.position = transform.position + new Vector3(0f, 60f);
             }
 
@@ -47,13 +48,13 @@ public class SpellElementChange : MonoBehaviour, IPointerEnterHandler
                 element = Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_element"), Hud.instance.transform, false);
                 element.transform.SetAsFirstSibling();
                 fromIndex = index;
-                Utils.FindChild(element.transform, "$image_icon").GetComponent<Image>().sprite = data.m_data.m_sprite;
+                Utils.FindChild(element.transform, "$image_icon").GetComponent<Image>().sprite = data.m_data.GetSprite();
                 if (title) Destroy(title);
             }
         }
         catch
         {
-            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to interact with spell bar element");
+            // AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to interact with spell bar element");
         }
     }
 

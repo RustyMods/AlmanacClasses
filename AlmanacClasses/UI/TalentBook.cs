@@ -27,7 +27,6 @@ public class TalentBook : MonoBehaviour, Interactable, Hoverable
 
     private static void SetTextElements()
     {
-        int prestige = PlayerManager.m_tempPlayerData.m_prestige;
         int experience = PlayerManager.m_tempPlayerData.m_experience;
         int level = PlayerManager.GetPlayerLevel(experience);
         int nextXP = PlayerManager.GetRequiredExperience(level + 1);
@@ -45,7 +44,7 @@ public class TalentBook : MonoBehaviour, Interactable, Hoverable
         int strength = CharacteristicManager.GetCharacteristic(Characteristic.Strength);
         int wisdom = CharacteristicManager.GetCharacteristic(Characteristic.Wisdom);
 
-        LoadUI.PrestigeText.text = Localization.instance.Localize($"$almanac_prestige: <color=orange>{prestige}</color>");
+        LoadUI.PrestigeText.text = "";
         LoadUI.LevelText.text = Localization.instance.Localize("$text_level") + ": " + $"<color=orange>{level}</color>";
         LoadUI.ExperienceText.text = $"<color=orange>{experience}</color>" + " / " + $"<color=orange>{nextXP}</color>";
         LoadUI.ExperienceBarFill.fillAmount = ((float)experience / (float)nextXP);

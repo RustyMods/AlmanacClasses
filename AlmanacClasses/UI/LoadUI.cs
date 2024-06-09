@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using AlmanacClasses.Classes;
-using AlmanacClasses.Classes.Abilities;
 using AlmanacClasses.Data;
 using AlmanacClasses.LoadAssets;
 using AlmanacClasses.Managers;
@@ -56,6 +54,9 @@ public static class LoadUI
     public static GameObject MenuInfoPanel = null!;
 
     private static Button CenterButton = null!;
+
+    public static Talent? SelectedTalent;
+    
     public static bool m_initLineFillSet;
     public static readonly Dictionary<string, Button> ButtonMap = new();
     public static readonly Dictionary<Button, Dictionary<string, Image>> ButtonFillLineMap = new();
@@ -174,9 +175,8 @@ public static class LoadUI
         { "$button_rogue_talent_5", new(){"$button_rogue_1", "$button_rogue_2", "$button_rogue_talent_2"}},
         { "$button_warrior_talent_5", new(){"$button_warrior_1", "$button_warrior_2", "$button_warrior_talent_2"}},
     };
-
     private static bool IsEXPBarVisible() => ExperienceBarHUD && ExperienceBarHUD.activeInHierarchy;
-
+    public static bool IsTalentButton(Selectable button) => TalentButtons.Contains(button);
     public static void InitHudExperienceBar(Hud instance)
     {
         ExperienceBarHUD = Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("Experience_Bar"), instance.transform, false);
@@ -222,16 +222,12 @@ public static class LoadUI
 
         SpellBarHoverName = HoverName;
     }
-
     public static void OnExperienceBarScaleChange(object sender, EventArgs e)
     {
-        if (sender is ConfigEntry<float> config)
-        {
-            float scale = config.Value / 100f;
-            ExpBarRect.localScale = new Vector3(scale, scale, scale);
-        }
+        if (sender is not ConfigEntry<float> config) return;
+        float scale = config.Value / 100f;
+        ExpBarRect.localScale = new Vector3(scale, scale, scale);
     }
-
     public static void OnMenuInfoPanelConfigChange(object sender, EventArgs e)
     {
         if (sender is ConfigEntry<Vector2> config)
@@ -239,7 +235,6 @@ public static class LoadUI
             MenuInfoPanel.transform.position = AlmanacClassesPlugin._SpellBookPos.Value + config.Value;
         }
     }
-
     public static void InitSkillTree(InventoryGui instance)
     {
         AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Initializing talent UI");
@@ -275,6 +270,7 @@ public static class LoadUI
         PointsUsed = Utils.FindChild(SkillTree_UI.transform, "$text_used_points").GetComponent<Text>();
         RequiredPoints = Utils.FindChild(SkillTree_UI.transform, "$text_prestige_needed").GetComponent<Text>();
 
+        
 
         // Static Elements
         Utils.FindChild(SkillTree_UI.transform, "$text_title").GetComponent<Text>().text = "$title_talents";
@@ -297,20 +293,17 @@ public static class LoadUI
         SetLineFill();
         SetAllButtonEvents();
     }
-
     public static void OnChangeExperienceBarPosition(object sender, EventArgs e)
     {
         if (sender is not ConfigEntry<Vector2> config) return;
 
         ExpBarRect.anchoredPosition = config.Value;
     }
-
     public static void OnChangeExperienceBarVisibility(object sender, EventArgs e)
     {
         if (sender is not ConfigEntry<AlmanacClassesPlugin.Toggle> config) return;
         ExperienceBarHUD.SetActive(config.Value is AlmanacClassesPlugin.Toggle.On);
     }
-
     public static void UpdateExperienceBarHud()
     {
         if (!IsEXPBarVisible()) return;
@@ -321,37 +314,47 @@ public static class LoadUI
         ExpHudText.text = $"{experience} / {nxtLvlExp}";
         ExpHudFillBar.fillAmount = percentage;
     }
-
     private static void SetPrestigeButton()
     {
         Utils.FindChild(SkillTree_UI.transform, "$button_center").GetComponent<Button>().onClick.AddListener(() =>
         {
-            int usedPoints = TalentManager.GetTotalBoughtTalentPoints();
-            if (usedPoints < AlmanacClassesPlugin._PrestigeThreshold.Value)
+            if (TalentManager.GetTotalBoughtTalentPoints() < AlmanacClassesPlugin._PrestigeThreshold.Value)
             {
-                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_talent_required");
+                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_not_enough_tp_to_prestige");
                 return;
             }
 
-            if (!TalentManager.AllTalents.TryGetValue("PrestigeButton", out Talent ability)) return;
-            int cost = ability.m_cost;
+            if (SelectedTalent == null)
+            {
+                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_select_talent");
+                return;
+            }
+            if (!PlayerManager.m_tempPlayerData.m_boughtTalents.ContainsKey(SelectedTalent.m_key)) return;
+            int cost = SelectedTalent.GetCost();
             if (cost > TalentManager.GetAvailableTalentPoints())
             {
-                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_not_enough_tp_to_prestige");
+                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_not_enough_tp");
+                return;
             }
-            else
-            {
-                usedPoints += cost;
-                PlayerManager.m_playerTalents[ability.m_key] = ability;
-                PlayerManager.m_tempPlayerData.m_prestigePoints += usedPoints;
-                ++PlayerManager.m_tempPlayerData.m_prestige;
-                ResetTalents();
-                TalentManager.PrestigeTalents(PlayerManager.m_tempPlayerData.m_prestige);
-                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_prestiged " + PlayerManager.m_tempPlayerData.m_prestige);
-            }
+            AddLevel(SelectedTalent);
+            CharacteristicManager.UpdateCharacteristics();
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_prestiged " + SelectedTalent.GetName() + " $almanac_to lvl " + SelectedTalent.GetLevel());
+            TalentBook.ShowUI();
         });
     }
 
+    private static void AddLevel(Talent ability)
+    {
+        if (PlayerManager.m_tempPlayerData.m_boughtTalents.ContainsKey(ability.m_key))
+        {
+            ++PlayerManager.m_tempPlayerData.m_boughtTalents[ability.m_key];
+        }
+
+        if (PlayerManager.m_playerTalents.TryGetValue(ability.m_key, out Talent talent))
+        {
+            talent.AddLevel();
+        }
+    }
     public static void SetInitialFillLines()
     {
         if (m_initLineFillSet) return;
@@ -359,7 +362,7 @@ public static class LoadUI
         CheckedTalents.Add(CenterButton);
         foreach (KeyValuePair<string, Talent> kvp in PlayerManager.m_playerTalents)
         {
-            string buttonName = kvp.Value.m_buttonName;
+            string buttonName = kvp.Value.m_button;
             if (!ButtonMap.TryGetValue(buttonName, out Button button)) continue;
             CheckedTalents.Add(button);
             
@@ -400,7 +403,6 @@ public static class LoadUI
         SetLineWarrior(lines);
         SetLineRadial(lines);
     }
-
     private static void SetLineUp(Transform lines)
     {
         Transform lineUp = Utils.FindChild(lines, "$part_lines_up");
@@ -424,7 +426,6 @@ public static class LoadUI
         AllLines.Add(LineUp4Left);
         AllLines.Add(LineUp4LeftUp);
     }
-
     private static void SetLineBard(Transform lines)
     {
         Transform lineBard = Utils.FindChild(lines, "$part_lines_up_right");
@@ -448,7 +449,6 @@ public static class LoadUI
         AllLines.Add(LineBard4Left);
         AllLines.Add(LineBard4LeftUp);
     }
-
     private static void SetLineShaman(Transform lines)
     {
         Transform lineShaman = Utils.FindChild(lines, "$part_lines_right");
@@ -472,7 +472,6 @@ public static class LoadUI
         AllLines.Add(LineShaman4Left);
         AllLines.Add(LineShaman4LeftUp);
     }
-
     private static void SetLineSage(Transform lines)
     {
         Transform lineSage = Utils.FindChild(lines, "$part_lines_down_right");
@@ -496,7 +495,6 @@ public static class LoadUI
         AllLines.Add(LineSage4Left);
         AllLines.Add(LineSage4LeftUp);
     }
-
     private static void SetLineDown(Transform lines)
     {
         Transform lineDown = lines.Find("$part_lines_down");
@@ -520,7 +518,6 @@ public static class LoadUI
         AllLines.Add(LineDown4Left);
         AllLines.Add(LineDown4LeftDown);
     }
-
     private static void SetLineRanger(Transform lines)
     {
         Transform lineRanger = Utils.FindChild(lines, "$part_lines_down_left");
@@ -544,7 +541,6 @@ public static class LoadUI
         AllLines.Add(LineRanger4Left);
         AllLines.Add(LineRanger4LeftUp);
     }
-
     private static void SetLineRogue(Transform lines)
     {
         Transform lineRogue = Utils.FindChild(lines, "$part_lines_left");
@@ -568,7 +564,6 @@ public static class LoadUI
         AllLines.Add(LineRogue4Left);
         AllLines.Add(LineRogue4LeftUp);
     }
-
     private static void SetLineWarrior(Transform lines)
     {
         Transform lineWarrior = Utils.FindChild(lines, "$part_lines_up_left");
@@ -592,7 +587,6 @@ public static class LoadUI
         AllLines.Add(LineWarrior4Left);
         AllLines.Add(LineWarrior4LeftUp);
     }
-
     private static void SetLineRadial(Transform lines)
     {
         Transform lineRadial = Utils.FindChild(lines, "$part_lines_radial");
@@ -615,7 +609,6 @@ public static class LoadUI
         AllLines.Add(LineRadial8);
     }
     #endregion
-
     private static void LoadCloseButton()
     {
         Transform closeButton = Utils.FindChild(SkillTree_UI.transform, "$button_close");
@@ -628,7 +621,6 @@ public static class LoadUI
 
         closeButton.gameObject.AddComponent<ButtonSfx>().m_sfxPrefab = sfx.m_sfxPrefab;
     }
-
     private static void LoadResetButton()
     {
         Transform resetButton = Utils.FindChild(SkillTree_UI.transform, "$button_reset");
@@ -651,18 +643,16 @@ public static class LoadUI
 
         resetButton.gameObject.AddComponent<ButtonSfx>().m_sfxPrefab = sfx.m_sfxPrefab;
     }
-
     public static void ResetTalents(bool command = false)
     {
         LoadTwoHanded.ResetTwoHandedWeapons();
         SpellBook.DestroyElements();
         SpellBook.m_abilities.Clear();
-        List<StatusEffect> effects = Player.m_localPlayer.GetSEMan().GetStatusEffects().FindAll(x => x is StatusEffectManager.Data.TalentEffect);
+        List<StatusEffect> effects = Player.m_localPlayer.GetSEMan().GetStatusEffects().FindAll(x => StatusEffectManager.IsClassEffect(x.name));
         foreach (StatusEffect effect in effects)
         {
             Player.m_localPlayer.GetSEMan().RemoveStatusEffect(effect);
         }
-        PlayerManager.m_tempPlayerData.m_boughtTalents.Clear();
         foreach (Button talent in CheckedTalents)
         {
             Transform checkmark = Utils.FindChild(talent.transform, "Checkmark");
@@ -672,13 +662,15 @@ public static class LoadUI
         CheckedTalents.Clear();
         CheckedTalents.Add(CenterButton);
         foreach (Image line in AllLines) line.fillAmount = 0f;
-                
-        PlayerManager.m_playerTalents.Clear();
         PlayerManager.m_tempPlayerData.m_boughtTalents.Clear();
-        CharacteristicManager.ReloadCharacteristics();
+        PlayerManager.m_tempPlayerData.m_spellBook.Clear();
+        PlayerManager.m_playerTalents.Clear();
+        CharacteristicManager.ResetCharacteristics();
+        TalentManager.ResetTalentLevels();
+        SelectedTalent = null;
+        SetAllButtonColors(Color.white);
         if (!command) TalentBook.ShowUI();
     }
-
     private static void AddSFXToTalentButtons()
     {
         TalentButtons.Clear();
@@ -691,14 +683,15 @@ public static class LoadUI
             button.gameObject.AddComponent<ButtonSfx>().m_sfxPrefab = sfx.m_sfxPrefab;
         }
     }
-
     private static void SetAllButtonEvents()
     {
         ButtonFillLineMap.Clear();
         ButtonCoreLineAmountMap.Clear();
         CheckedTalents.Clear();
         CenterButton = Utils.FindChild(SkillTree_UI.transform, "$button_center").GetComponent<Button>();
+        
         CheckedTalents.Add(CenterButton);
+        
         SetCoreButtonsEvents();
         SetBardButtonEvents();
         SetShamanButtonEvents();
@@ -707,7 +700,6 @@ public static class LoadUI
         SetRogueButtonEvents();
         SetWarriorButtonEvents();
     }
-
     private static void SetCoreButtonsEvents()
     {
         Transform? CoreCharacteristics = Utils.FindChild(SkillTree_UI.transform, "$part_core_characteristics");
@@ -724,10 +716,10 @@ public static class LoadUI
             {"$button_lumberjack", LineUp3Right}, {"$button_warrior_6", LineRadial8}
         }, 1f, "Core5");
         SetButton(CoreCharacteristics, "$button_core_6", new(){{"$button_lumberjack", LineUp4Left}, {"$button_bard_5", LineRadial1}}, 1f, "Core6");
-        SetButton(CoreTalents, "$button_lumberjack", new(){{"$button_core_2", LineCoreUp},{"$button_core_6", LineUp4Left}, {"$button_core_5", LineUp3Right}}, 0.7f, "CoreComfort1");
-        SetButton(CoreTalents, "$button_chef", new(){{"$button_lumberjack", LineCoreUp}}, 1f, "CoreChef");
-        SetButton(CoreTalents, "$button_comfort_1", new(){{"$button_core_5", LineUp3RightUp}}, 1f, "CoreLumberjack");
-        SetButton(CoreTalents, "$button_comfort_2", new(){{"$button_core_6", LineUp4LeftUp}}, 1f, "CoreComfort2");
+        SetButton(CoreTalents, "$button_lumberjack", new(){{"$button_core_2", LineCoreUp},{"$button_core_6", LineUp4Left}, {"$button_core_5", LineUp3Right}}, 0.7f, "AirBender");
+        SetButton(CoreTalents, "$button_chef", new(){{"$button_lumberjack", LineCoreUp}}, 1f, "MasterChef");
+        SetButton(CoreTalents, "$button_comfort_1", new(){{"$button_core_5", LineUp3RightUp}}, 1f, "Resourceful");
+        SetButton(CoreTalents, "$button_comfort_2", new(){{"$button_core_6", LineUp4LeftUp}}, 1f, "Comfort");
         
         SetButton(CoreCharacteristics, "$button_core_7", new(){{"$button_center", LineCoreDown}, {"$button_sneak", LineDown1Right}, {"$button_merchant", LineDown1Left}}, 0.4f, "Core7");
         SetButton(CoreCharacteristics, "$button_core_8", new(){{"$button_core_7", LineCoreDown}}, 0.53f, "Core8");
@@ -735,14 +727,13 @@ public static class LoadUI
         SetButton(CoreCharacteristics, "$button_core_10", new(){{"$button_core_8", LineDown2Left}}, 1f, "Core10");
         SetButton(CoreCharacteristics, "$button_core_11", new(){{"$button_treasure", LineDown3Right}, {"$button_sage_6", LineRadial4}}, 1f, "Core11");
         SetButton(CoreCharacteristics, "$button_core_12", new(){{"$button_treasure", LineDown4Left}, {"$button_ranger_5", LineRadial5}}, 1f, "Core12");
-        SetButton(CoreTalents, "$button_treasure", new(){{"$button_core_8", LineCoreDown}, {"$button_core_11", LineDown3Right}, {"$button_core_12", LineDown4Left}}, 0.7f, "CoreTreasure");
-        SetButton(CoreTalents, "$button_sneak", new(){{"$button_core_7", LineDown1Right}, {"$button_sage_1", LineSage1Left}}, 1f, "CoreSneak");
-        SetButton(CoreTalents, "$button_merchant", new(){{"$button_core_7", LineDown1Left}, {"$button_ranger_1", LineRanger1Right}}, 1f, "CoreMerchant");
-        SetButton(CoreTalents, "$button_shield", new(){{"$button_core_11", LineDown3RightDown}}, 1f, "CoreCarry");
+        SetButton(CoreTalents, "$button_treasure", new(){{"$button_core_8", LineCoreDown}, {"$button_core_11", LineDown3Right}, {"$button_core_12", LineDown4Left}}, 0.7f, "Forager");
+        SetButton(CoreTalents, "$button_sneak", new(){{"$button_core_7", LineDown1Right}, {"$button_sage_1", LineSage1Left}}, 1f, "Wise");
+        SetButton(CoreTalents, "$button_merchant", new(){{"$button_core_7", LineDown1Left}, {"$button_ranger_1", LineRanger1Right}}, 1f, "DoubleLoot");
+        SetButton(CoreTalents, "$button_shield", new(){{"$button_core_11", LineDown3RightDown}}, 1f, "PackMule");
         SetButton(CoreTalents, "$button_rain", new(){{"$button_core_12", LineDown4LeftDown}}, 1f, "RainProof");
-        SetButton(CoreTalents, "$button_sail", new(){{"$button_treasure", LineCoreDown}}, 1f, "CoreSail");
+        SetButton(CoreTalents, "$button_sail", new(){{"$button_treasure", LineCoreDown}}, 1f, "Trader");
     }
-
     private static void SetBardButtonEvents()
     {
         Transform? BardTalents = Utils.FindChild(SkillTree_UI.transform, "$part_bard_talents");
@@ -757,9 +748,8 @@ public static class LoadUI
         SetButton(BardTalents, "$button_bard_talent_2", new(){{"$button_bard_2", LineCoreBard}, {"$button_bard_5", LineBard3Right}, {"$button_bard_6", LineBard4Left}}, 0.7f, "SongOfVitality");
         SetButton(BardTalents, "$button_bard_talent_3", new(){{"$button_bard_5", LineBard3RightUp}}, 1f, "SongOfDamage");
         SetButton(BardTalents, "$button_bard_talent_4", new(){{"$button_bard_6", LineBard4LeftUp}}, 1f, "SongOfHealing");
-        SetButton(BardTalents, "$button_bard_talent_5", new(){{"$button_bard_talent_2", LineCoreBard}}, 1f, "SongOfSpirit");
+        SetButton(BardTalents, "$button_bard_talent_5", new(){{"$button_bard_talent_2", LineCoreBard}}, 1f, "SongOfAttrition");
     }
-
     private static void SetShamanButtonEvents()
     {
         Transform ShamanTalents = Utils.FindChild(SkillTree_UI.transform, "$part_shaman_talents");
@@ -775,11 +765,10 @@ public static class LoadUI
         SetButton(ShamanCharacteristics, "$button_shaman_6", new(){{"$button_shaman_talent_2", LineShaman4Left}, {"$button_sage_5", LineRadial3}}, 1f, "Shaman6");
         SetButton(ShamanTalents, "$button_shaman_talent_1", new(){{"$button_bard_1", LineBard1Left}, {"$button_shaman_1", LineShaman1Right}}, 1f, "ShamanHeal");
         SetButton(ShamanTalents, "$button_shaman_talent_2", new(){{"$button_shaman_2", LineCoreShaman}, {"$button_shaman_5", LineShaman3Right}, {"$button_shaman_6",LineShaman4Left}}, 0.7f, "RootBeam");
-        SetButton(ShamanTalents, "$button_shaman_talent_3", new(){{"$button_shaman_5", LineShaman3RightUp}}, 1f, "ShamanGhosts");
+        SetButton(ShamanTalents, "$button_shaman_talent_3", new(){{"$button_shaman_5", LineShaman3RightUp}}, 1f, "ShamanSpawn");
         SetButton(ShamanTalents, "$button_shaman_talent_4", new(){{"$button_shaman_6", LineShaman4LeftUp}}, 1f, "ShamanRegeneration");
         SetButton(ShamanTalents, "$button_shaman_talent_5", new(){{"$button_shaman_talent_2", LineCoreShaman}}, 1f, "ShamanShield");
     }
-
     private static void SetSageButtonEvents()
     {
         Transform SageTalents = Utils.FindChild(SkillTree_UI.transform, "$part_sage_talents");
@@ -796,7 +785,6 @@ public static class LoadUI
         SetButton(SageTalents, "$button_sage_talent_2", new(){{"$button_sage_5", LineSage3RightUp}}, 1f, "GoblinBeam");
         SetButton(SageTalents, "$button_sage_talent_5", new(){{"$button_sage_talent_4", LineCoreSage}}, 1f, "IceBreath");
     }
-
     private static void SetRangerButtonEvents()
     {
         Transform RangerTalents = Utils.FindChild(SkillTree_UI.transform, "$part_ranger_talents");
@@ -824,7 +812,7 @@ public static class LoadUI
         {
             {"$button_rogue_1", LineRogue1Right},
             {"$button_ranger_1", LineRanger1Left}
-        }, 1f, "DeerHunter");
+        }, 1f, "RangerHunter");
         SetButton(RangerTalents, "$button_ranger_talent_2", new()
         {
             {"$button_ranger_2", LineCoreRanger},
@@ -835,7 +823,6 @@ public static class LoadUI
         SetButton(RangerTalents, "$button_ranger_talent_4", new(){{"$button_ranger_6", LineRanger4LeftUp}}, 1f, "RangerTrap");
         SetButton(RangerTalents, "$button_ranger_talent_5", new(){{"$button_ranger_talent_2", LineCoreRanger}}, 1f, "QuickShot");
     }
-
     private static void SetRogueButtonEvents()
     {
         Transform RogueTalents = Utils.FindChild(SkillTree_UI.transform, "$part_rogue_talents");
@@ -870,11 +857,10 @@ public static class LoadUI
             {"$button_rogue_5", LineRogue3Right},
             {"$button_rogue_6",LineRogue4Left}
         }, 0.7f, "RogueReflect");
-        SetButton(RogueTalents, "$button_rogue_talent_3", new(){{"$button_rogue_5", LineRogue3RightUp}}, 1f, "RogueDamage");
+        SetButton(RogueTalents, "$button_rogue_talent_3", new(){{"$button_rogue_5", LineRogue3RightUp}}, 1f, "RogueBackstab");
         SetButton(RogueTalents, "$button_rogue_talent_4", new(){{"$button_rogue_6", LineRogue4LeftUp}}, 1f, "RogueStamina");
         SetButton(RogueTalents, "$button_rogue_talent_5", new(){{"$button_rogue_talent_2", LineCoreRogue}}, 1f, "RogueBleed");
     }
-
     private static void SetWarriorButtonEvents()
     {
         Transform WarriorTalents = Utils.FindChild(SkillTree_UI.transform, "$part_warrior_talents");
@@ -913,36 +899,27 @@ public static class LoadUI
         SetButton(WarriorTalents, "$button_warrior_talent_4", new(){{"$button_warrior_6", LineWarrior4LeftUp}}, 1f, "MonkeyWrench");
         SetButton(WarriorTalents, "$button_warrior_talent_5", new(){{"$button_warrior_talent_2", LineCoreWarrior}}, 1f, "DualWield");
     }
-
     public static void ChangeButton(Talent talent, bool revert = false)
     {
-        if (!ButtonMap.TryGetValue(talent.m_buttonName, out Button button)) return;
-        if (revert)
+        if (!ButtonMap.TryGetValue(talent.m_button, out Button button)) return;
+        if (!TalentManager.m_talentsByButton.TryGetValue(talent.m_button, out Talent original)) return;
+        if (!TalentManager.m_altTalentsByButton.TryGetValue(talent.m_button, out Talent alt)) return;
+        
+        if (!revert)
         {
-            Talent? alt = TalentManager.GetAltTalentByButton(talent.m_buttonName);
-            if (alt != null)
+            if (PlayerManager.m_playerTalents.ContainsKey(alt.m_key))
             {
-                if (PlayerManager.m_playerTalents.ContainsKey(alt.m_key))
-                {
-                    PlayerManager.m_playerTalents.Remove(alt.m_key);
-                }
-
-                alt.m_altActive = false;
+                PlayerManager.m_playerTalents.Remove(alt.m_key);
             }
-            RemapButton(talent.m_buttonName, ButtonFillLineMap[button], 1f, talent.m_key);
+            RemapButton(talent.m_button, ButtonFillLineMap[button], 1f, talent.m_key);
         }
         else
         {
-            Talent? original = TalentManager.GetTalentByButton(talent.m_buttonName);
-            if (original != null)
+            if (PlayerManager.m_playerTalents.ContainsKey(original.m_key))
             {
-                if (PlayerManager.m_playerTalents.ContainsKey(original.m_key))
-                {
-                    PlayerManager.m_playerTalents.Remove(original.m_key);
-                }
+                PlayerManager.m_playerTalents.Remove(original.m_key);
             }
-            RemapButton(talent.m_buttonName, ButtonFillLineMap[button], 1f, talent.m_key);
-            talent.m_altActive = true;
+            RemapButton(talent.m_button, ButtonFillLineMap[button], 1f, talent.m_key);
         }
     }
 
@@ -951,93 +928,67 @@ public static class LoadUI
         if (!ButtonMap.TryGetValue(name, out Button button)) return;
         Transform? checkmark = Utils.FindChild(button.transform, "Checkmark");
         button.onClick.RemoveAllListeners();
-        button.onClick.AddListener(() =>
-        {
-            if (CheckedTalents.Contains(button)) return;
-            
-            if (EndTalents.Keys.Contains(name))
-            {
-                if (!CanBuyEndAbility(name))
-                {
-                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_need_connected_talents");
-                    return;
-                }
-            }
-            Dictionary<string, Image> validatedLines = new();
-            foreach (Button talent in CheckedTalents)
-            {
-                if (lines.TryGetValue(talent.name, out Image line))
-                {
-                    validatedLines[talent.name] = line;
-                }
-            }
+        button.onClick.AddListener(() => { ButtonEvent(button, checkmark, name, lines, amount, key); });
+        if (!button.TryGetComponent(out ButtonSfx component)) return;
+        component.Start();
+    }
 
-            if (validatedLines.Count == 0)
-            {
-                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_need_previous_talent");
-                return;
-            }
-            
-            if (TalentManager.AllTalents.TryGetValue(key, out Talent ability))
-            {
-                int cost = ability.m_cost;
-                if (cost > TalentManager.GetAvailableTalentPoints())
-                {
-                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_not_enough_tp");
-                    return;
-                }
-                PlayerManager.m_playerTalents[ability.m_key] = ability;
-                PlayerManager.m_tempPlayerData.m_boughtTalents.Add(ability.m_key);
-                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_purchased");
-                if (ability.m_key == "MonkeyWrench")
-                {
-                    LoadTwoHanded.ModifyTwoHandedWeapons();
-                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_two_handed");
-                }
-                CharacteristicManager.ReloadCharacteristics();
-                TalentBook.ShowUI();
-                if (ability.m_triggerNow)
-                {
-                    StatusEffect effect = ObjectDB.instance.GetStatusEffect(ability.m_statusEffect.name.GetStableHashCode());
-                    if (effect)
-                    {
-                        if (!Player.m_localPlayer.GetSEMan().HaveStatusEffect(effect.name))
-                        {
-                            Player.m_localPlayer.GetSEMan().AddStatusEffect(effect);
-                        }
-                    }
-                }
-                else if (ability.m_isAbility)
-                {
-                    if (SpellBook.IsAbilityInBook(ability))
-                    {
-                        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_spell_in_book");
-                        return;
-                    }
-                    if (SpellBook.m_abilities.Count > 7)
-                    {
-                        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_spell_book_full");
-                        return;
-                    }
-                    SpellBook.m_abilities.Add(new AbilityData()
-                    {
-                        m_data = ability
-                    });
-                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_added_spell");
-                }
-            }
-            else
-            {
-                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_failed_to_get_talent");
-                return;
-            }
-            checkmark.gameObject.SetActive(true);
-            foreach (KeyValuePair<string, Image> line in validatedLines)
-            {
-                line.Value.fillAmount = line.Value.transform.parent.name == "$line_core" ? amount : 1f;
-            }
-            CheckedTalents.Add(button);
-        });   
+    private static void SelectTalent(Talent ability, Button button)
+    {
+        if (!PlayerManager.m_playerTalents.ContainsKey(ability.m_key)) return;
+        SelectedTalent = ability;
+        SetAllButtonColors(Color.white);
+        SetButtonColor(button, new Color(1f, 0.5f, 0f, 1f));
+    }
+
+    private static void SetButtonColor(Button button, Color color)
+    {
+        Transform background = button.gameObject.transform.Find("background");
+        if (!background)
+        {
+            background = button.gameObject.transform.Find("Background");
+            if (!background) return;
+        }
+
+        if (!background.TryGetComponent(out Image component)) return;
+        component.color = color;
+    }
+
+    private static void SetAllButtonColors(Color color)
+    {
+        foreach (KeyValuePair<string, Button> kvp in ButtonMap) SetButtonColor(kvp.Value, color);
+    }
+
+    private static void ButtonEvent(Button button, Transform checkmark, string name, Dictionary<string, Image> lines, float amount, string key)
+    {
+        if (!TalentManager.m_talents.TryGetValue(key, out Talent ability))
+        {
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_failed_to_get_talent");
+            return;
+        }
+        SelectTalent(ability, button);
+        if (!CanPurchase(button)) return;
+        if (!IsEndAbility(name)) return;
+        if (!IsConnected(lines, out Dictionary<string, Image> validatedLines)) return;
+        if (!CheckCost(ability.GetCost())) return;
+        PurchaseTalent(ability);
+        CheckMonkeyWrench(ability);
+        switch (ability.m_type)
+        {
+            case TalentType.Passive:
+                AddStatusEffect(ability);
+                break;
+            case TalentType.Ability or TalentType.StatusEffect:
+                if (!AddToSpellBook(ability)) return;
+                break;
+            case TalentType.Characteristic:
+                CharacteristicManager.AddCharacteristic(ability.GetCharacteristicType(), ability.GetCharacteristic(ability.GetLevel()));
+                break;
+        }
+        checkmark.gameObject.SetActive(true);
+        SetLines(validatedLines, amount);
+        CheckedTalents.Add(button);
+        TalentBook.ShowUI();
     }
 
     private static void SetButton(Transform parent, string name, Dictionary<string, Image> lines, float amount, string key)
@@ -1046,93 +997,90 @@ public static class LoadUI
         ButtonFillLineMap[button] = lines;
         ButtonCoreLineAmountMap[button] = amount;
         Transform? checkmark = Utils.FindChild(button.transform, "Checkmark");
-        button.onClick.AddListener(() =>
-        {
-            if (CheckedTalents.Contains(button)) return;
-            
-            if (EndTalents.Keys.Contains(name))
-            {
-                if (!CanBuyEndAbility(name))
-                {
-                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_need_connected_talents");
-                    return;
-                }
-            }
-            Dictionary<string, Image> validatedLines = new();
-            foreach (Button talent in CheckedTalents)
-            {
-                if (lines.TryGetValue(talent.name, out Image line))
-                {
-                    validatedLines[talent.name] = line;
-                }
-            }
+        button.onClick.AddListener(() => { ButtonEvent(button, checkmark, name, lines, amount, key); });
+    }
+    private static bool IsEndAbility(string name)
+    {
+        if (!EndTalents.ContainsKey(name)) return true;
+        if (CanBuyEndAbility(name)) return true;
+        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_need_connected_talents");
+        return false;
+    }
 
-            if (validatedLines.Count == 0)
+    private static bool CanPurchase(Button button) => !CheckedTalents.Contains(button);
+
+    private static bool IsConnected(Dictionary<string, Image> lines, out Dictionary<string, Image> validatedLines)
+    {
+        validatedLines = new Dictionary<string, Image>();
+        foreach (Button checkedButton in CheckedTalents)
+        {
+            if (lines.TryGetValue(checkedButton.name, out Image line))
             {
-                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_need_previous_talent");
-                return;
+                validatedLines[checkedButton.name] = line;
             }
-            
-            if (TalentManager.AllTalents.TryGetValue(key, out Talent ability))
-            {
-                int cost = ability.m_cost;
-                if (cost > TalentManager.GetAvailableTalentPoints())
-                {
-                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_not_enough_tp");
-                    return;
-                }
-                PlayerManager.m_playerTalents[ability.m_key] = ability;
-                PlayerManager.m_tempPlayerData.m_boughtTalents.Add(ability.m_key);
-                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_purchased");
-                if (ability.m_key == "MonkeyWrench")
-                {
-                    LoadTwoHanded.ModifyTwoHandedWeapons();
-                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_two_handed");
-                }
-                CharacteristicManager.ReloadCharacteristics();
-                TalentBook.ShowUI();
-                if (ability.m_triggerNow)
-                {
-                    StatusEffect effect = ObjectDB.instance.GetStatusEffect(ability.m_statusEffect.name.GetStableHashCode());
-                    if (effect)
-                    {
-                        if (!Player.m_localPlayer.GetSEMan().HaveStatusEffect(effect.name))
-                        {
-                            Player.m_localPlayer.GetSEMan().AddStatusEffect(effect);
-                        }
-                    }
-                }
-                else if (ability.m_isAbility)
-                {
-                    if (SpellBook.IsAbilityInBook(ability))
-                    {
-                        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_spell_in_book");
-                        return;
-                    }
-                    if (SpellBook.m_abilities.Count > 7)
-                    {
-                        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_spell_book_full");
-                        return;
-                    }
-                    SpellBook.m_abilities.Add(new AbilityData()
-                    {
-                        m_data = ability
-                    });
-                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_added_spell");
-                }
-            }
-            else
-            {
-                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_failed_to_get_talent");
-                return;
-            }
-            checkmark.gameObject.SetActive(true);
-            foreach (KeyValuePair<string, Image> line in validatedLines)
-            {
-                line.Value.fillAmount = line.Value.transform.parent.name == "$line_core" ? amount : 1f;
-            }
-            CheckedTalents.Add(button);
+        }
+
+        if (validatedLines.Count != 0) return true;
+        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_need_previous_talent");
+        return false;
+    }
+
+    private static void SetLines(Dictionary<string, Image> validatedLines, float amount)
+    {
+        foreach (KeyValuePair<string, Image> line in validatedLines)
+        {
+            line.Value.fillAmount = line.Value.transform.parent.name == "$line_core" ? amount : 1f;
+        }
+    }
+
+    private static bool CheckCost(int cost)
+    {
+        if (cost <= TalentManager.GetAvailableTalentPoints()) return true;
+        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_not_enough_tp");
+        return false;
+    }
+
+    private static void PurchaseTalent(Talent ability)
+    {
+        PlayerManager.m_playerTalents[ability.m_key] = ability;
+        PlayerManager.m_tempPlayerData.m_boughtTalents[ability.m_key] = 1;
+        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_purchased");
+    }
+
+    private static void AddStatusEffect(Talent ability)
+    {
+        if (ability.m_statusEffectHash != 0)
+        {
+            Player.m_localPlayer.GetSEMan().AddStatusEffect(ability.m_statusEffectHash);
+        }
+    }
+
+    private static void CheckMonkeyWrench(Talent ability)
+    {
+        if (ability.m_key != "MonkeyWrench") return;
+        LoadTwoHanded.ModifyTwoHandedWeapons();
+        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_two_handed");
+    }
+
+    private static bool AddToSpellBook(Talent ability)
+    {
+        if (SpellBook.IsAbilityInBook(ability))
+        {
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_spell_in_book");
+            return false;
+        }
+        if (SpellBook.m_abilities.Count > 7)
+        {
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_spell_book_full");
+            return false;
+        }
+
+        SpellBook.m_abilities.Add(SpellBook.m_abilities.Count, new AbilityData()
+        {
+            m_data = ability
         });
+        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_added_spell");
+        return true;
     }
 
     private static bool CanBuyEndAbility(string button)
@@ -1156,179 +1104,5 @@ public static class LoadUI
     {
         Font[]? fonts = Resources.FindObjectsOfTypeAll<Font>();
         return fonts.FirstOrDefault(x => x.name == name);
-    }
-    
-    public static string GetTooltip(Talent talent)
-    {
-        StringBuilder stringBuilder = new StringBuilder();
-        switch (talent.m_type)
-        {
-            case TalentType.Characteristic:
-                string key = DefaultData.LocalizeCharacteristics[talent.m_characteristic];
-                int value = talent.m_characteristicValue;
-                stringBuilder.Append($"+ <color=orange>{value}</color> {key}\n");
-                switch (talent.m_characteristic)
-                {
-                    case Characteristic.Constitution:
-                        stringBuilder.Append($"Increases base vitality");
-                        break;
-                    case Characteristic.Dexterity:
-                        stringBuilder.Append($"Increases base stamina and ranged damage");
-                        break;
-                    case Characteristic.Intelligence:
-                        stringBuilder.Append($"Increases magic damage");
-                        break;
-                    case Characteristic.Strength:
-                        stringBuilder.Append($"Increases melee damage and carry weight");
-                        break;
-                    case Characteristic.Wisdom:
-                        stringBuilder.Append($"Increases skill experience gain and base eitr");
-                        break;
-                }
-                return Localization.instance.Localize(stringBuilder.ToString());
-            default:
-                stringBuilder.Append(talent.m_description);
-                break;
-        }
-        stringBuilder.Append("\n");
-
-        if (talent.m_skill is not Skills.SkillType.None)
-        {
-            stringBuilder.Append($"<color=#1D5DEC>$skill_{talent.m_skill.ToString().ToLower()}</color>\n");
-        }
-
-        if (talent.m_ttl != null)
-        {
-            stringBuilder.Append($"$almanac_cooldown: <color=orange>{talent.m_ttl.Value}</color>sec\n");
-        }
-
-        if (talent.m_duration != null)
-        {
-            stringBuilder.Append($"$almanac_duration: <color=orange>{talent.m_duration.Value}</color>sec\n");
-        }
-
-        if (talent.m_eitrCost is { Value: > 0 }) stringBuilder.Append($"$se_eitr $almanac_cost: <color=orange>{talent.m_eitrCost.Value}</color>\n");
-
-        if (talent.m_staminaCost is { Value: > 0 }) stringBuilder.Append($"$se_stamina $almanac_cost: <color=orange>{talent.m_staminaCost.Value}</color>\n");
-
-        if (talent.m_healthCost is { Value: > 0 }) stringBuilder.Append($"$se_health $almanac_cost: <color=orange>{talent.m_healthCost.Value}</color>\n");
-
-        foreach (KeyValuePair<StatusEffectData.Modifier, ConfigEntry<float>> kvp in talent.m_modifiers)
-        {
-            string key = DefaultData.LocalizeModifiers[kvp.Key];
-            switch (kvp.Key)
-            {
-                case StatusEffectData.Modifier.MaxCarryWeight 
-                    or StatusEffectData.Modifier.Vitality 
-                    or StatusEffectData.Modifier.Stamina 
-                    or StatusEffectData.Modifier.Eitr
-                    or StatusEffectData.Modifier.DamageAbsorb:
-                    float amount = kvp.Value.Value * talent.m_level;
-                    stringBuilder.Append($"{key}: <color=orange>{amount}</color>\n");
-                    break;
-                case StatusEffectData.Modifier.Heal:
-                    float value = Spells.ApplySkill(talent.m_skill, kvp.Value.Value * talent.m_level);
-                    stringBuilder.Append($"{key}: <color=orange>{value}</color>\n");
-                    break;
-                case StatusEffectData.Modifier.Reflect
-                    or StatusEffectData.Modifier.HealthRegen
-                    or StatusEffectData.Modifier.StaminaRegen
-                    or StatusEffectData.Modifier.RaiseSkills
-                    or StatusEffectData.Modifier.Noise
-                    or StatusEffectData.Modifier.EitrRegen
-                    or StatusEffectData.Modifier.Speed 
-                    or StatusEffectData.Modifier.Attack:
-                    float percentageLVL = (kvp.Value.Value * talent.m_level) * 100;
-                    stringBuilder.Append($"{key}: <color=orange>{percentageLVL}</color>%\n");
-                    break;
-                default:
-                    float percentage = kvp.Value.Value * 100;
-                    stringBuilder.Append($"{key}: <color=orange>{percentage}</color>%\n");
-                    break;
-            }
-        }
-        // Get damages applies talent level
-        if (talent.m_talentDamages != null)
-        {
-            HitData.DamageTypes damages = TalentManager.GetDamages(talent);
-            if (damages.HaveDamage())
-            {
-                damages.Modify(Mathf.Clamp(Player.m_localPlayer.GetSkillFactor(talent.m_skill), 0.1f, 1f));
-                if (damages.m_blunt > 0)
-                {
-                    stringBuilder.Append($"$inventory_blunt: <color=orange>{damages.m_blunt}</color>\n");
-                }
-
-                if (damages.m_slash > 0)
-                {
-                    stringBuilder.Append($"$inventory_slash: <color=orange>{damages.m_slash}</color>\n");
-                }
-
-                if (damages.m_pierce > 0)
-                {
-                    stringBuilder.Append($"$inventory_pierce: <color=orange>{damages.m_pierce}</color>\n");
-                }
-
-                if (damages.m_fire > 0)
-                {
-                    stringBuilder.Append($"$inventory_fire: <color=orange>{damages.m_fire}</color>\n");
-                }
-
-                if (damages.m_frost > 0)
-                {
-                    stringBuilder.Append($"$inventory_frost: <color=orange>{damages.m_frost}</color>\n");
-                }
-
-                if (damages.m_lightning > 0)
-                {
-                    stringBuilder.Append($"$inventory_lightning: <color=orange>{damages.m_lightning}</color>\n");
-                }
-
-                if (damages.m_poison > 0)
-                {
-                    stringBuilder.Append($"$inventory_poison: <color=orange>{damages.m_poison}</color>\n");
-                }
-
-                if (damages.m_spirit > 0)
-                {
-                    stringBuilder.Append($"$inventory_spirit: <color=orange>{damages.m_spirit}</color>\n");
-                }
-            }
-        }
-
-        foreach (KeyValuePair<HitData.DamageType, ConfigEntry<HitData.DamageModifier>> kvp in talent.m_resistances)
-        {
-            string key = DefaultData.LocalizeDamageType[kvp.Key];
-            string mod = DefaultData.LocalizeDamageModifier[kvp.Value.Value];
-            stringBuilder.Append($"<color=orange>{mod}</color> VS <color=orange>{key}</color>\n");
-        }
-
-        if (talent.m_chance != null)
-        {
-            string type = talent.m_key == "QuickShot" ? "Speed Modifier" : "$almanac_chance"; 
-            stringBuilder.Append($"{type}: <color=orange>{talent.m_chance.Value * talent.m_level}</color>%\n");
-        }
-
-        if (talent.m_heal != null)
-        {
-            stringBuilder.Append($"$almanac_heal: <color=orange>{Spells.ApplySkill(talent.m_skill, talent.m_heal.Value * talent.m_level)}</color>\n");
-        }
-
-        if (talent.m_comfortAmount != null)
-        {
-            stringBuilder.Append($"$almanac_comfort: <color=orange>{talent.m_comfortAmount.Value * talent.m_level}</color>\n");
-        }
-
-        if (talent.m_key == "CoreChef")
-        {
-            stringBuilder.Append($"$text_food_boost: <color=orange>{(AlmanacClassesPlugin._MasterChefIncrease.Value * talent.m_level) * 100}</color>%\n");
-        }
-
-        if (talent.m_key == "CoreLumberjack")
-        {
-            stringBuilder.Append($"$inventory_chop: <color=orange>{(AlmanacClassesPlugin._LumberjackIncrease.Value * talent.m_level) * 100}</color>%\n");
-        }
-
-        return Localization.instance.Localize(stringBuilder.ToString());
     }
 }

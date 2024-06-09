@@ -10,6 +10,7 @@ public static class ClassesAPI
     private static readonly MethodInfo? API_AddExperience;
     private static readonly MethodInfo? API_GetLevel;
     private static readonly MethodInfo? API_GetCharacteristic;
+    private static readonly MethodInfo? API_GetPrestigeLevel;
     public static void AddEXP(int amount)
     {
         API_AddExperience?.Invoke(null, new object[] { amount });
@@ -31,6 +32,11 @@ public static class ClassesAPI
     public static int GetIntelligence() => GetCharacteristic("Intelligence");
     public static int GetWisdom() => GetCharacteristic("Wisdom");
 
+    public static int GetPrestigeLevel()
+    {
+        return (int)(API_GetPrestigeLevel?.Invoke(null, null) ?? 1);
+    }
+
     static ClassesAPI()
     {
         if (Type.GetType("AlmanacClasses.API.API, AlmanacClasses") is not { } api)
@@ -41,6 +47,7 @@ public static class ClassesAPI
         API_AddExperience = api.GetMethod("AddExperience", BindingFlags.Public | BindingFlags.Static);
         API_GetLevel = api.GetMethod("GetLevel", BindingFlags.Public | BindingFlags.Static);
         API_GetCharacteristic = api.GetMethod("GetCharacteristic", BindingFlags.Public | BindingFlags.Static);
+        API_GetPrestigeLevel = api.GetMethod("GetPrestigeLevel", BindingFlags.Public | BindingFlags.Static);
     }
 }
 
@@ -48,7 +55,6 @@ public static class API
 {
     public static void AddExperience(int amount) => PlayerManager.AddExperience(amount);
     public static int GetLevel() => PlayerManager.GetPlayerLevel(PlayerManager.GetExperience());
-
     public static int GetCharacteristic(string type)
     {
         switch (type)

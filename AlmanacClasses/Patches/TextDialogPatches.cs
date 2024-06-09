@@ -19,13 +19,13 @@ public static class TextDialogPatches
             StringBuilder stringBuilder = new();
             foreach(StatusEffect statusEffect in effects)
             {
-                if (statusEffect is StatusEffectManager.Data.TalentEffect) continue;
+                if (!StatusEffectManager.IsClassEffect(statusEffect.name)) continue;
                 stringBuilder.Append("<color=orange>" + Localization.instance.Localize(statusEffect.m_name) + "</color>\n");
                 stringBuilder.Append(Localization.instance.Localize(statusEffect.GetTooltipString()));
                 stringBuilder.Append("\n\n");
             }
 
-            Player.m_localPlayer.GetGuardianPowerHUD(out var se, out float _);
+            Player.m_localPlayer.GetGuardianPowerHUD(out StatusEffect se, out float _);
             if (se)
             {
                 stringBuilder.Append("<color=yellow>" + Localization.instance.Localize("$inventory_selectedgp") + "</color>\n");

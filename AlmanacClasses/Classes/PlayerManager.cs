@@ -1,96 +1,158 @@
 ﻿using System;
 using System.Collections.Generic;
-using AlmanacClasses.Data;
+using System.Linq;
 using AlmanacClasses.Managers;
 using AlmanacClasses.UI;
-using BepInEx.Configuration;
 using UnityEngine;
 using YamlDotNet.Serialization;
 
 namespace AlmanacClasses.Classes;
 
+[Serializable]
+public class PlayerData
+{
+    public int m_experience;
+    public Dictionary<string, int> m_boughtTalents = new();
+    public Dictionary<int, string> m_spellBook = new();
+}
+
+[Serializable]
+public class PlayerDataOld
+{
+    public int m_experience = 0;
+    public Dictionary<int, string> m_spellBook = new();
+    public HashSet<string> m_boughtTalents = new();
+    public int m_prestige = 1;
+    public int m_prestigePoints = 0;
+}
 public static class PlayerManager
 {
-    public static readonly string m_playerDataKey = "AlmanacClassesPlayerData";
+    private static readonly string m_oldKey = "AlmanacClassesPlayerData";
+    private static readonly string m_playerDataKey = "AlmanacClassesPlayerData_New";
     public static PlayerData m_tempPlayerData = new();
     public static readonly Dictionary<string, Talent> m_playerTalents = new();
     public static void InitPlayerData()
     {
         if (!Player.m_localPlayer) return;
-        if (!Player.m_localPlayer.m_customData.TryGetValue(m_playerDataKey, out string data))
+        IDeserializer deserializer = new DeserializerBuilder().Build();
+        try
         {
-            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Failed to get classes player data");
+            if (!Player.m_localPlayer.m_customData.TryGetValue(m_playerDataKey, out string data))
+            {
+                try
+                {
+                    if (Player.m_localPlayer.m_customData.TryGetValue(m_oldKey, out string old))
+                    {
+                        var oldData = deserializer.Deserialize<PlayerDataOld>(old);
+                        m_tempPlayerData.m_experience = oldData.m_experience;
+                        Player.m_localPlayer.m_customData.Remove(m_oldKey);
+                    }
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+            else
+            {
+                m_tempPlayerData = deserializer.Deserialize<PlayerData>(data);
+                AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Loaded classes data");
+            }
         }
-        else
+        catch
         {
-            IDeserializer deserializer = new DeserializerBuilder().Build();
-            m_tempPlayerData = deserializer.Deserialize<PlayerData>(data);
-            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Loaded classes data");
+            // ignored
         }
+    }
+
+    private static float m_updateTimer;
+    public static void UpdatePassiveEffects(float dt)
+    {
+        if (!Player.m_localPlayer) return;
+        m_updateTimer += dt;
+        if (m_updateTimer < 1f) return;
+        m_updateTimer = 0.0f;
+        AddPassiveStatusEffects(Player.m_localPlayer);
     }
 
     public static void AddPassiveStatusEffects(Player instance)
     {
         foreach (KeyValuePair<string, Talent> talent in m_playerTalents)
         {
-            if (talent.Value.m_triggerNow)
-            {
-                instance.GetSEMan().AddStatusEffect(talent.Value.m_statusEffect.name.GetStableHashCode());
-            }
+            if (talent.Value.m_type is not TalentType.Passive) continue;
+            if (talent.Value.m_statusEffectHash == 0) continue;
+            if (talent.Key == "Survivor") continue;
+            instance.GetSEMan().AddStatusEffect(talent.Value.m_statusEffectHash);
         }
+
+        instance.GetSEMan().AddStatusEffect("SE_Characteristic".GetStableHashCode());
     }
 
     public static void InitPlayerTalents()
     {
         AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Loaded saved player talents");
-        foreach (string talent in m_tempPlayerData.m_boughtTalents)
+        foreach (KeyValuePair<int, string> kvp in m_tempPlayerData.m_spellBook)
         {
-            if (!TalentManager.AllTalents.TryGetValue(talent, out Talent match)) continue;
+            if (!TalentManager.m_talents.TryGetValue(kvp.Value, out Talent match)) continue;
             if (match == null) continue;
-            m_playerTalents[talent] = match;
-            if (match.m_isAbility)
-            {
-                SpellBook.m_abilities.Add(new AbilityData(){m_data = match});
-            }
+            SpellBook.m_abilities[kvp.Key] = new AbilityData() { m_data = match };
         }
-        CharacteristicManager.ReloadCharacteristics();
+
+        foreach (KeyValuePair<string, int> kvp in m_tempPlayerData.m_boughtTalents)
+        {
+            if (!TalentManager.m_talents.TryGetValue(kvp.Key, out Talent match)) continue;
+            if (match == null) continue;
+            match.SetLevel(kvp.Value);
+            m_playerTalents[kvp.Key] = match;
+            if (match.m_type is not TalentType.Characteristic) continue;
+            if (match.m_characteristic == null) continue;
+            CharacteristicManager.AddCharacteristic(match.GetCharacteristicType(), match.GetCharacteristic(match.GetLevel()));
+        }
         CheckAltTalents();
     }
 
     private static void CheckAltTalents()
     {
-        if (m_playerTalents.ContainsKey("MonkeyWrench") && m_playerTalents.ContainsKey("BattleFury"))
+        foreach (var kvp in TalentManager.m_altTalentsByButton)
         {
-            if (AlmanacClassesPlugin._UseBattleFury.Value is AlmanacClassesPlugin.Toggle.On)
-            {
-                m_playerTalents.Remove("MonkeyWrench");
-                m_tempPlayerData.m_boughtTalents.Remove("MonkeyWrench");
-            }
-            else
-            {
-                m_playerTalents.Remove("BattleFury");
-                m_tempPlayerData.m_boughtTalents.Remove("BattleFury");
-            }
-        }
+            Talent talent = kvp.Value;
+            string button = kvp.Key;
 
-        if (m_playerTalents.ContainsKey("DualWield") && m_playerTalents.ContainsKey("Survivor"))
+            if (talent.m_alt?.Value is AlmanacClassesPlugin.Toggle.Off) continue;
+
+            RemoveOriginalTalent(button);
+            
+            m_playerTalents[talent.m_key] = talent;
+            
+            LoadUI.ChangeButton(talent);
+        }
+    }
+
+    private static void RemoveOriginalTalent(string button)
+    {
+        Talent? original = m_playerTalents.Values.ToList().Find(x => x.m_button == button);
+        if (original == null) return;
+        m_playerTalents.Remove(original.m_key);
+        if (m_tempPlayerData.m_boughtTalents.ContainsKey(original.m_key))
         {
-            if (AlmanacClassesPlugin._UseSurvivor.Value is AlmanacClassesPlugin.Toggle.On)
-            {
-                m_playerTalents.Remove("DualWield");
-                m_tempPlayerData.m_boughtTalents.Remove("DualWield");
-            }
-            else
-            {
-                m_playerTalents.Remove("Survivor");
-                m_tempPlayerData.m_boughtTalents.Remove("Survivor");
-            }
+            m_tempPlayerData.m_boughtTalents.Remove(original.m_key);
+        }
+    }
+
+    private static void SaveSpellBook()
+    {
+        foreach (var kvp in SpellBook.m_abilities)
+        {
+            m_tempPlayerData.m_spellBook[kvp.Key] = kvp.Value.m_data.m_key;
         }
     }
 
     public static void SavePlayerData()
     {
         if (!Player.m_localPlayer) return;
+
+        SaveSpellBook();
+        
         ISerializer serializer = new SerializerBuilder().Build();
         string data = serializer.Serialize(m_tempPlayerData);
         Player.m_localPlayer.m_customData[m_playerDataKey] = data;
@@ -98,65 +160,54 @@ public static class PlayerManager
 
     public static int GetTotalAddedHealth()
     {
-        int output = CharacteristicManager.GetCharacteristic(Characteristic.Constitution) / AlmanacClassesPlugin._HealthRatio.Value;
-        output = Mathf.Clamp(output, 0, AlmanacClassesPlugin._MaxHealth.Value);
-        List<StatusEffect> effects = Player.m_localPlayer.GetSEMan().GetStatusEffects().FindAll(x => x is StatusEffectManager.Data.TalentEffect);
-        foreach (StatusEffect? effect in effects)
+        int output = (int)(CharacteristicManager.GetCharacteristic(Characteristic.Constitution) /
+                      AlmanacClassesPlugin._HealthRatio.Value);
+        foreach (var status in Player.m_localPlayer.GetSEMan().GetStatusEffects())
         {
-            StatusEffectManager.Data.TalentEffect? talentEffect = effect as StatusEffectManager.Data.TalentEffect;
-            if (talentEffect == null) continue;
-            if (!talentEffect.data.talent.m_modifiers.TryGetValue(StatusEffectData.Modifier.Vitality, out ConfigEntry<float> config)) continue;
-            
-            output += (int)config.Value * talentEffect.data.talent.m_level;
+            if (!StatusEffectManager.IsClassEffect(status.name)) continue;
+            if (!TalentManager.m_talentsByStatusEffect.TryGetValue(status.m_nameHash, out Talent talent)) continue;
+            if (talent.m_values == null) continue;
+            output += (int)(talent.m_values.m_health?.Value ?? 0f);
         }
-        
         return output;
     }
 
     public static int GetTotalAddedStamina()
     {
-        int output = CharacteristicManager.GetCharacteristic(Characteristic.Dexterity) / AlmanacClassesPlugin._StaminaRatio.Value;
-        output = Mathf.Clamp(output, 0, AlmanacClassesPlugin._MaxStamina.Value);
-        List<StatusEffect> effects = Player.m_localPlayer.GetSEMan().GetStatusEffects().FindAll(x => x is StatusEffectManager.Data.TalentEffect);
-        foreach (StatusEffect? effect in effects)
-        {
-            StatusEffectManager.Data.TalentEffect? talentEffect = effect as StatusEffectManager.Data.TalentEffect;
-            if (talentEffect == null) continue;
-            if (!talentEffect.data.talent.m_modifiers.TryGetValue(StatusEffectData.Modifier.Stamina, out ConfigEntry<float> config)) continue;
-            
-            output += (int)config.Value * talentEffect.data.talent.m_level;
-        }
+        int output = (int)(CharacteristicManager.GetCharacteristic(Characteristic.Dexterity) /
+                      AlmanacClassesPlugin._StaminaRatio.Value);
 
+        foreach (var status in Player.m_localPlayer.GetSEMan().GetStatusEffects())
+        {
+            if (!StatusEffectManager.IsClassEffect(status.name)) continue;
+            if (!TalentManager.m_talentsByStatusEffect.TryGetValue(status.m_nameHash, out Talent talent)) continue;
+            if (talent.m_values == null) continue;
+            output += (int)(talent.m_values.m_stamina?.Value ?? 0f);
+        }
         return output;
     }
 
     public static int GetTotalAddedEitr()
     {
-        int output = CharacteristicManager.GetCharacteristic(Characteristic.Wisdom) / AlmanacClassesPlugin._EitrRatio.Value;
-        output = Mathf.Clamp(output, 0, AlmanacClassesPlugin._MaxEitr.Value);
-        List<StatusEffect> effects = Player.m_localPlayer.GetSEMan().GetStatusEffects().FindAll(x => x is StatusEffectManager.Data.TalentEffect);
-        foreach (StatusEffect? effect in effects)
+        int output = (int)(CharacteristicManager.GetCharacteristic(Characteristic.Wisdom) /
+                      AlmanacClassesPlugin._EitrRatio.Value);
+
+        foreach (var status in Player.m_localPlayer.GetSEMan().GetStatusEffects())
         {
-            StatusEffectManager.Data.TalentEffect? talentEffect = effect as StatusEffectManager.Data.TalentEffect;
-            if (talentEffect == null) continue;
-            if (!talentEffect.data.talent.m_modifiers.TryGetValue(StatusEffectData.Modifier.Eitr, out ConfigEntry<float> config)) continue;
-            
-            output += (int)config.Value * talentEffect.data.talent.m_level;
+            if (!StatusEffectManager.IsClassEffect(status.name)) continue;
+            if (!TalentManager.m_talentsByStatusEffect.TryGetValue(status.m_nameHash, out Talent talent)) continue;
+            if (talent.m_values == null) continue;
+            output += (int)(talent.m_values.m_eitr?.Value ?? 0f);
         }
 
         return output;
     }
 
-    public static int GetDamageRatio(Characteristic type)
-    {
-        int characteristic = CharacteristicManager.GetCharacteristic(type);
-        int output = characteristic / AlmanacClassesPlugin._DamageRatio.Value;
-        return 1 + output / 100;
-    }
-    
-    public static int GetPlayerLevel(int experience) => (int)Math.Pow(experience / 100f, 0.5f);
+    public static int GetPlayerLevel(int experience) => Mathf.Clamp((int)Math.Pow(experience / 100f, 0.5f), 1, AlmanacClassesPlugin._MaxLevel.Value);
     public static int GetRequiredExperience(int level) => (int)Math.Pow(level, 2) * 100;
 
     public static void AddExperience(int amount) => m_tempPlayerData.m_experience += amount;
     public static int GetExperience() => m_tempPlayerData.m_experience;
+
+    public static float CalculateModifier(float input, int level) => input + (input - 1) * (level - 1);
 }

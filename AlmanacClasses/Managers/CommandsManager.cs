@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using AlmanacClasses.Classes;
+using AlmanacClasses.Classes.Abilities.Ranger;
 using AlmanacClasses.Data;
 using AlmanacClasses.UI;
 using HarmonyLib;
@@ -13,7 +14,10 @@ public static class CommandsManager
     [HarmonyPatch(typeof(Terminal), nameof(Terminal.Awake))]
     private static class Terminal_Awake_Patch
     {
-        private static void Postfix() => AddCommands();
+        private static void Postfix()
+        {
+            AddCommands();
+        }
     }
 
     private static void AddCommands()
@@ -25,15 +29,13 @@ public static class CommandsManager
             {
                 case "reset":
                     PlayerManager.m_tempPlayerData.m_experience = 0;
-                    PlayerManager.m_tempPlayerData.m_prestige = 1;
                     PlayerManager.m_tempPlayerData.m_boughtTalents.Clear();
-                    PlayerManager.m_tempPlayerData.m_prestigePoints = 0;
                     PlayerManager.m_playerTalents.Clear();
                     CharacteristicManager.m_tempCharacteristics = new(DefaultData.defaultCharacteristics);
                     SpellBook.DestroyElements();
                     SpellBook.m_abilities.Clear();
                     LoadUI.ResetTalents(true);
-                    TalentManager.InitTalents(1);
+                    TalentManager.InitializeTalents();
                     AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo("Reset all classes data");
                     break;
                 
@@ -45,10 +47,10 @@ public static class CommandsManager
                     foreach(string text in info) AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo(text);
                     break;
             }
-
+    
             return true;
         }),optionsFetcher:()=>new(){"help", "reset"});
-
+    
         Terminal.ConsoleCommand WriteFiles = new("talents_write", "Almanac Class System File Commands", (Terminal.ConsoleEventFailable)(args =>
         {
             if (args.Length < 2) return false;
@@ -70,7 +72,7 @@ public static class CommandsManager
             }
             return true;
         }),optionsFetcher:()=>new(){"help","experience"});
-
+    
         Terminal.ConsoleCommand AdminCommands = new("talents_test", "Almanac Class System Admin only commands",
             (Terminal.ConsoleEventFailable)(args =>
             {
@@ -97,7 +99,7 @@ public static class CommandsManager
                                 AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo("Failed to get local player z sync animation");
                                 return false;
                             }
-
+    
                             RuntimeAnimatorController? controller = zSyncAnimation.m_animator.runtimeAnimatorController;
                             foreach (AnimationClip? animation in controller.animationClips)
                             {
@@ -126,10 +128,10 @@ public static class CommandsManager
                         if (!creature) return false;
                         if (!int.TryParse(args[3], out int level)) return false;
                         if (!creature.GetComponent<MonsterAI>()) return false;
-                        Classes.Abilities.SpawnSystem.TriggerHunterSpawn(creature, level);
+                        RangerSpawn.TriggerHunterSpawn(creature, level);
                         break;
                 }
-
+    
                 return true;
             }), optionsFetcher: ()=>new List<string>()
             {
