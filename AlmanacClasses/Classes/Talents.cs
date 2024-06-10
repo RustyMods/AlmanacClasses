@@ -1647,7 +1647,8 @@ public static class TalentManager
                 m_cost = _Plugin.config("Bard - Song of Attrition", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_damages = new Talent.TalentDamages()
                 {
-                    m_spirit = _Plugin.config("Bard - Song of Attrition", "Spirit Damage", 10f, new ConfigDescription("Set the damages", new AcceptableValueRange<float>(0f, 1000f)))
+                    m_spirit = _Plugin.config("Bard - Song of Attrition", "Spirit Damage", 10f, new ConfigDescription("Set the damages", new AcceptableValueRange<float>(0f, 1000f))),
+                    m_slash = _Plugin.config("Bard - Song of Attrition", "Slash Damage", 1f, new ConfigDescription("Set the damages", new AcceptableValueRange<float>(0f, 1000f)))
                 },
                 m_length = _Plugin.config("Bard - Song of Attrition", "Length", 60f, new ConfigDescription("Set the length of effect", new AcceptableValueRange<float>(1f, 1000f))),
                 m_sprite = SpriteManager.SongOfSpirit_Icon,

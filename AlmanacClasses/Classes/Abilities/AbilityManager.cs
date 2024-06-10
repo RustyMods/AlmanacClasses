@@ -171,8 +171,7 @@ public static class AbilityManager
                 RangerTrap.TriggerSpawnTrap(damages, talent.GetLength(talent.GetLevel()));
                 break;
             case "TriggerHeal":
-                float amount = 200f;
-                if (!ShamanHeal.TriggerHeal(amount)) return false;
+                if (!ShamanHeal.TriggerHeal(talent.GetHealAmount(talent.GetLevel()))) return false;
                 break;
             case "TriggerIceBreath":
                 IceBreath.TriggerIceBreath(damages);

@@ -8,7 +8,6 @@ public static class ShamanSpawn
     {
         if (!creature) return;
         if (!creature.GetComponent<Humanoid>()) return;
-        SpawnSystem.StartSpawnAnimation();
         AlmanacClassesPlugin._Plugin.StartCoroutine(SpawnSystem.DelayedMultipleSpawn(creature, "Friendly " + creature.name.Replace("_", string.Empty), talent.GetLevel(), talent.GetLength(talent.GetLevel())));
     }
 }

@@ -922,7 +922,7 @@ public static class LoadUI
             {
                 PlayerManager.m_playerTalents.Remove(alt.m_key);
             }
-            RemapButton(talent.m_button, ButtonFillLineMap[button], 1f, talent.m_key);
+            RemapButton(talent.m_button, ButtonFillLineMap[button], line, talent.m_key);
         }
         else
         {
