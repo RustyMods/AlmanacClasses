@@ -343,6 +343,8 @@ public class Talent
                 case Characteristic.Dexterity:
                     stringBuilder.Append(
                         $"$almanac_current: <color=orange>+{(int)CharacteristicManager.GetStaminaRatio()}</color> $se_stamina\n");
+                    stringBuilder.Append(
+                        $"$almanac_attackspeedmod: <color=orange>+{FormatPercentage(CharacteristicManager.GetDexterityModifier())}%</color>");
                     break;
                 case Characteristic.Wisdom:
                     stringBuilder.Append(
@@ -484,7 +486,7 @@ public class Talent
             {
                 case Characteristic.Constitution:
                     stringBuilder.Append(
-                        $"$almanac_current: <color=orange>+{CharacteristicManager.GetHealthRatio()}</color> $se_health\n");
+                        $"$almanac_current: <color=orange>+{(int)CharacteristicManager.GetHealthRatio()}</color> $se_health\n");
                     break;
                 case Characteristic.Strength:
                     stringBuilder.Append($"$se_max_carryweight: <color=orange>+ {GetCharacteristic(GetLevel())}</color> --> <color={m_prestigeColor}>+ {GetCharacteristic(GetLevel() + 1)}</color>\n");
@@ -497,11 +499,13 @@ public class Talent
                     break;
                 case Characteristic.Dexterity:
                     stringBuilder.Append(
-                        $"$almanac_current: <color=orange>+{CharacteristicManager.GetStaminaRatio()}</color> $se_stamina\n");
+                        $"$almanac_current: <color=orange>+{(int)CharacteristicManager.GetStaminaRatio()}</color> $se_stamina\n");
+                    stringBuilder.Append(
+                        $"$almanac_attackspeedmod: <color=orange>+{FormatPercentage(CharacteristicManager.GetDexterityModifier())}%</color>");
                     break;
                 case Characteristic.Wisdom:
                     stringBuilder.Append(
-                        $"$almanac_current: <color=orange>+{CharacteristicManager.GetEitrRatio()}</color> $se_eitr");
+                        $"$almanac_current: <color=orange>+{(int)CharacteristicManager.GetEitrRatio()}</color> $se_eitr");
                     break;
             }
         }

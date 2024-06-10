@@ -55,6 +55,13 @@ namespace AlmanacClasses
             Assembly assembly = Assembly.GetExecutingAssembly();
             _harmony.PatchAll(assembly);
             SetupWatcher();
+            
+            AnimationSpeedManager.Add((character, speed) =>
+            {
+                if (character is not Player player || !player.InAttack() || player.m_currentAttack is null)
+                    return speed;
+                return speed * CharacteristicManager.GetDexterityModifier();
+            });
         }
 
         public void Update()
@@ -133,6 +140,7 @@ namespace AlmanacClasses
         public static ConfigEntry<float> _HealthRatio = null!;
         public static ConfigEntry<float> _StaminaRatio = null!;
         public static ConfigEntry<float> _DamageRatio = null!;
+        public static ConfigEntry<float> _SpeedRatio = null!;
 
         public static ConfigEntry<int> _StatsCost = null!;
 
@@ -159,8 +167,11 @@ namespace AlmanacClasses
             _EitrRatio = config("4 - Characteristics", "1. Eitr Ratio", 2f, new ConfigDescription("Set the amount of wisdom points required for 1 eitr", new AcceptableValueRange<float>(1f, 10f)));
             _HealthRatio = config("4 - Characteristics", "3. Health Ratio", 1f, new ConfigDescription("Set the amount of constitution points for 1 health", new AcceptableValueRange<float>(1f, 10f)));
             _StaminaRatio = config("4 - Characteristics", "5. Stamina Ratio", 3f, new ConfigDescription("Set the amount of dexterity points for 1 stamina", new AcceptableValueRange<float>(1f, 10f)));
-            _DamageRatio = config("4 - Characteristics", "6. Damage Ratio", 10f, new ConfigDescription("Set the ratio of strength, dexterity, intelligence to increased damage output of, melee, ranged and magic damage", new AcceptableValueRange<float>(0f, 20f)));
-            _StatsCost = config("4 - Characteristics", "7. Purchase Cost", 3, new ConfigDescription("Set the cost to unlock talent", new AcceptableValueRange<int>(1, 10)));
+            _DamageRatio = config("4 - Characteristics", "6. Damage Ratio", 10f, new ConfigDescription("Set the ratio of strength, intelligence to increased damage output of, melee and magic damage", new AcceptableValueRange<float>(0f, 20f)));
+            _SpeedRatio = config("4 - Characteristics", "7. Attack Speed Ratio", 3f,
+                new ConfigDescription("Set the ratio of dexterity to increase attack speed",
+                    new AcceptableValueRange<float>(1f, 10f)));
+            _StatsCost = config("4 - Characteristics", "8. Purchase Cost", 3, new ConfigDescription("Set the cost to unlock talent", new AcceptableValueRange<int>(1, 10)));
         }
         private void InitSettingsConfigs()
         {

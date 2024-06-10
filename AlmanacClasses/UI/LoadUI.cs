@@ -36,6 +36,7 @@ public static class LoadUI
     
     public static Text PrestigeText = null!;
     public static Text LevelText = null!;
+    public static Text ExperienceTitleText = null!;
     public static Text ExperienceText = null!;
     public static Text TalentPointsText = null!;
     public static Text TalentName = null!;
@@ -43,6 +44,7 @@ public static class LoadUI
     public static Text TalentCost = null!;
     public static Text ActivePassive = null!;
 
+    public static Text CharacteristicsTitleText = null!;
     public static Text ConstitutionText = null!;
     public static Text DexterityText = null!;
     public static Text IntelligenceText = null!;
@@ -251,6 +253,7 @@ public static class LoadUI
 
         PrestigeText = Utils.FindChild(SkillTree_UI.transform, "$text_prestige").GetComponent<Text>();
         LevelText = Utils.FindChild(SkillTree_UI.transform, "$text_level").GetComponent<Text>();
+        ExperienceTitleText = Utils.FindChild(SkillTree_UI.transform, "$text_experience_title").GetComponent<Text>();
         ExperienceText = Utils.FindChild(SkillTree_UI.transform, "$text_experience").GetComponent<Text>();
         TalentPointsText = Utils.FindChild(SkillTree_UI.transform, "$text_talent_points").GetComponent<Text>();
         TalentName = Utils.FindChild(SkillTree_UI.transform, "$text_name").GetComponent<Text>();
@@ -258,6 +261,7 @@ public static class LoadUI
         TalentCost = Utils.FindChild(SkillTree_UI.transform, "$text_cost").GetComponent<Text>();
         ActivePassive = Utils.FindChild(SkillTree_UI.transform, "$text_active_passive").GetComponent<Text>();
 
+        CharacteristicsTitleText = Utils.FindChild(SkillTree_UI.transform, "$text_stats_title").GetComponent<Text>();
         ConstitutionText = Utils.FindChild(SkillTree_UI.transform, "$text_constitution").GetComponent<Text>();
         DexterityText = Utils.FindChild(SkillTree_UI.transform, "$text_dexterity").GetComponent<Text>();
         IntelligenceText = Utils.FindChild(SkillTree_UI.transform, "$text_intelligence").GetComponent<Text>();

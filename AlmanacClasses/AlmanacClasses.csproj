@@ -66,6 +66,9 @@
         <Reference Include="0Harmony">
             <HintPath>$(BepInExPath)\core\0Harmony.dll</HintPath>
         </Reference>
+        <Reference Include="AnimationSpeedManager">
+          <HintPath>Libs\AnimationSpeedManager.dll</HintPath>
+        </Reference>
         <Reference Include="assembly_guiutils">
             <HintPath>$(PublicizedAssembliesPath)\assembly_guiutils_publicized.dll</HintPath>
         </Reference>
@@ -228,6 +231,7 @@
         <Content Include=".gitignore" />
         <Content Include="environment.props" />
         <Content Include="ILRepack.targets" />
+        <Content Include="Libs\AnimationSpeedManager.dll" />
         <Content Include="Libs\ServerSync.dll">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>

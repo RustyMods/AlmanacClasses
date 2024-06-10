@@ -25,6 +25,12 @@ public static class CharacteristicManager
     public static float GetEitrRatio() => GetCharacteristic(Characteristic.Wisdom) / AlmanacClassesPlugin._EitrRatio.Value;
     public static float GetStrengthModifier() => GetDamageRatio(Characteristic.Strength);
     public static float GetIntelligenceModifier() => GetDamageRatio(Characteristic.Intelligence);
+    public static float GetDexterityModifier()
+    {
+        int characteristic = GetCharacteristic(Characteristic.Dexterity);
+        float output = characteristic / AlmanacClassesPlugin._SpeedRatio.Value;
+        return 1 + output / 100f;
+    }
     private static float GetDamageRatio(Characteristic type)
     {
         int characteristic = GetCharacteristic(type);
