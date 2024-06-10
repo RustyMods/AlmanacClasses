@@ -1,14 +1,22 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using AlmanacClasses.Data;
 
 namespace AlmanacClasses.Classes;
 
 public static class CharacteristicManager
 {
-    public static Dictionary<Characteristic, int> m_tempCharacteristics = new(DefaultData.defaultCharacteristics);
-    public static void ResetCharacteristics() => m_tempCharacteristics = new Dictionary<Characteristic, int>(DefaultData.defaultCharacteristics);
+    private static readonly Dictionary<Characteristic, int> m_defaults = new()
+    {
+        [Characteristic.None] = 0,
+        [Characteristic.Constitution] = 0,
+        [Characteristic.Intelligence] = 0,
+        [Characteristic.Strength] = 0,
+        [Characteristic.Dexterity] = 0,
+        [Characteristic.Wisdom] = 0,
+    };
+    public static Dictionary<Characteristic, int> m_tempCharacteristics = new(m_defaults);
+    public static void ResetCharacteristics() => m_tempCharacteristics = new Dictionary<Characteristic, int>(m_defaults);
     public static void AddCharacteristic(Characteristic type, int value) => m_tempCharacteristics[type] += value;
     public static void UpdateCharacteristics()
     {
@@ -18,6 +26,8 @@ public static class CharacteristicManager
             AddCharacteristic(kvp.Value.GetCharacteristicType(), kvp.Value.GetCharacteristic(kvp.Value.GetLevel()));
         }
     }
+
+    public static string GetCharacteristicKey(Characteristic type) => $"$almanac_{type.ToString().ToLower()}";
 
     public static string GetTooltip()
     {

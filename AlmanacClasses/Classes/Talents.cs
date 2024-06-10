@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using AlmanacClasses.Data;
 using AlmanacClasses.FileSystem;
 using AlmanacClasses.LoadAssets;
 using AlmanacClasses.Managers;
@@ -161,7 +160,7 @@ public class Talent
         if (m_type is TalentType.Characteristic)
         {
             if (m_characteristic == null) return stringBuilder.ToString();
-            string key = DefaultData.LocalizeCharacteristics[GetCharacteristicType()];
+            string key = CharacteristicManager.GetCharacteristicKey(GetCharacteristicType());
             stringBuilder.Append($"${GetCharacteristicType().ToString().ToLower()}_desc\n");
             stringBuilder.Append($"+ <color=orange>{GetCharacteristic(GetLevel())} {key}</color>\n\n");
             switch (m_characteristic.m_type)
@@ -343,7 +342,7 @@ public class Talent
         if (m_type is TalentType.Characteristic)
         {
             if (m_characteristic == null) return stringBuilder.ToString();
-            string key = DefaultData.LocalizeCharacteristics[GetCharacteristicType()];
+            string key = CharacteristicManager.GetCharacteristicKey(GetCharacteristicType());
             stringBuilder.Append($"${GetCharacteristicType().ToString().ToLower()}_desc\n");
             stringBuilder.Append($"+ <color=orange>{GetCharacteristic(GetLevel())}</color> --> <color={m_prestigeColor}>{GetCharacteristic(GetLevel() + 1)}</color> {key}\n\n");
             switch (m_characteristic.m_type)

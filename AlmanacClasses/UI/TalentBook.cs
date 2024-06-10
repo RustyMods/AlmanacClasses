@@ -1,7 +1,4 @@
-﻿using System;
-using AlmanacClasses.Classes;
-using AlmanacClasses.Data;
-using AlmanacClasses.Managers;
+﻿using AlmanacClasses.Classes;
 using UnityEngine;
 
 namespace AlmanacClasses.UI;

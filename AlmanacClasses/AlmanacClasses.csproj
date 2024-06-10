@@ -181,8 +181,6 @@
         <Compile Include="Classes\ExperienceManager.cs" />
         <Compile Include="Classes\PlayerManager.cs" />
         <Compile Include="Classes\Talents.cs" />
-        <Compile Include="Data\DefaultData.cs" />
-        <Compile Include="Data\StatusEffectData.cs" />
         <Compile Include="FileSystem\FilePaths.cs" />
         <Compile Include="FileSystem\Watcher.cs" />
         <Compile Include="LoadAssets\AltarEffectFade.cs" />

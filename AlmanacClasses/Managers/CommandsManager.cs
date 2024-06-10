@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using AlmanacClasses.Classes;
 using AlmanacClasses.Classes.Abilities.Ranger;
-using AlmanacClasses.Data;
 using AlmanacClasses.UI;
 using HarmonyLib;
 using UnityEngine;
@@ -28,7 +26,7 @@ public static class CommandsManager
                     PlayerManager.m_tempPlayerData.m_experience = 0;
                     PlayerManager.m_tempPlayerData.m_boughtTalents.Clear();
                     PlayerManager.m_playerTalents.Clear();
-                    CharacteristicManager.m_tempCharacteristics = new(DefaultData.defaultCharacteristics);
+                    CharacteristicManager.ResetCharacteristics();
                     SpellBook.DestroyElements();
                     SpellBook.m_abilities.Clear();
                     LoadUI.ResetTalents(true);

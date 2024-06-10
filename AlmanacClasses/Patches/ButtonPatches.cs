@@ -1,6 +1,4 @@
-﻿using System.Text;
-using AlmanacClasses.Classes;
-using AlmanacClasses.Data;
+﻿using AlmanacClasses.Classes;
 using AlmanacClasses.UI;
 using HarmonyLib;
 using UnityEngine.UI;

@@ -1,7 +1,4 @@
-﻿using AlmanacClasses.Classes;
-using AlmanacClasses.Data;
-using HarmonyLib;
-using UnityEngine;
+﻿using HarmonyLib;
 
 namespace AlmanacClasses.Patches;
 

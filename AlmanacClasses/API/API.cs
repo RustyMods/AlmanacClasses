@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using AlmanacClasses.Classes;
-using AlmanacClasses.Data;
 
 namespace AlmanacClasses.API;
 
@@ -15,23 +14,19 @@ public static class ClassesAPI
     {
         API_AddExperience?.Invoke(null, new object[] { amount });
     }
-
     public static int GetLevel()
     {
         return (int)(API_GetLevel?.Invoke(null, null) ?? 0);
     }
-
     public static int GetCharacteristic(string type)
     {
         return (int)(API_GetCharacteristic?.Invoke(null, new object[] { type }) ?? 0);
     }
-    
     public static int GetConstitution() => GetCharacteristic("Constitution");
     public static int GetDexterity() => GetCharacteristic("Dexterity");
     public static int GetStrength() => GetCharacteristic("Strength");
     public static int GetIntelligence() => GetCharacteristic("Intelligence");
     public static int GetWisdom() => GetCharacteristic("Wisdom");
-
     public static int GetPrestigeLevel()
     {
         return (int)(API_GetPrestigeLevel?.Invoke(null, null) ?? 1);

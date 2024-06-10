@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using AlmanacClasses.Classes;
-using AlmanacClasses.Data;
 using AlmanacClasses.LoadAssets;
 using AlmanacClasses.Managers;
 using BepInEx.Configuration;
