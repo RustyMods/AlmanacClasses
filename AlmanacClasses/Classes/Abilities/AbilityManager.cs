@@ -115,7 +115,7 @@ public static class AbilityManager
         m_castedSpells.Add(ability.m_key);
         m_cooldownMap[ability.m_key] = 1f;
         float count = 0;
-        float cooldown = ability.GetCooldown();
+        float cooldown = ability.GetCooldown(ability.GetLevel());
         while (count < cooldown)
         {
             m_cooldownMap[ability.m_key] -= 1f / cooldown;
@@ -168,7 +168,7 @@ public static class AbilityManager
                 ShamanSpawn.TriggerShamanSpawn(creature, talent);
                 break;
             case "TriggerSpawnTrap":
-                RangerTrap.TriggerSpawnTrap(damages, talent.GetLength());
+                RangerTrap.TriggerSpawnTrap(damages, talent.GetLength(talent.GetLevel()));
                 break;
             case "TriggerHeal":
                 float amount = 200f;

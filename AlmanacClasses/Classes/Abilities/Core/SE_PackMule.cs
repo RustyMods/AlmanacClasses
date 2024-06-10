@@ -7,7 +7,6 @@ public class SE_PackMule : StatusEffect
     public override void Setup(Character character)
     {
         if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
-        m_ttl = talent.GetLength();
         m_startEffects = talent.GetEffectList();
         m_talent = talent;
         base.Setup(character);

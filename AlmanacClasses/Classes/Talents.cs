@@ -21,33 +21,37 @@ public class Talent
     public string m_ability = "";
     public string m_animation = "";
     public int m_level = 1;
+    public ConfigEntry<Toggle>? m_alt;
+    public ConfigEntry<int>? m_cap;
+    public TalentType m_type;
+    public ConfigEntry<Toggle>? m_effectsEnabled;
+    public EffectList? m_startEffects;
+    public Sprite? m_sprite;
+    public ConfigEntry<int>? m_cost;
+    public ConfigEntry<float>? m_cooldown;
+    public ConfigEntry<float>? m_length;
+    public ConfigEntry<float>? m_eitrCost;
+    public ConfigEntry<float>? m_staminaCost;
+    public ConfigEntry<float>? m_healthCost;
+    public TalentDamages? m_damages;
+    public TalentValues? m_values;
+    public TalentCreatures? m_creatures;
+    public ConfigEntry<string>? m_creature;
+    public ResistancePercentages? m_resistances;
     public int GetLevel() => m_level;
     public void AddLevel() => ++m_level;
-    public ConfigEntry<Toggle>? m_alt;
-    public ConfigEntry<int>? m_cap = null!;
     public int GetPrestigeCap() => m_cap?.Value ?? int.MaxValue;
     public void SetLevel(int level) => m_level = level;
-    public TalentType m_type;
     public string GetTalentType() => $"$almanac_{m_type.ToString().ToLower()}";
-    public ConfigEntry<Toggle>? m_effectsEnabled;
     public bool UseEffects() => m_effectsEnabled == null || m_effectsEnabled.Value is Toggle.On;
-    public EffectList? m_startEffects;
     public EffectList GetEffectList() => UseEffects() ?  m_startEffects ?? new EffectList() : new EffectList();
-    public Sprite? m_sprite;
     public Sprite? GetSprite() => m_sprite;
-    public ConfigEntry<int>? m_cost;
     public int GetCost() => m_cost?.Value ?? _StatsCost.Value;
-    public ConfigEntry<float>? m_cooldown;
-    public float GetCooldown() => m_cooldown?.Value ?? 0f;
-    public ConfigEntry<float>? m_length;
-    public float GetLength() => m_length?.Value ?? 0f;
-    public ConfigEntry<float>? m_eitrCost;
+    public float GetCooldown(int level) => Mathf.Clamp((m_cooldown?.Value ?? 0f) - (level - 1) * 5f, 1f, float.MaxValue);
+    public float GetLength(int level) => (m_length?.Value ?? 0f) + (level - 1) * 5f;
     public float GetEitrCost() => m_eitrCost?.Value ?? 0f;
-    public ConfigEntry<float>? m_staminaCost;
     public float GetStaminaCost() => m_staminaCost?.Value ?? 0f;
-    public ConfigEntry<float>? m_healthCost;
     public float GetHealthCost() => m_healthCost?.Value ?? 0f;
-    public TalentDamages? m_damages;
     public HitData.DamageTypes GetDamages(int level)
     {
         HitData.DamageTypes damages = new HitData.DamageTypes();
@@ -65,7 +69,6 @@ public class Talent
         damages.Modify(level);
         return damages;
     }
-    public TalentValues? m_values;
     public float GetHealAmount(int level) => (m_values == null) ? 0f : (m_values.m_heal?.Value ?? 0f) * level;
     public float GetHealth(int level) => m_values == null ? 0f : (m_values.m_health?.Value ?? 0f) * level;
     public float GetStamina(int level) => m_values == null ? 0f : (m_values.m_stamina?.Value ?? 0f) * level;
@@ -89,19 +92,22 @@ public class Talent
     public float GetAttackSpeedReduction(int level) => m_values == null ? 1f : Mathf.Clamp01(1 - ((m_values.m_attackSpeedReduction?.Value ?? 1f) - 0.1f * (level - 1)));
     public float GetAttackStaminaUsage(int level) => m_values == null ? 1f : Mathf.Clamp01(1 - ((m_values.m_attackStaminaUsage?.Value ?? 0f) + (level - 1) * 0.1f));
     public float GetSneakStaminaUsage(int level) => m_values == null ? 1f : Mathf.Clamp01(1 - ((m_values.m_sneakStaminaUsage?.Value ?? 0f) + (level - 1) * 0.1f));
-    
-    public TalentResistances? m_resistances;
-    public HitData.DamageModifiers GetDamageModifiers()
+    public float GetResistance(int level, HitData.DamageType type)
     {
-        if (m_resistances == null) return new HitData.DamageModifiers();
-        return new HitData.DamageModifiers
+        if (m_resistances == null) return 1f;
+        return Mathf.Clamp01(type switch
         {
-            m_blunt = m_resistances.m_blunt?.Value ?? HitData.DamageModifier.Normal,
-            m_pierce = m_resistances.m_pierce?.Value ?? HitData.DamageModifier.Normal,
-            m_slash = m_resistances.m_slash?.Value ?? HitData.DamageModifier.Normal,
-        };
+            HitData.DamageType.Blunt => (m_resistances.m_blunt?.Value ?? 1f) - (level - 1) * 0.05f,
+            HitData.DamageType.Slash => (m_resistances.m_slash?.Value ?? 1f) - (level - 1) * 0.05f,
+            HitData.DamageType.Pierce => (m_resistances.m_pierce?.Value ?? 1f) - (level - 1) * 0.05f,
+            HitData.DamageType.Fire => (m_resistances.m_fire?.Value ?? 1f) - (level - 1) * 0.05f,
+            HitData.DamageType.Frost => (m_resistances.m_frost?.Value ?? 1f) - (level - 1) * 0.05f,
+            HitData.DamageType.Lightning => (m_resistances.m_lightning?.Value ?? 1f) - (level - 1) * 0.05f,
+            HitData.DamageType.Poison => (m_resistances.m_poison?.Value ?? 1f) - (level - 1) * 0.05f,
+            HitData.DamageType.Spirit => (m_resistances.m_spirit?.Value ?? 1f) - (level - 1) * 0.05f,
+            _ => 1f
+        });
     }
-    public TalentCreatures? m_creatures;
     public GameObject? GetCreatures(Heightmap.Biome biome)
     {
         if (m_creatures == null) return null;
@@ -131,7 +137,6 @@ public class Talent
                 return null;
         }
     }
-    public ConfigEntry<string>? m_creature;
     public GameObject? GetCreature()
     {
         ZNetScene scene = ZNetScene.instance;
@@ -141,73 +146,11 @@ public class Talent
 
     public TalentCharacteristics? m_characteristic;
     public Characteristic GetCharacteristicType() => m_characteristic?.m_type ?? Characteristic.None;
-    public int GetCharacteristic(int level) => (m_characteristic?.m_amount ?? 0) * level;
-    public class TalentValues
-    {
-        public ConfigEntry<float>? m_heal;
-        public ConfigEntry<float>? m_absorb;
-        public ConfigEntry<float>? m_health;
-        public ConfigEntry<float>? m_stamina;
-        public ConfigEntry<float>? m_eitr;
-        public ConfigEntry<float>? m_eitrRegen;
-        public ConfigEntry<float>? m_healthRegen;
-        public ConfigEntry<float>? m_staminaRegen;
-        public ConfigEntry<int>? m_carryWeight;
-        public ConfigEntry<float>? m_modifyAttack;
-        public ConfigEntry<float>? m_speed;
-        public ConfigEntry<float>? m_bleed;
-        public ConfigEntry<float>? m_chance;
-        public ConfigEntry<float>? m_reflect;
-        public ConfigEntry<float>? m_comfort;
-        public ConfigEntry<float>? m_damageReduction;
-        public ConfigEntry<float>? m_foodModifier;
-        public ConfigEntry<float>? m_forageModifier;
-        public ConfigEntry<float>? m_speedReduction;
-        public ConfigEntry<float>? m_runStaminaDrain;
-        public ConfigEntry<float>? m_attackSpeedReduction;
-        public ConfigEntry<float>? m_attackStaminaUsage;
-        public ConfigEntry<float>? m_sneakStaminaUsage;
-    }
-    public class TalentCreatures
-    {
-        public ConfigEntry<string>? m_meadows;
-        public ConfigEntry<string>? m_blackforest;
-        public ConfigEntry<string>? m_swamp;
-        public ConfigEntry<string>? m_mountains;
-        public ConfigEntry<string>? m_plains;
-        public ConfigEntry<string>? m_mistlands;
-        public ConfigEntry<string>? m_ashlands;
-        public ConfigEntry<string>? m_deepnorth;
-        public ConfigEntry<string>? m_ocean;
-    }
-    public class TalentResistances
-    {
-        public ConfigEntry<HitData.DamageModifier>? m_blunt;
-        public ConfigEntry<HitData.DamageModifier>? m_slash;
-        public ConfigEntry<HitData.DamageModifier>? m_pierce;
-    }
-    public class TalentDamages
-    {
-        public ConfigEntry<float>? m_blunt;
-        public ConfigEntry<float>? m_pierce;
-        public ConfigEntry<float>? m_slash;
-        public ConfigEntry<float>? m_chop;
-        public ConfigEntry<float>? m_pickaxe;
-        public ConfigEntry<float>? m_fire;
-        public ConfigEntry<float>? m_frost;
-        public ConfigEntry<float>? m_lightning;
-        public ConfigEntry<float>? m_poison;
-        public ConfigEntry<float>? m_spirit;
-    }
-    public class TalentCharacteristics
-    {
-        public Characteristic m_type;
-        public int m_amount;
-    }
+    public int GetCharacteristic(int level) => (m_characteristic?.m_amount ?? 0) + (level - 1) * 5;
     public string GetName() => m_type is TalentType.Characteristic ? GetTalentType() : $"$talent_{m_key.ToLower()}";
-    public string GetDescription() => $"$talent_{m_key.ToLower()}_desc";
-    private float GetCreatureDespawnLength(int level) => m_creature == null ? 0f : GetLength() * level;
-    private float GetCreaturesDespawnLength(int level) => m_creatures == null ? 0f : GetLength() * level;
+    private string GetDescription() => $"$talent_{m_key.ToLower()}_desc";
+    private float GetCreatureLength(int level) => m_creature == null ? 0f : GetLength(level);
+    private float GetCreaturesLength(int level) => m_creatures == null ? 0f : GetLength(level);
     public string GetTooltip()
     {
         StringBuilder stringBuilder = new StringBuilder();
@@ -220,71 +163,85 @@ public class Talent
             switch (m_characteristic.m_type)
             {
                 case Characteristic.Constitution:
-                    stringBuilder.Append(
-                        $"$almanac_current: <color=orange>+{(int)CharacteristicManager.GetHealthRatio()}</color> $se_health\n");
+                    stringBuilder.Append($"$almanac_current: <color=orange>+{(int)CharacteristicManager.GetHealthRatio()}</color> $se_health\n");
                     break;
                 case Characteristic.Strength:
                     stringBuilder.Append($"$se_max_carryweight: <color=orange>+ {GetCharacteristic(GetLevel())}</color>\n");
-                    stringBuilder.Append(
-                        $"$almanac_current: <color=orange>+{FormatPercentage(CharacteristicManager.GetStrengthModifier())}%</color> $almanac_physical\n");
+                    stringBuilder.Append($"$almanac_current: <color=orange>+{FormatPercentage(CharacteristicManager.GetStrengthModifier())}%</color> $almanac_physical\n");
                     break;
                 case Characteristic.Intelligence:
-                    stringBuilder.Append(
-                        $"$almanac_current: <color=orange>+{FormatPercentage(CharacteristicManager.GetIntelligenceModifier())}%</color> $almanac_elemental\n");
+                    stringBuilder.Append($"$almanac_current: <color=orange>+{FormatPercentage(CharacteristicManager.GetIntelligenceModifier())}%</color> $almanac_elemental\n");
                     break;
                 case Characteristic.Dexterity:
-                    stringBuilder.Append(
-                        $"$almanac_current: <color=orange>+{(int)CharacteristicManager.GetStaminaRatio()}</color> $se_stamina\n");
-                    stringBuilder.Append(
-                        $"$almanac_attackspeedmod: <color=orange>+{FormatPercentage(CharacteristicManager.GetDexterityModifier())}%</color>");
+                    stringBuilder.Append($"$almanac_current: <color=orange>+{(int)CharacteristicManager.GetStaminaRatio()}</color> $se_stamina\n");
+                    stringBuilder.Append($"$almanac_attackspeedmod: <color=orange>+{FormatPercentage(CharacteristicManager.GetDexterityModifier())}%</color>");
                     break;
                 case Characteristic.Wisdom:
-                    stringBuilder.Append(
-                        $"$almanac_current: <color=orange>+{(int)CharacteristicManager.GetEitrRatio()}</color> $se_eitr");
+                    stringBuilder.Append($"$almanac_current: <color=orange>+{(int)CharacteristicManager.GetEitrRatio()}</color> $se_eitr");
                     break;
             }
         }
         else
         {
             stringBuilder.Append(GetDescription() + "\n\n");
-            if (m_cooldown != null)
-            {
-                stringBuilder.Append($"$almanac_cooldown: <color=orange>{GetCooldown()}</color>sec\n");
-            }
-
-            if (m_length != null)
-            {
-                stringBuilder.Append($"$almanac_duration: <color=orange>{GetLength()}</color>sec\n");
-            }
-
-            if (m_eitrCost is { Value: > 0 }) stringBuilder.Append($"$se_eitr $almanac_cost: <color=orange>{GetEitrCost()}</color>\n");
-            if (m_staminaCost is { Value: > 0 }) stringBuilder.Append($"$se_stamina $almanac_cost: <color=orange>{GetStaminaCost()}</color>\n");
-            if (m_healthCost is { Value: > 0 }) stringBuilder.Append($"$se_health $almanac_cost: <color=orange>{GetHealthCost()}</color>\n");
+            if (m_cooldown != null) 
+                stringBuilder.Append($"$almanac_cooldown: <color=orange>{GetCooldown(GetLevel())}</color>sec\n");
+            if (m_length != null) 
+                stringBuilder.Append($"$almanac_duration: <color=orange>{GetLength(GetLevel())}</color>sec\n");
+            if (m_eitrCost is { Value: > 0 }) 
+                stringBuilder.Append($"$se_eitr $almanac_cost: <color=orange>{GetEitrCost()}</color>\n");
+            if (m_staminaCost is { Value: > 0 }) 
+                stringBuilder.Append($"$se_stamina $almanac_cost: <color=orange>{GetStaminaCost()}</color>\n");
+            if (m_healthCost is { Value: > 0 }) 
+                stringBuilder.Append($"$se_health $almanac_cost: <color=orange>{GetHealthCost()}</color>\n");
             if (m_values != null)
             {
-                if (m_values.m_absorb is { Value: > 0 }) stringBuilder.Append($"$almanac_damage_absorb: <color=orange>{GetAbsorb(GetLevel())}</color>\n");
-                if (m_values.m_chance is { Value: > 0 }) stringBuilder.Append($"$almanac_chance: <color=orange>{GetChance(GetLevel())}%</color>\n");
-                if (m_values.m_reflect is { Value: > 0 }) stringBuilder.Append($"$almanac_reflect: <color=orange>{FormatPercentage(GetReflect(GetLevel()) + 1f)}%</color>\n");
-                if (m_values.m_bleed is { Value: > 0 }) stringBuilder.Append($"$almanac_bleed: <color=orange>{GetBleed(GetLevel())}/tick</color>\n");
-                if (m_values.m_eitr is {Value: > 0}) stringBuilder.Append($"$se_eitr: <color=orange>{GetEitr(GetLevel())}</color>\n");
-                if (m_values.m_heal is {Value: > 0}) stringBuilder.Append($"$almanac_heal: <color=orange>{GetHealAmount(GetLevel())}</color>\n");
-                if (m_values.m_health is {Value: > 0}) stringBuilder.Append($"$se_health: <color=orange>{GetHealth(GetLevel())}</color>\n");
-                if (m_values.m_stamina is {Value: > 0}) stringBuilder.Append($"$se_stamina: <color=orange>{GetStamina(GetLevel())}</color>\n");
-                if (m_values.m_speed is { Value: > 0}) stringBuilder.Append($"$almanac_speed: <color=orange>{FormatPercentage(GetSpeedModifier(GetLevel()))}%</color>\n");
-                if (m_values.m_carryWeight is { Value: > 0}) stringBuilder.Append($"$se_max_carryweight: <color=orange>{GetCarryWeight(GetLevel())}</color>\n");
-                if (m_values.m_eitrRegen is {Value: > 0}) stringBuilder.Append($"$se_eitrregen: <color=orange>{FormatPercentage(GetEitrRegen(GetLevel()))}%</color>\n");
-                if (m_values.m_healthRegen is {Value: > 0}) stringBuilder.Append($"$se_healthregen: <color=orange>{FormatPercentage(GetHealthRegen(GetLevel()))}%</color>\n");
-                if (m_values.m_staminaRegen is {Value: > 0}) stringBuilder.Append($"$se_staminaregen: <color=orange>{FormatPercentage(GetStaminaRegen(GetLevel()))}%</color>\n");
-                if (m_values.m_modifyAttack is {Value: > 0}) stringBuilder.Append($"$almanac_attack: <color=orange>{FormatPercentage(GetAttack(GetLevel()))}%</color>\n");
-                if (m_values.m_comfort is { Value: > 0 }) stringBuilder.Append($"$se_rested_comfort: <color=orange>{GetAddedComfort(GetLevel())}</color>\n");
-                if (m_values.m_damageReduction is { Value: > 0 }) stringBuilder.Append($"$almanac_damage_reduction: <color=orange>{FormatPercentage(GetDamageReduction(GetLevel()))}%</color>\n");
-                if (m_values.m_foodModifier is { Value: > 0 }) stringBuilder.Append($"$almanac_foodmod: <color=orange>{FormatPercentage(GetFoodModifier(GetLevel()))}%</color>\n");
-                if (m_values.m_forageModifier is { Value: > 0 }) stringBuilder.Append($"$almanac_foragemod: <color=orange>{FormatPercentage(GetForageModifier(GetLevel()))}%</color>\n");
-                if (m_values.m_speedReduction is { Value: > 0 }) stringBuilder.Append($"$almanac_speed: <color=orange>{FormatPercentage(GetSpeedReduction(GetLevel()))}%</color>\n");
-                if (m_values.m_runStaminaDrain is {Value: > 0}) stringBuilder.Append($"$se_runstamina: <color=orange>{FormatPercentage(GetRunStaminaDrain(GetLevel()))}%</color>\n");
-                if (m_values.m_attackSpeedReduction is { Value: > 0 }) stringBuilder.Append($"$almanac_attackspeedmod $almanac_reduction: <color=orange>{FormatPercentage(GetAttackSpeedReduction(GetLevel()))}%</color>\n");
-                if (m_values.m_sneakStaminaUsage is { Value: > 0 }) stringBuilder.Append($"$se_sneakstamina: <color=orange>{FormatPercentage(GetSneakStaminaUsage(GetLevel()))}%</color>\n");
-                if (m_values.m_attackStaminaUsage is { Value: > 0 }) stringBuilder.Append($"$se_attackstamina: <color=orange>{FormatPercentage(GetAttackStaminaUsage(GetLevel()))}%</color>\n");
+                if (m_values.m_absorb is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_damage_absorb: <color=orange>{GetAbsorb(GetLevel())}</color>\n");
+                if (m_values.m_chance is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_chance: <color=orange>{GetChance(GetLevel())}%</color>\n");
+                if (m_values.m_reflect is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_reflect: <color=orange>{FormatPercentage(GetReflect(GetLevel()) + 1f)}%</color>\n");
+                if (m_values.m_bleed is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_bleed: <color=orange>{GetBleed(GetLevel())}/tick</color>\n");
+                if (m_values.m_eitr is {Value: > 0}) 
+                    stringBuilder.Append($"$se_eitr: <color=orange>{GetEitr(GetLevel())}</color>\n");
+                if (m_values.m_heal is {Value: > 0}) 
+                    stringBuilder.Append($"$almanac_heal: <color=orange>{GetHealAmount(GetLevel())}</color>\n");
+                if (m_values.m_health is {Value: > 0}) 
+                    stringBuilder.Append($"$se_health: <color=orange>{GetHealth(GetLevel())}</color>\n");
+                if (m_values.m_stamina is {Value: > 0}) 
+                    stringBuilder.Append($"$se_stamina: <color=orange>{GetStamina(GetLevel())}</color>\n");
+                if (m_values.m_speed is { Value: > 0}) 
+                    stringBuilder.Append($"$almanac_speed: <color=orange>{FormatPercentage(GetSpeedModifier(GetLevel()))}%</color>\n");
+                if (m_values.m_carryWeight is { Value: > 0}) 
+                    stringBuilder.Append($"$se_max_carryweight: <color=orange>{GetCarryWeight(GetLevel())}</color>\n");
+                if (m_values.m_eitrRegen is {Value: > 0}) 
+                    stringBuilder.Append($"$se_eitrregen: <color=orange>{FormatPercentage(GetEitrRegen(GetLevel()))}%</color>\n");
+                if (m_values.m_healthRegen is {Value: > 0}) 
+                    stringBuilder.Append($"$se_healthregen: <color=orange>{FormatPercentage(GetHealthRegen(GetLevel()))}%</color>\n");
+                if (m_values.m_staminaRegen is {Value: > 0}) 
+                    stringBuilder.Append($"$se_staminaregen: <color=orange>{FormatPercentage(GetStaminaRegen(GetLevel()))}%</color>\n");
+                if (m_values.m_modifyAttack is {Value: > 0}) 
+                    stringBuilder.Append($"$almanac_attack: <color=orange>{FormatPercentage(GetAttack(GetLevel()))}%</color>\n");
+                if (m_values.m_comfort is { Value: > 0 }) 
+                    stringBuilder.Append($"$se_rested_comfort: <color=orange>{GetAddedComfort(GetLevel())}</color>\n");
+                if (m_values.m_damageReduction is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_damage_reduction: <color=orange>{FormatPercentage(GetDamageReduction(GetLevel()))}%</color>\n");
+                if (m_values.m_foodModifier is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_foodmod: <color=orange>{FormatPercentage(GetFoodModifier(GetLevel()))}%</color>\n");
+                if (m_values.m_forageModifier is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_foragemod: <color=orange>{FormatPercentage(GetForageModifier(GetLevel()))}%</color>\n");
+                if (m_values.m_speedReduction is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_speed: <color=orange>{FormatPercentage(GetSpeedReduction(GetLevel()))}%</color>\n");
+                if (m_values.m_runStaminaDrain is {Value: > 0}) 
+                    stringBuilder.Append($"$se_runstamina: <color=orange>{FormatPercentage(GetRunStaminaDrain(GetLevel()))}%</color>\n");
+                if (m_values.m_attackSpeedReduction is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_attackspeedmod $almanac_reduction: <color=orange>{FormatPercentage(GetAttackSpeedReduction(GetLevel()))}%</color>\n");
+                if (m_values.m_sneakStaminaUsage is { Value: > 0 }) 
+                    stringBuilder.Append($"$se_sneakstamina: <color=orange>{FormatPercentage(GetSneakStaminaUsage(GetLevel()))}%</color>\n");
+                if (m_values.m_attackStaminaUsage is { Value: > 0 }) 
+                    stringBuilder.Append($"$se_attackstamina: <color=orange>{FormatPercentage(GetAttackStaminaUsage(GetLevel()))}%</color>\n");
             }
 
             if (m_damages != null)
@@ -304,65 +261,74 @@ public class Talent
 
             if (m_resistances != null)
             {
-                if (m_resistances.m_pierce is { Value: > 0 }) stringBuilder.Append($"<color=orange>{GetDamageModifiers().m_pierce}</color> VS <color=orange>$inventory_pierce</color>\n");
-                if (m_resistances.m_slash is { Value: > 0 }) stringBuilder.Append($"<color=orange>{GetDamageModifiers().m_slash}</color> VS <color=orange>$inventory_slash</color>\n");
-                if (m_resistances.m_blunt is { Value: > 0 }) stringBuilder.Append($"<color=orange>{GetDamageModifiers().m_blunt}</color> VS <color=orange>$inventory_blunt</color>\n");
+                if (m_resistances.m_blunt is { Value: > 0 }) 
+                    stringBuilder.Append($"$inventory_blunt $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Blunt))}%</color>\n");
+                if (m_resistances.m_pierce is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_pierce $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Pierce))}%</color>\n");
+                if (m_resistances.m_slash is { Value: > 0 }) 
+                    stringBuilder.Append($"$inventory_slash $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Slash))}%</color>\n");
+                if (m_resistances.m_fire is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_fire $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Fire))}%</color>\n");
+                if (m_resistances.m_frost is { Value: > 0 }) 
+                    stringBuilder.Append($"$inventory_frost $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Frost))}%</color>\n");
+                if (m_resistances.m_lightning is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_lightning $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Lightning))}%</color>\n");
+                if (m_resistances.m_poison is { Value: > 0 }) 
+                    stringBuilder.Append($"$inventory_poison $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Poison))}%</color>\n");
+                if (m_resistances.m_spirit is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_spirit $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Spirit))}%</color>\n");
             }
-
-            if (m_creature != null) stringBuilder.Append($"$almanac_creature: <color=orange>{m_creature.Value}</color> ({GetCreatureDespawnLength(GetLevel())}sec)\n");
+            if (m_creature != null) 
+                stringBuilder.Append($"$almanac_creature: <color=orange>{m_creature.Value}</color> lvl {GetLevel()} \n ({GetCreatureLength(GetLevel())}sec)\n");
             if (m_creatures != null)
-            {
-                if (Player.m_localPlayer)
-                {
-                    Heightmap.Biome currentBiome = Player.m_localPlayer.GetCurrentBiome();
-                    ConfigEntry<string>? config = null!;
-                    switch (currentBiome)
-                    {
-                        case Heightmap.Biome.Meadows:
-                            config = m_creatures.m_meadows;
-                            break;
-                        case Heightmap.Biome.BlackForest:
-                            config = m_creatures.m_blackforest;
-                            break;
-                        case Heightmap.Biome.Swamp:
-                            config = m_creatures.m_swamp;
-                            break;
-                        case Heightmap.Biome.Mountain:
-                            config = m_creatures.m_mountains;
-                            break;
-                        case Heightmap.Biome.Plains:
-                            config = m_creatures.m_plains;
-                            break;
-                        case Heightmap.Biome.Mistlands:
-                            config = m_creatures.m_mistlands;
-                            break;
-                        case Heightmap.Biome.AshLands:
-                            config = m_creatures.m_ashlands;
-                            break;
-                        case Heightmap.Biome.DeepNorth:
-                            config = m_creatures.m_deepnorth;
-                            break;
-                        case Heightmap.Biome.Ocean:
-                            config = m_creatures.m_ocean;
-                            break;
-                    }
-
-                    stringBuilder.Append($"{GetBiomeLocalized(currentBiome)} $almanac_creature: <color=orange>{config?.Value ?? ""}</color> ({GetCreaturesDespawnLength(GetLevel())}sec)\n");
-                }
-            }
-
+                stringBuilder.Append($"{GetBiomeLocalized(GetCurrentBiome())} $almanac_creature: <color=orange>{GetCreaturesConfig()?.Value ?? ""}</color> lvl {GetLevel()} \n ({GetCreaturesLength(GetLevel())}sec)\n");
             if (m_key == "Trader")
-            {
-                stringBuilder.Append($"$almanac_allows_to_tp <color=orange>{m_level}</color>\n");
-            }
-
+                stringBuilder.Append($"$almanac_allows_to_tp <color=orange>{GetLevel()}</color>\n");
             if (m_key == "AirBender")
-            {
-                stringBuilder.Append($"$almanac_jumps: <color=orange>{m_level}</color>\n");
-            }
+                stringBuilder.Append($"$almanac_jumps: <color=orange>{GetLevel()}</color>\n");
         }
         return Localization.instance.Localize(stringBuilder.ToString());
     }
+    private ConfigEntry<string>? GetCreaturesConfig()
+    {
+        if (!Player.m_localPlayer || m_creatures == null) return null;
+        ConfigEntry<string>? config = null!;
+        switch (GetCurrentBiome())
+        {
+            case Heightmap.Biome.Meadows:
+                config = m_creatures.m_meadows;
+                break;
+            case Heightmap.Biome.BlackForest:
+                config = m_creatures.m_blackforest;
+                break;
+            case Heightmap.Biome.Swamp:
+                config = m_creatures.m_swamp;
+                break;
+            case Heightmap.Biome.Mountain:
+                config = m_creatures.m_mountains;
+                break;
+            case Heightmap.Biome.Plains:
+                config = m_creatures.m_plains;
+                break;
+            case Heightmap.Biome.Mistlands:
+                config = m_creatures.m_mistlands;
+                break;
+            case Heightmap.Biome.AshLands:
+                config = m_creatures.m_ashlands;
+                break;
+            case Heightmap.Biome.DeepNorth:
+                config = m_creatures.m_deepnorth;
+                break;
+            case Heightmap.Biome.Ocean:
+                config = m_creatures.m_ocean;
+                break;
+            case Heightmap.Biome.None:
+                return null;
+        }
+        return config;
+    }
+    private Heightmap.Biome GetCurrentBiome() =>
+        Player.m_localPlayer == null ? Heightmap.Biome.None : Player.m_localPlayer.GetCurrentBiome();
     private string GetBiomeLocalized(Heightmap.Biome biome) => $"$biome_{biome.ToString().ToLower()}";
     private int FormatPercentage(float value) => (int)(value * 100 - 100);
     public string GetPrestigeTooltip()
@@ -405,121 +371,188 @@ public class Talent
         {
             stringBuilder.Append(GetDescription() + "\n\n");
             if (m_cooldown != null)
-            {
-                stringBuilder.Append($"$almanac_cooldown: <color=orange>{GetCooldown()}</color>sec\n");
-            }
-
+                stringBuilder.Append($"$almanac_cooldown: <color=orange>{GetCooldown(GetLevel())}</color>sec --> <color={m_prestigeColor}>{GetCooldown(GetLevel() + 1)}</color>sec\n");
             if (m_length != null)
-            {
-                stringBuilder.Append($"$almanac_duration: <color=orange>{GetLength()}</color>sec\n");
-            }
-
-            if (m_eitrCost is { Value: > 0 }) stringBuilder.Append($"$se_eitr $almanac_cost: <color=orange>{GetEitrCost()}</color>\n");
-            if (m_staminaCost is { Value: > 0 }) stringBuilder.Append($"$se_stamina $almanac_cost: <color=orange>{GetStaminaCost()}</color>\n");
-            if (m_healthCost is { Value: > 0 }) stringBuilder.Append($"$se_health $almanac_cost: <color=orange>{GetHealthCost()}</color>\n");
+                stringBuilder.Append($"$almanac_duration: <color=orange>{GetLength(GetLevel())}</color>sec --> <color={m_prestigeColor}>{GetLength(GetLevel() + 1)}</color>sec\n");
+            if (m_eitrCost is { Value: > 0 }) 
+                stringBuilder.Append($"$se_eitr $almanac_cost: <color=orange>{GetEitrCost()}</color>\n");
+            if (m_staminaCost is { Value: > 0 }) 
+                stringBuilder.Append($"$se_stamina $almanac_cost: <color=orange>{GetStaminaCost()}</color>\n");
+            if (m_healthCost is { Value: > 0 }) 
+                stringBuilder.Append($"$se_health $almanac_cost: <color=orange>{GetHealthCost()}</color>\n");
             if (m_values != null)
             {
-                if (m_values.m_absorb is { Value: > 0 }) stringBuilder.Append($"$almanac_damage_absorb: <color=orange>{GetAbsorb(GetLevel())}</color> --> <color={m_prestigeColor}>{GetAbsorb(GetLevel() + 1)}</color>\n");
-                if (m_values.m_chance is { Value: > 0 }) stringBuilder.Append($"$almanac_chance: <color=orange>{GetChance(GetLevel())}%</color> --> <color={m_prestigeColor}>{GetChance(GetLevel() + 1)}%</color>\n");
-                if (m_values.m_reflect is { Value: > 0 }) stringBuilder.Append($"$almanac_reflect: <color=orange>{FormatPercentage(GetReflect(GetLevel()) + 1f)}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetReflect(GetLevel() + 1) + 1f)}%</color>\n");
-                if (m_values.m_bleed is { Value: > 0 }) stringBuilder.Append($"$almanac_bleed: <color=orange>{GetBleed(GetLevel())}/tick</color> --> <color={m_prestigeColor}>{GetBleed(GetLevel() + 1)}/tick</color>\n");
-                if (m_values.m_eitr is {Value: > 0}) stringBuilder.Append($"$se_eitr: <color=orange>{GetEitr(GetLevel())}</color> --> <color={m_prestigeColor}>{GetEitr(GetLevel() + 1)}</color>\n");
-                if (m_values.m_heal is {Value: > 0}) stringBuilder.Append($"$almanac_heal: <color=orange>{GetHealAmount(GetLevel())}</color> --> <color={m_prestigeColor}>{GetHealAmount(GetLevel() + 1)}</color>\n");
-                if (m_values.m_health is {Value: > 0}) stringBuilder.Append($"$se_health: <color=orange>{GetHealth(GetLevel())}</color> --> <color={m_prestigeColor}>{GetHealth(GetLevel() + 1)}</color>\n");
-                if (m_values.m_stamina is {Value: > 0}) stringBuilder.Append($"$se_stamina: <color=orange>{GetStamina(GetLevel())}</color> --> <color={m_prestigeColor}>{GetStamina(GetLevel() + 1)}</color>\n");
-                if (m_values.m_speed is { Value: > 0}) stringBuilder.Append($"$almanac_speed: <color=orange>{FormatPercentage(GetSpeedModifier(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetSpeedModifier(GetLevel() + 1))}%</color>\n");
-                if (m_values.m_carryWeight is { Value: > 0}) stringBuilder.Append($"$se_max_carryweight: <color=orange>{GetCarryWeight(GetLevel())}</color> --> <color={m_prestigeColor}>{GetCarryWeight(GetLevel() + 1)}</color>\n");
-                if (m_values.m_eitrRegen is {Value: > 0}) stringBuilder.Append($"$se_eitrregen: <color=orange>{FormatPercentage(GetEitrRegen(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetEitrRegen(GetLevel() + 1))}%</color>\n");
-                if (m_values.m_healthRegen is {Value: > 0}) stringBuilder.Append($"$se_healthregen: <color=orange>{FormatPercentage(GetHealthRegen(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetHealthRegen(GetLevel() + 1))}%</color>\n");
-                if (m_values.m_staminaRegen is {Value: > 0}) stringBuilder.Append($"$se_staminaregen: <color=orange>{FormatPercentage(GetStaminaRegen(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetStaminaRegen(GetLevel() + 1))}%</color>\n");
-                if (m_values.m_modifyAttack is {Value: > 0}) stringBuilder.Append($"$almanac_attack: <color=orange>{FormatPercentage(GetAttack(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetAttack(GetLevel() + 1))}%</color>\n");
-                if (m_values.m_comfort is { Value: > 0 }) stringBuilder.Append($"$se_rested_comfort: <color=orange>{GetAddedComfort(GetLevel())}</color> --> <color={m_prestigeColor}>{GetAddedComfort(GetLevel() + 1)}</color>\n");
-                if (m_values.m_damageReduction is { Value: > 0 }) stringBuilder.Append($"$almanac_damage_reduction: <color=orange>{FormatPercentage(GetDamageReduction(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetDamageReduction(GetLevel() + 1))}%</color>\n");
-                if (m_values.m_foodModifier is { Value: > 0 }) stringBuilder.Append($"$almanac_foodmod: <color=orange>{FormatPercentage(GetFoodModifier(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetFoodModifier(GetLevel() + 1))}%</color>\n");
-                if (m_values.m_forageModifier is { Value: > 0 }) stringBuilder.Append($"$almanac_foragemod: <color=orange>{FormatPercentage(GetForageModifier(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetForageModifier(GetLevel() + 1))}%</color>\n");
-                if (m_values.m_speedReduction is { Value: > 0 }) stringBuilder.Append($"$almanac_speed: <color=orange>{FormatPercentage(GetSpeedReduction(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetSpeedReduction(GetLevel() + 1))}%</color>\n");
-                if (m_values.m_runStaminaDrain is {Value: > 0}) stringBuilder.Append($"$se_runstamina: <color=orange>{FormatPercentage(GetRunStaminaDrain(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetRunStaminaDrain(GetLevel() + 1))}%</color>\n");
-                if (m_values.m_attackSpeedReduction is { Value: > 0 }) stringBuilder.Append($"$almanac_attackspeedmod $almanac_reduction: <color=orange>{FormatPercentage(GetAttackSpeedReduction(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetAttackSpeedReduction(GetLevel() + 1))}%</color>\n");
-                if (m_values.m_sneakStaminaUsage is { Value: > 0 }) stringBuilder.Append($"$se_sneakstamina: <color=orange>{FormatPercentage(GetSneakStaminaUsage(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetSneakStaminaUsage(GetLevel() + 1))}%</color>\n");
-                if (m_values.m_attackStaminaUsage is { Value: > 0 }) stringBuilder.Append($"$se_attackstamina: <color=orange>{FormatPercentage(GetAttackStaminaUsage(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetAttackStaminaUsage(GetLevel() + 1))}%</color>\n");
+                if (m_values.m_absorb is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_damage_absorb: <color=orange>{GetAbsorb(GetLevel())}</color> --> <color={m_prestigeColor}>{GetAbsorb(GetLevel() + 1)}</color>\n");
+                if (m_values.m_chance is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_chance: <color=orange>{GetChance(GetLevel())}%</color> --> <color={m_prestigeColor}>{GetChance(GetLevel() + 1)}%</color>\n");
+                if (m_values.m_reflect is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_reflect: <color=orange>{FormatPercentage(GetReflect(GetLevel()) + 1f)}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetReflect(GetLevel() + 1) + 1f)}%</color>\n");
+                if (m_values.m_bleed is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_bleed: <color=orange>{GetBleed(GetLevel())}/tick</color> --> <color={m_prestigeColor}>{GetBleed(GetLevel() + 1)}/tick</color>\n");
+                if (m_values.m_eitr is {Value: > 0}) 
+                    stringBuilder.Append($"$se_eitr: <color=orange>{GetEitr(GetLevel())}</color> --> <color={m_prestigeColor}>{GetEitr(GetLevel() + 1)}</color>\n");
+                if (m_values.m_heal is {Value: > 0}) 
+                    stringBuilder.Append($"$almanac_heal: <color=orange>{GetHealAmount(GetLevel())}</color> --> <color={m_prestigeColor}>{GetHealAmount(GetLevel() + 1)}</color>\n");
+                if (m_values.m_health is {Value: > 0}) 
+                    stringBuilder.Append($"$se_health: <color=orange>{GetHealth(GetLevel())}</color> --> <color={m_prestigeColor}>{GetHealth(GetLevel() + 1)}</color>\n");
+                if (m_values.m_stamina is {Value: > 0}) 
+                    stringBuilder.Append($"$se_stamina: <color=orange>{GetStamina(GetLevel())}</color> --> <color={m_prestigeColor}>{GetStamina(GetLevel() + 1)}</color>\n");
+                if (m_values.m_speed is { Value: > 0}) 
+                    stringBuilder.Append($"$almanac_speed: <color=orange>{FormatPercentage(GetSpeedModifier(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetSpeedModifier(GetLevel() + 1))}%</color>\n");
+                if (m_values.m_carryWeight is { Value: > 0}) 
+                    stringBuilder.Append($"$se_max_carryweight: <color=orange>{GetCarryWeight(GetLevel())}</color> --> <color={m_prestigeColor}>{GetCarryWeight(GetLevel() + 1)}</color>\n");
+                if (m_values.m_eitrRegen is {Value: > 0}) 
+                    stringBuilder.Append($"$se_eitrregen: <color=orange>{FormatPercentage(GetEitrRegen(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetEitrRegen(GetLevel() + 1))}%</color>\n");
+                if (m_values.m_healthRegen is {Value: > 0}) 
+                    stringBuilder.Append($"$se_healthregen: <color=orange>{FormatPercentage(GetHealthRegen(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetHealthRegen(GetLevel() + 1))}%</color>\n");
+                if (m_values.m_staminaRegen is {Value: > 0}) 
+                    stringBuilder.Append($"$se_staminaregen: <color=orange>{FormatPercentage(GetStaminaRegen(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetStaminaRegen(GetLevel() + 1))}%</color>\n");
+                if (m_values.m_modifyAttack is {Value: > 0}) 
+                    stringBuilder.Append($"$almanac_attack: <color=orange>{FormatPercentage(GetAttack(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetAttack(GetLevel() + 1))}%</color>\n");
+                if (m_values.m_comfort is { Value: > 0 }) 
+                    stringBuilder.Append($"$se_rested_comfort: <color=orange>{GetAddedComfort(GetLevel())}</color> --> <color={m_prestigeColor}>{GetAddedComfort(GetLevel() + 1)}</color>\n");
+                if (m_values.m_damageReduction is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_damage_reduction: <color=orange>{FormatPercentage(GetDamageReduction(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetDamageReduction(GetLevel() + 1))}%</color>\n");
+                if (m_values.m_foodModifier is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_foodmod: <color=orange>{FormatPercentage(GetFoodModifier(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetFoodModifier(GetLevel() + 1))}%</color>\n");
+                if (m_values.m_forageModifier is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_foragemod: <color=orange>{FormatPercentage(GetForageModifier(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetForageModifier(GetLevel() + 1))}%</color>\n");
+                if (m_values.m_speedReduction is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_speed: <color=orange>{FormatPercentage(GetSpeedReduction(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetSpeedReduction(GetLevel() + 1))}%</color>\n");
+                if (m_values.m_runStaminaDrain is {Value: > 0}) 
+                    stringBuilder.Append($"$se_runstamina: <color=orange>{FormatPercentage(GetRunStaminaDrain(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetRunStaminaDrain(GetLevel() + 1))}%</color>\n");
+                if (m_values.m_attackSpeedReduction is { Value: > 0 }) 
+                    stringBuilder.Append($"$almanac_attackspeedmod $almanac_reduction: <color=orange>{FormatPercentage(GetAttackSpeedReduction(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetAttackSpeedReduction(GetLevel() + 1))}%</color>\n");
+                if (m_values.m_sneakStaminaUsage is { Value: > 0 }) 
+                    stringBuilder.Append($"$se_sneakstamina: <color=orange>{FormatPercentage(GetSneakStaminaUsage(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetSneakStaminaUsage(GetLevel() + 1))}%</color>\n");
+                if (m_values.m_attackStaminaUsage is { Value: > 0 }) 
+                    stringBuilder.Append($"$se_attackstamina: <color=orange>{FormatPercentage(GetAttackStaminaUsage(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetAttackStaminaUsage(GetLevel() + 1))}%</color>\n");
             }
 
             if (m_damages != null)
             {
                 HitData.DamageTypes damages = GetDamages(GetLevel());
                 HitData.DamageTypes newDamages = GetDamages(GetLevel() + 1);
-                if (m_damages.m_blunt is {Value: > 0}) stringBuilder.Append($"$inventory_blunt: <color=orange>{damages.m_blunt}</color> --> <color={m_prestigeColor}>{newDamages.m_blunt}</color>\n");
-                if (m_damages.m_pierce is {Value: > 0}) stringBuilder.Append($"$inventory_pierce: <color=orange>{damages.m_pierce}</color> --> <color={m_prestigeColor}>{newDamages.m_pierce}</color>\n");
-                if (m_damages.m_slash is {Value: > 0}) stringBuilder.Append($"$inventory_slash: <color=orange>{damages.m_slash}</color> --> <color={m_prestigeColor}>{newDamages.m_slash}</color>\n");
-                if (m_damages.m_pickaxe is {Value: > 0}) stringBuilder.Append($"$inventory_pickaxe: <color=orange>{damages.m_pickaxe}</color> --> <color={m_prestigeColor}>{newDamages.m_pickaxe}</color>\n");
-                if (m_damages.m_chop is {Value: > 0}) stringBuilder.Append($"$inventory_chop: <color=orange>{damages.m_chop}</color> --> <color={m_prestigeColor}>{newDamages.m_chop}</color>\n");
-                if (m_damages.m_fire is {Value: > 0}) stringBuilder.Append($"$inventory_fire: <color=orange>{damages.m_fire}</color> --> <color={m_prestigeColor}>{newDamages.m_fire}</color>\n");
-                if (m_damages.m_frost is {Value: > 0}) stringBuilder.Append($"$inventory_frost: <color=orange>{damages.m_frost}</color> --> <color={m_prestigeColor}>{newDamages.m_frost}</color>\n");
-                if (m_damages.m_lightning is {Value: > 0}) stringBuilder.Append($"$inventory_lightning: <color=orange>{damages.m_lightning}</color> --> <color={m_prestigeColor}>{newDamages.m_lightning}</color>\n");
-                if (m_damages.m_poison is {Value: > 0}) stringBuilder.Append($"$inventory_poison: <color=orange>{damages.m_poison}</color> --> <color={m_prestigeColor}>{newDamages.m_poison}</color>\n");
-                if (m_damages.m_spirit is {Value: > 0}) stringBuilder.Append($"$inventory_spirit: <color=orange>{damages.m_spirit}</color> --> <color={m_prestigeColor}>{newDamages.m_spirit}</color>\n");
+                if (m_damages.m_blunt is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_blunt: <color=orange>{damages.m_blunt}</color> --> <color={m_prestigeColor}>{newDamages.m_blunt}</color>\n");
+                if (m_damages.m_pierce is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_pierce: <color=orange>{damages.m_pierce}</color> --> <color={m_prestigeColor}>{newDamages.m_pierce}</color>\n");
+                if (m_damages.m_slash is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_slash: <color=orange>{damages.m_slash}</color> --> <color={m_prestigeColor}>{newDamages.m_slash}</color>\n");
+                if (m_damages.m_pickaxe is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_pickaxe: <color=orange>{damages.m_pickaxe}</color> --> <color={m_prestigeColor}>{newDamages.m_pickaxe}</color>\n");
+                if (m_damages.m_chop is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_chop: <color=orange>{damages.m_chop}</color> --> <color={m_prestigeColor}>{newDamages.m_chop}</color>\n");
+                if (m_damages.m_fire is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_fire: <color=orange>{damages.m_fire}</color> --> <color={m_prestigeColor}>{newDamages.m_fire}</color>\n");
+                if (m_damages.m_frost is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_frost: <color=orange>{damages.m_frost}</color> --> <color={m_prestigeColor}>{newDamages.m_frost}</color>\n");
+                if (m_damages.m_lightning is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_lightning: <color=orange>{damages.m_lightning}</color> --> <color={m_prestigeColor}>{newDamages.m_lightning}</color>\n");
+                if (m_damages.m_poison is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_poison: <color=orange>{damages.m_poison}</color> --> <color={m_prestigeColor}>{newDamages.m_poison}</color>\n");
+                if (m_damages.m_spirit is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_spirit: <color=orange>{damages.m_spirit}</color> --> <color={m_prestigeColor}>{newDamages.m_spirit}</color>\n");
             }
 
             if (m_resistances != null)
             {
-                if (m_resistances.m_pierce is { Value: > 0 }) stringBuilder.Append($"<color=orange>{GetDamageModifiers().m_pierce}</color> VS <color=orange>$inventory_pierce</color>\n");
-                if (m_resistances.m_slash is { Value: > 0 }) stringBuilder.Append($"<color=orange>{GetDamageModifiers().m_slash}</color> VS <color=orange>$inventory_slash</color>\n");
-                if (m_resistances.m_blunt is { Value: > 0 }) stringBuilder.Append($"<color=orange>{GetDamageModifiers().m_blunt}</color> VS <color=orange>$inventory_blunt</color>\n");
+                if (m_resistances.m_blunt is { Value: > 0 }) 
+                    stringBuilder.Append($"$inventory_blunt $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Blunt))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetResistance(GetLevel() + 1, HitData.DamageType.Blunt))}%</color>\n");
+                if (m_resistances.m_pierce is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_pierce $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Pierce))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetResistance(GetLevel() + 1, HitData.DamageType.Pierce))}%</color>\n");
+                if (m_resistances.m_slash is { Value: > 0 }) 
+                    stringBuilder.Append($"$inventory_slash $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Slash))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetResistance(GetLevel() + 1, HitData.DamageType.Slash))}%</color>\n");
+                if (m_resistances.m_fire is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_fire $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Fire))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetResistance(GetLevel() + 1, HitData.DamageType.Fire))}%</color>\n");
+                if (m_resistances.m_frost is { Value: > 0 }) 
+                    stringBuilder.Append($"$inventory_frost $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Frost))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetResistance(GetLevel() + 1, HitData.DamageType.Frost))}%</color>\n");
+                if (m_resistances.m_lightning is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_lightning $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Lightning))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetResistance(GetLevel() + 1, HitData.DamageType.Lightning))}%</color>\n");
+                if (m_resistances.m_poison is { Value: > 0 }) 
+                    stringBuilder.Append($"$inventory_poison $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Poison))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetResistance(GetLevel() + 1, HitData.DamageType.Poison))}%</color>\n");
+                if (m_resistances.m_spirit is {Value: > 0}) 
+                    stringBuilder.Append($"$inventory_spirit $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Spirit))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetResistance(GetLevel() + 1, HitData.DamageType.Spirit))}%</color>\n");
             }
 
-            if (m_creature != null) stringBuilder.Append($"$almanac_creature: <color=orange>{m_creature.Value}</color> ({GetCreatureDespawnLength(GetLevel())}sec --> <color={m_prestigeColor}>{GetCreatureDespawnLength(GetLevel() + 1)}sec</color>)\n");
+            if (m_creature != null) 
+                stringBuilder.Append($"$almanac_creature: <color=orange>{m_creature.Value}</color> lvl {GetLevel()} --> <color={m_prestigeColor}>{GetLevel() + 1}</color> \n ({GetCreatureLength(GetLevel())}sec --> <color={m_prestigeColor}>{GetCreatureLength(GetLevel() + 1)}sec</color>)\n");
             if (m_creatures != null)
-            {
-                if (Player.m_localPlayer)
-                {
-                    Heightmap.Biome currentBiome = Player.m_localPlayer.GetCurrentBiome();
-                    ConfigEntry<string>? config = null!;
-                    switch (currentBiome)
-                    {
-                        case Heightmap.Biome.Meadows:
-                            config = m_creatures.m_meadows;
-                            break;
-                        case Heightmap.Biome.BlackForest:
-                            config = m_creatures.m_blackforest;
-                            break;
-                        case Heightmap.Biome.Swamp:
-                            config = m_creatures.m_swamp;
-                            break;
-                        case Heightmap.Biome.Mountain:
-                            config = m_creatures.m_mountains;
-                            break;
-                        case Heightmap.Biome.Plains:
-                            config = m_creatures.m_plains;
-                            break;
-                        case Heightmap.Biome.Mistlands:
-                            config = m_creatures.m_mistlands;
-                            break;
-                        case Heightmap.Biome.AshLands:
-                            config = m_creatures.m_ashlands;
-                            break;
-                        case Heightmap.Biome.DeepNorth:
-                            config = m_creatures.m_deepnorth;
-                            break;
-                        case Heightmap.Biome.Ocean:
-                            config = m_creatures.m_ocean;
-                            break;
-                    }
-
-                    stringBuilder.Append($"{GetBiomeLocalized(currentBiome)} $almanac_creature: <color=orange>{config?.Value ?? ""}</color> ({GetCreaturesDespawnLength(GetLevel())}sec --> <color={m_prestigeColor}>{GetCreaturesDespawnLength(GetLevel() + 1)}sec</color>)\n");
-                }
-            }
-
+                stringBuilder.Append($"{GetBiomeLocalized(GetCurrentBiome())} $almanac_creature: <color=orange>{GetCreaturesConfig()?.Value ?? ""}</color> lvl {GetLevel()} --> <color={m_prestigeColor}>{GetLevel() + 1}</color> \n ({GetCreaturesLength(GetLevel())}sec --> <color={m_prestigeColor}>{GetCreaturesLength(GetLevel() + 1)}sec</color>)\n");
             if (m_key == "Trader")
-            {
                 stringBuilder.Append($"$almanac_allows_to_tp <color=orange>{GetLevel()}</color> --> <color={m_prestigeColor}>{GetLevel() + 1}</color>\n");
-            }
-            
             if (m_key == "AirBender")
-            {
-                stringBuilder.Append($"$almanac_jumps: <color=orange>{m_level}</color> --> <color={m_prestigeColor}>{GetLevel() + 1}</color>\n");
-            }
+                stringBuilder.Append($"$almanac_jumps: <color=orange>{GetLevel()}</color> --> <color={m_prestigeColor}>{GetLevel() + 1}</color>\n");
         }
         return Localization.instance.Localize(stringBuilder.ToString());
+    }
+    public class TalentValues
+    {
+        public ConfigEntry<float>? m_heal;
+        public ConfigEntry<float>? m_absorb;
+        public ConfigEntry<float>? m_health;
+        public ConfigEntry<float>? m_stamina;
+        public ConfigEntry<float>? m_eitr;
+        public ConfigEntry<float>? m_eitrRegen;
+        public ConfigEntry<float>? m_healthRegen;
+        public ConfigEntry<float>? m_staminaRegen;
+        public ConfigEntry<int>? m_carryWeight;
+        public ConfigEntry<float>? m_modifyAttack;
+        public ConfigEntry<float>? m_speed;
+        public ConfigEntry<float>? m_bleed;
+        public ConfigEntry<float>? m_chance;
+        public ConfigEntry<float>? m_reflect;
+        public ConfigEntry<float>? m_comfort;
+        public ConfigEntry<float>? m_damageReduction;
+        public ConfigEntry<float>? m_foodModifier;
+        public ConfigEntry<float>? m_forageModifier;
+        public ConfigEntry<float>? m_speedReduction;
+        public ConfigEntry<float>? m_runStaminaDrain;
+        public ConfigEntry<float>? m_attackSpeedReduction;
+        public ConfigEntry<float>? m_attackStaminaUsage;
+        public ConfigEntry<float>? m_sneakStaminaUsage;
+    }
+    public class TalentCreatures
+    {
+        public ConfigEntry<string>? m_meadows;
+        public ConfigEntry<string>? m_blackforest;
+        public ConfigEntry<string>? m_swamp;
+        public ConfigEntry<string>? m_mountains;
+        public ConfigEntry<string>? m_plains;
+        public ConfigEntry<string>? m_mistlands;
+        public ConfigEntry<string>? m_ashlands;
+        public ConfigEntry<string>? m_deepnorth;
+        public ConfigEntry<string>? m_ocean;
+    }
+    public class ResistancePercentages
+    {
+        public ConfigEntry<float>? m_blunt;
+        public ConfigEntry<float>? m_pierce;
+        public ConfigEntry<float>? m_slash;
+        public ConfigEntry<float>? m_fire;
+        public ConfigEntry<float>? m_frost;
+        public ConfigEntry<float>? m_lightning;
+        public ConfigEntry<float>? m_poison;
+        public ConfigEntry<float>? m_spirit;
+    }
+    public class TalentDamages
+    {
+        public ConfigEntry<float>? m_blunt;
+        public ConfigEntry<float>? m_pierce;
+        public ConfigEntry<float>? m_slash;
+        public ConfigEntry<float>? m_chop;
+        public ConfigEntry<float>? m_pickaxe;
+        public ConfigEntry<float>? m_fire;
+        public ConfigEntry<float>? m_frost;
+        public ConfigEntry<float>? m_lightning;
+        public ConfigEntry<float>? m_poison;
+        public ConfigEntry<float>? m_spirit;
+    }
+    public class TalentCharacteristics
+    {
+        public Characteristic m_type;
+        public int m_amount;
     }
 }
 
@@ -534,10 +567,7 @@ public static class TalentManager
 
     public static void ResetTalentLevels()
     {
-        foreach (var kvp in m_talents)
-        {
-            kvp.Value.SetLevel(1);
-        }
+        foreach (KeyValuePair<string, Talent> kvp in m_talents) kvp.Value.SetLevel(1);
     }
 
     public static void InitializeTalents()
@@ -1369,7 +1399,8 @@ public static class TalentManager
                 m_cost = _Plugin.config("Shaman - Regeneration", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
-                    m_eitrRegen = _Plugin.config("Shaman - Regeneration", "Eitr Regeneration", 1.05f, new ConfigDescription("Set the multiplier", new AcceptableValueRange<float>(0f, 10f)))
+                    m_eitrRegen = _Plugin.config("Shaman - Regeneration", "Eitr Regeneration", 1.05f, new ConfigDescription("Set the multiplier", new AcceptableValueRange<float>(0f, 10f))),
+                    m_staminaRegen = _Plugin.config("Shaman - Regeneration", "Stamina Regeneration", 1.05f, new ConfigDescription("Set the multiplier", new AcceptableValueRange<float>(0f, 10f)))
                 },
                 m_length = _Plugin.config("Shaman - Regeneration", "Length", 60f, new ConfigDescription("Set the length of effect", new AcceptableValueRange<float>(1f, 1000f))),
                 m_sprite = SpriteManager.ShamanRegeneration,
@@ -1927,11 +1958,11 @@ public static class TalentManager
                 m_type = TalentType.StatusEffect,
                 m_cooldown = _Plugin.config("Warrior - Fortification", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Warrior - Fortification", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
-                m_resistances = new Talent.TalentResistances()
+                m_resistances = new Talent.ResistancePercentages()
                 {
-                    m_blunt = _Plugin.config("Warrior - Fortification", "Blunt Resistance", HitData.DamageModifier.Resistant, "Set resistance"),
-                    m_slash = _Plugin.config("Warrior - Fortification", "Slash Resistance", HitData.DamageModifier.Resistant, "Set resistance"),
-                    m_pierce = _Plugin.config("Warrior - Fortification", "Pierce Resistance", HitData.DamageModifier.Resistant, "Set resistance"),
+                    m_blunt =  _Plugin.config("Warrior - Fortification", "Blunt Resistance", 0.9f, new ConfigDescription("Set resistance modifier", new AcceptableValueRange<float>(0f, 1f))),
+                    m_pierce = _Plugin.config("Warrior - Fortification", "Pierce Resistance", 0.9f, new ConfigDescription("Set resistance modifier", new AcceptableValueRange<float>(0f, 1f))),
+                    m_slash =  _Plugin.config("Warrior - Fortification", "Slash Resistance", 0.9f, new ConfigDescription("Set resistance modifier", new AcceptableValueRange<float>(0f, 1f))),
                 },
                 m_length = _Plugin.config("Warrior - Fortification", "Effect Length", 30f, new ConfigDescription("Set the length of the talent", new AcceptableValueRange<float>(0f, 1000f))),
                 m_sprite = SpriteManager.Resistant_Icon,

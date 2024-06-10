@@ -9,7 +9,7 @@ public static class RangerSpawn
         if (!creature) return;
         if (!creature.GetComponent<Humanoid>()) return;
         SpawnSystem.StartSpawnAnimation();
-        AlmanacClassesPlugin._Plugin.StartCoroutine(SpawnSystem.DelayedSpawn(creature, "Friendly " + creature.name.Replace("_", " "), talent.GetLevel(), talent.GetLength()));
+        AlmanacClassesPlugin._Plugin.StartCoroutine(SpawnSystem.DelayedSpawn(creature, "Friendly " + creature.name.Replace("_", " "), talent.GetLevel(), talent.GetLength(talent.GetLevel())));
     }
 
     public static void TriggerHunterSpawn(GameObject creature, int level)
