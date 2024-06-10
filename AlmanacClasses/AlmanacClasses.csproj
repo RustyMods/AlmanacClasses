@@ -142,7 +142,6 @@
         <Compile Include="Classes\Abilities\Core\SE_ExperienceOrb.cs" />
         <Compile Include="Classes\Abilities\Core\SE_PackMule.cs" />
         <Compile Include="Classes\Abilities\Core\SE_Resourceful.cs" />
-        <Compile Include="Classes\Abilities\Core\SE_Sneaky.cs" />
         <Compile Include="Classes\Abilities\Core\Trader.cs" />
         <Compile Include="Classes\Abilities\Ranger\RangerSpawn.cs" />
         <Compile Include="Classes\Abilities\Ranger\RangerTrap.cs" />

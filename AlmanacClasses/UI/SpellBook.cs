@@ -19,10 +19,7 @@ public static class SpellBook
     private static GameObject m_spellBar = null!;
     private static GameObject m_element = null!;
     public static readonly Dictionary<int, AbilityData> m_abilities = new();
-
     private static RectTransform m_spellBarPos = null!;
-    private static readonly int Saturation = Shader.PropertyToID("_Saturation");
-
     public static void OnSpellBarPosChange(object sender, EventArgs e)
     {
         m_spellBarPos.anchoredPosition = AlmanacClassesPlugin._SpellBookPos.Value;
@@ -41,16 +38,6 @@ public static class SpellBook
         m_spellBarPos.anchoredPosition = AlmanacClassesPlugin._SpellBookPos.Value;
         m_spellBar.AddComponent<SpellBarMove>();
         m_element = AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_element");
-        Image? grayMat = Utils.FindChild(m_element.transform, "$image_gray").GetComponent<Image>();
-        try
-        {
-            grayMat.material.shader = MaterialReplacer.FindShaderWithName(grayMat.material.shader, "Custom/icon");
-        }
-        catch
-        {
-            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to find Custom/icon shader");
-        }
-        grayMat.material.SetFloat(Saturation, -0.5f);
         m_element.AddComponent<SpellElementChange>();
         
         Text[] texts = m_element.GetComponentsInChildren<Text>();
@@ -76,9 +63,7 @@ public static class SpellBook
             Image? gray = Utils.FindChild(element.transform, "$image_gray").GetComponent<Image>();
             Image? fill = Utils.FindChild(element.transform, "$image_fill").GetComponent<Image>();
             Text timer = Utils.FindChild(element.transform, "$text_timer").GetComponent<Text>();
-            gray.sprite = icon;
-            gray.color = Color.clear;
-            
+
             if (AbilityManager.m_cooldownMap.TryGetValue(kvp.Value.m_data.m_key, out float cooldown))
             {
                 if (kvp.Value.m_data.m_statusEffectHash != 0)
@@ -88,16 +73,7 @@ public static class SpellBook
                         StatusEffect effect = Player.m_localPlayer.GetSEMan().GetStatusEffect(kvp.Value.m_data.m_statusEffectHash);
                         float time = effect.GetRemaningTime();
                         float normal = Mathf.Clamp01(time / effect.m_ttl);
-                        if (time > 0)
-                        {
-                            gray.color = new Color(0f, 0f, 0f, 1f);
-                            gray.fillAmount = normal;
-                        }
-                        else
-                        {
-                            gray.color = Color.clear;
-                            gray.fillAmount = 0f;
-                        }
+                        gray.fillAmount = time > 0 ? normal : 0f;
                     }
                 }
                 

@@ -7,8 +7,9 @@ namespace AlmanacClasses.Classes.Abilities.Shaman;
 public class SE_ShamanShield : StatusEffect
 {
     private readonly string m_key = "ShamanShield";
+    private Talent m_talent = null!;
     
-    private float m_absorbDamage = 100f;
+    private float m_absorbDamage;
 
     private readonly List<Player> m_players = new();
 
@@ -17,7 +18,8 @@ public class SE_ShamanShield : StatusEffect
         if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
         m_ttl = talent.GetLength();
         m_startEffects = talent.GetEffectList();
-        
+        m_absorbDamage = m_absorbDamage == 0f ? talent.GetAbsorb(talent.GetLevel()) : m_absorbDamage;
+        m_talent = talent;
         base.Setup(character);
         FindPlayers();
         BoostPlayers();
@@ -25,10 +27,11 @@ public class SE_ShamanShield : StatusEffect
 
     private void BoostPlayers()
     {
-        foreach (var player in m_players)
+        foreach (Player player in m_players)
         {
             if (player.GetSEMan().HaveStatusEffect(name.GetStableHashCode())) continue;
-            player.GetSEMan().AddStatusEffect(name.GetStableHashCode());
+            StatusEffect effect = player.GetSEMan().AddStatusEffect(name.GetStableHashCode());
+            if (effect is SE_ShamanShield shield) shield.m_absorbDamage = m_talent.GetAbsorb(m_talent.GetLevel());
         }
     }
     

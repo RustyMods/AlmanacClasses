@@ -115,9 +115,10 @@ public static class AbilityManager
         m_castedSpells.Add(ability.m_key);
         m_cooldownMap[ability.m_key] = 1f;
         float count = 0;
-        while (count < ability.m_cooldown?.Value)
+        float cooldown = ability.GetCooldown();
+        while (count < cooldown)
         {
-            m_cooldownMap[ability.m_key] -= 1f / ability.m_cooldown.Value;
+            m_cooldownMap[ability.m_key] -= 1f / cooldown;
             yield return new WaitForSeconds(1f);
             ++count;
         }
@@ -179,51 +180,43 @@ public static class AbilityManager
         }
         return true;
     }
-
-    private static bool CheckCost(Talent talent)
-    {
-        if (!CheckEitrCost(talent)) return false;
-        if (!CheckStaminaCost(talent)) return false;
-        if (!CheckHealthCost(talent)) return false;
-        return true;
-    }
-
+    private static bool CheckCost(Talent talent) => CheckEitrCost(talent) && CheckStaminaCost(talent) && CheckHealthCost(talent);
     private static bool CheckHealthCost(Talent talent)
     {
-        if (talent.m_healthCost == null) return true;
-        if (!Player.m_localPlayer.HaveHealth(talent.m_healthCost?.Value ?? 0f))
+        float cost = talent.GetHealthCost();
+        if (!Player.m_localPlayer.HaveHealth(cost))
         {
             Hud.instance.FlashHealthBar();
             Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_hp_required");
             return false;
         }
-        Player.m_localPlayer.UseHealth(talent.m_healthCost?.Value ?? 0f);
+        Player.m_localPlayer.UseHealth(cost);
         return true;
     }
 
     private static bool CheckStaminaCost(Talent talent)
     {
-        if (talent.m_staminaCost == null) return true;
-        if (!Player.m_localPlayer.HaveStamina(talent.m_staminaCost?.Value ?? 0f))
+        float cost = talent.GetStaminaCost();
+        if (!Player.m_localPlayer.HaveStamina(cost))
         {
             Hud.instance.StaminaBarEmptyFlash();
             Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_stamina_required");
             return false;
         }
-        Player.m_localPlayer.UseStamina(talent.m_staminaCost?.Value ?? 0f);
+        Player.m_localPlayer.UseStamina(cost);
         return true;
     }
 
     private static bool CheckEitrCost(Talent talent)
     {
-        if (talent.m_eitrCost == null) return true;
-        if (!Player.m_localPlayer.HaveEitr(talent.m_eitrCost?.Value ?? 4f))
+        float cost = talent.GetEitrCost();
+        if (!Player.m_localPlayer.HaveEitr(cost))
         {
             Hud.instance.EitrBarEmptyFlash();
             Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$hud_eitrrequired");
             return false;
         }
-        Player.m_localPlayer.UseEitr(talent.m_eitrCost?.Value ?? 4f);
+        Player.m_localPlayer.UseEitr(cost);
         return true;
     }
 }

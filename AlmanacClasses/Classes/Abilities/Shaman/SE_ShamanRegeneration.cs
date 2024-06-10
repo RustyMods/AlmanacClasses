@@ -5,6 +5,9 @@ namespace AlmanacClasses.Classes.Abilities.Shaman;
 public class SE_ShamanRegeneration : StatusEffect
 {
     public string m_key = "ShamanRegeneration";
+    private Talent m_talent = null!;
+
+    public float m_modifier;
     public List<Player> m_players = new();
 
     public override void Setup(Character character)
@@ -12,6 +15,7 @@ public class SE_ShamanRegeneration : StatusEffect
         if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
         m_ttl = talent.GetLength();
         m_startEffects = talent.GetEffectList();
+        m_talent = talent;
         
         base.Setup(character);
         FindPlayers();
@@ -25,16 +29,19 @@ public class SE_ShamanRegeneration : StatusEffect
 
     private void BoostPlayers()
     {
-        foreach (var player in m_players)
+        foreach (Player player in m_players)
         {
             if (player.GetSEMan().HaveStatusEffect(name.GetStableHashCode())) continue;
-            player.GetSEMan().AddStatusEffect(name.GetStableHashCode());
+            StatusEffect effect = player.GetSEMan().AddStatusEffect(name.GetStableHashCode());
+            if (effect is SE_ShamanRegeneration regen)
+            {
+                regen.m_modifier = m_talent.GetEitrRegen(m_talent.GetLevel());
+            }
         }
     }
 
     public override void ModifyEitrRegen(ref float eitrRegen)
     {
-        if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
-        eitrRegen *= talent.GetEitrRegen(talent.GetLevel());
+        eitrRegen *= m_modifier == 0f ? m_talent.GetEitrRegen(m_talent.GetLevel()) : m_modifier;
     }
 }

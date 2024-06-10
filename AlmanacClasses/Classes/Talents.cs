@@ -23,20 +23,18 @@ public class Talent
     public int m_level = 1;
     public int GetLevel() => m_level;
     public void AddLevel() => ++m_level;
-    
     public ConfigEntry<Toggle>? m_alt;
-
     public ConfigEntry<int>? m_cap = null!;
-
     public int GetPrestigeCap() => m_cap?.Value ?? int.MaxValue;
     public void SetLevel(int level) => m_level = level;
     public TalentType m_type;
     public string GetTalentType() => $"$almanac_{m_type.ToString().ToLower()}";
+    public ConfigEntry<Toggle>? m_effectsEnabled;
+    public bool UseEffects() => m_effectsEnabled == null || m_effectsEnabled.Value is Toggle.On;
     public EffectList? m_startEffects;
-    public EffectList GetEffectList() => m_startEffects ?? new EffectList();
+    public EffectList GetEffectList() => UseEffects() ?  m_startEffects ?? new EffectList() : new EffectList();
     public Sprite? m_sprite;
     public Sprite? GetSprite() => m_sprite;
-    
     public ConfigEntry<int>? m_cost;
     public int GetCost() => m_cost?.Value ?? _StatsCost.Value;
     public ConfigEntry<float>? m_cooldown;
@@ -49,7 +47,6 @@ public class Talent
     public float GetStaminaCost() => m_staminaCost?.Value ?? 0f;
     public ConfigEntry<float>? m_healthCost;
     public float GetHealthCost() => m_healthCost?.Value ?? 0f;
-
     public TalentDamages? m_damages;
     public HitData.DamageTypes GetDamages(int level)
     {
@@ -68,137 +65,32 @@ public class Talent
         damages.Modify(level);
         return damages;
     }
-
     public TalentValues? m_values;
-
-    public float GetHealAmount(int level)
-    {
-        if (m_values == null) return 0f;
-        return (m_values.m_heal?.Value ?? 0f) * level;
-    }
-
-    public float GetHealth(int level)
-    {
-        if (m_values == null) return 0f;
-        return (m_values.m_health?.Value ?? 0f) * level;
-    }
-
-    public float GetStamina(int level)
-    {
-        if (m_values == null) return 0f;
-        return (m_values.m_stamina?.Value ?? 0f) * level;
-    }
-
-    public float GetEitr(int level)
-    {
-        if (m_values == null) return 0f;
-        return (m_values.m_eitr?.Value ?? 0f) * level;
-    }
-
-    public float GetAbsorb(int level)
-    {
-        if (m_values == null) return 0f;
-        return (m_values.m_absorb?.Value ?? 0f) * level;
-    }
-
-    public float GetEitrRegen(int level)
-    {
-        if (m_values == null) return 1f;
-        return (m_values.m_eitrRegen?.Value ?? 1f) * level - (level - 1);
-    }
-
-    public float GetHealthRegen(int level)
-    {
-        if (m_values == null) return 1f;
-        return (m_values.m_healthRegen?.Value ?? 1f) * level - (level - 1);
-    }
-
-    public float GetStaminaRegen(int level)
-    {
-        if (m_values == null) return 1f;
-        return (m_values.m_staminaRegen?.Value ?? 1f) * level - (level - 1);
-    }
-
-    public int GetCarryWeight(int level)
-    {
-        if (m_values == null) return 0;
-        return (m_values.m_carryWeight?.Value ?? 0) * level;
-    }
-
-    public float GetAttack(int level)
-    {
-        if (m_values == null) return 0f;
-        return (m_values.m_modifyAttack?.Value ?? 0f) * level - (level - 1);
-    }
-
-    public float GetBleed(int level)
-    {
-        if (m_values == null) return 0f;
-        return (m_values.m_bleed?.Value ?? 0f) * level;
-    }
-
-    public float GetSpeedModifier(int level)
-    {
-        if (m_values == null) return 0;
-        return (m_values.m_speed?.Value ?? 0f) * level - (level - 1);
-    }
-
-    public float GetChance(int level)
-    {
-        if (m_values == null) return 0f;
-        return (m_values.m_chance?.Value ?? 0f) * level;
-    }
-
-    public float GetReflect(int level)
-    {
-        if (m_values == null) return 0f;
-        return (m_values.m_reflect?.Value ?? 0f) * level ;
-    }
-
-    public float GetAddedComfort(int level)
-    {
-        if (m_values == null) return 0f;
-        return (m_values.m_comfort?.Value ?? 0f) * level;
-    }
-
-    public float GetDamageReduction(int level)
-    {
-        if (m_values == null) return 1f;
-        return Mathf.Clamp01(1 - ((m_values.m_damageReduction?.Value ?? 1f) - 0.1f * (level - 1)));
-    }
-
-    public float GetFoodModifier(int level)
-    {
-        if (m_values == null) return 1f;
-        return (m_values.m_foodModifier?.Value ?? 1f) * level - (level - 1);
-    }
-
-    public float GetForageModifier(int level)
-    {
-        if (m_values == null) return 1f;
-        return (m_values.m_forageModifier?.Value ?? 1f) * level - (level - 1);
-    }
-
-    public float GetSpeedReduction(int level)
-    {
-        if (m_values == null) return 1f;
-        return Mathf.Clamp01(1 - ((m_values.m_speedReduction?.Value ?? 1f) + 0.1f * (level - 1)));
-    }
-
-    public float GetRunStaminaDrain(int level)
-    {
-        if (m_values == null) return 1f;
-        return Mathf.Clamp(1 - (m_values.m_runStaminaDrain?.Value ?? 0f) * level, 0f, 1f);
-    }
-
-    public float GetAttackSpeedReduction(int level)
-    {
-        if (m_values == null) return 1f;
-        return Mathf.Clamp01(1 - ((m_values.m_attackSpeedReduction?.Value ?? 1f) - 0.1f * (level - 1)));
-    }
+    public float GetHealAmount(int level) => (m_values == null) ? 0f : (m_values.m_heal?.Value ?? 0f) * level;
+    public float GetHealth(int level) => m_values == null ? 0f : (m_values.m_health?.Value ?? 0f) * level;
+    public float GetStamina(int level) => m_values == null ? 0f : (m_values.m_stamina?.Value ?? 0f) * level;
+    public float GetEitr(int level) => m_values == null ? 0f : (m_values.m_eitr?.Value ?? 0f) * level;
+    public float GetAbsorb(int level) => m_values == null ? 0f : (m_values.m_absorb?.Value ?? 0f) * level;
+    public float GetEitrRegen(int level) => m_values == null ? 1f : (m_values.m_eitrRegen?.Value ?? 1f) * level - (level - 1);
+    public float GetHealthRegen(int level) => m_values == null ? 1f : (m_values.m_healthRegen?.Value ?? 1f) * level - (level - 1);
+    public float GetStaminaRegen(int level) => m_values == null ? 1f : (m_values.m_staminaRegen?.Value ?? 1f) * level - (level - 1);
+    public int GetCarryWeight(int level) => m_values == null ? 0 : (m_values.m_carryWeight?.Value ?? 0) * level;
+    public float GetAttack(int level) => m_values == null ? 0f : (m_values.m_modifyAttack?.Value ?? 0f) * level - (level - 1);
+    public float GetBleed(int level) => m_values == null ? 0f : (m_values.m_bleed?.Value ?? 0f) * level;
+    public float GetSpeedModifier(int level) => m_values == null ? 0f : (m_values.m_speed?.Value ?? 0f) * level - (level - 1);
+    public float GetChance(int level) => m_values == null ? 0f : (m_values.m_chance?.Value ?? 0f) * level;
+    public float GetReflect(int level) => m_values == null ? 0f : (m_values.m_reflect?.Value ?? 0f) * level;
+    public float GetAddedComfort(int level) => m_values == null ? 0f : (m_values.m_comfort?.Value ?? 0f) * level;
+    public float GetDamageReduction(int level) => m_values == null ? 1f : Mathf.Clamp01(1 - ((m_values.m_damageReduction?.Value ?? 1f) - 0.1f * (level - 1)));
+    public float GetFoodModifier(int level) => m_values == null ? 1f : (m_values.m_foodModifier?.Value ?? 1f) * level - (level - 1);
+    public float GetForageModifier(int level) => m_values == null ? 1f : (m_values.m_forageModifier?.Value ?? 1f) * level - (level - 1);
+    public float GetSpeedReduction(int level) => m_values == null ? 1f : Mathf.Clamp01(1 - ((m_values.m_speedReduction?.Value ?? 1f) + 0.1f * (level - 1)));
+    public float GetRunStaminaDrain(int level) => m_values == null ? 1f : Mathf.Clamp01(1 - (m_values.m_runStaminaDrain?.Value ?? 0f) * level);
+    public float GetAttackSpeedReduction(int level) => m_values == null ? 1f : Mathf.Clamp01(1 - ((m_values.m_attackSpeedReduction?.Value ?? 1f) - 0.1f * (level - 1)));
+    public float GetAttackStaminaUsage(int level) => m_values == null ? 1f : Mathf.Clamp01(1 - ((m_values.m_attackStaminaUsage?.Value ?? 0f) + (level - 1) * 0.1f));
+    public float GetSneakStaminaUsage(int level) => m_values == null ? 1f : Mathf.Clamp01(1 - ((m_values.m_sneakStaminaUsage?.Value ?? 0f) + (level - 1) * 0.1f));
     
     public TalentResistances? m_resistances;
-
     public HitData.DamageModifiers GetDamageModifiers()
     {
         if (m_resistances == null) return new HitData.DamageModifiers();
@@ -213,7 +105,7 @@ public class Talent
     public GameObject? GetCreatures(Heightmap.Biome biome)
     {
         if (m_creatures == null) return null;
-        var scene = ZNetScene.instance;
+        ZNetScene scene = ZNetScene.instance;
         if (!scene) return null;
         switch (biome)
         {
@@ -273,6 +165,8 @@ public class Talent
         public ConfigEntry<float>? m_speedReduction;
         public ConfigEntry<float>? m_runStaminaDrain;
         public ConfigEntry<float>? m_attackSpeedReduction;
+        public ConfigEntry<float>? m_attackStaminaUsage;
+        public ConfigEntry<float>? m_sneakStaminaUsage;
     }
     public class TalentCreatures
     {
@@ -310,23 +204,10 @@ public class Talent
         public Characteristic m_type;
         public int m_amount;
     }
-
     public string GetName() => m_type is TalentType.Characteristic ? GetTalentType() : $"$talent_{m_key.ToLower()}";
-    
     public string GetDescription() => $"$talent_{m_key.ToLower()}_desc";
-
-    private float GetCreatureDespawnLength(int level)
-    {
-        if (m_creature == null) return 0f;
-        return GetLength() * level;
-    }
-
-    private float GetCreaturesDespawnLength(int level)
-    {
-        if (m_creatures == null) return 0f;
-        return GetLength() * level;
-    }
-    
+    private float GetCreatureDespawnLength(int level) => m_creature == null ? 0f : GetLength() * level;
+    private float GetCreaturesDespawnLength(int level) => m_creatures == null ? 0f : GetLength() * level;
     public string GetTooltip()
     {
         StringBuilder stringBuilder = new StringBuilder();
@@ -402,6 +283,8 @@ public class Talent
                 if (m_values.m_speedReduction is { Value: > 0 }) stringBuilder.Append($"$almanac_speed: <color=orange>{FormatPercentage(GetSpeedReduction(GetLevel()))}%</color>\n");
                 if (m_values.m_runStaminaDrain is {Value: > 0}) stringBuilder.Append($"$se_runstamina: <color=orange>{FormatPercentage(GetRunStaminaDrain(GetLevel()))}%</color>\n");
                 if (m_values.m_attackSpeedReduction is { Value: > 0 }) stringBuilder.Append($"$almanac_attackspeedmod $almanac_reduction: <color=orange>{FormatPercentage(GetAttackSpeedReduction(GetLevel()))}%</color>\n");
+                if (m_values.m_sneakStaminaUsage is { Value: > 0 }) stringBuilder.Append($"$se_sneakstamina: <color=orange>{FormatPercentage(GetSneakStaminaUsage(GetLevel()))}%</color>\n");
+                if (m_values.m_attackStaminaUsage is { Value: > 0 }) stringBuilder.Append($"$se_attackstamina: <color=orange>{FormatPercentage(GetAttackStaminaUsage(GetLevel()))}%</color>\n");
             }
 
             if (m_damages != null)
@@ -480,11 +363,8 @@ public class Talent
         }
         return Localization.instance.Localize(stringBuilder.ToString());
     }
-
     private string GetBiomeLocalized(Heightmap.Biome biome) => $"$biome_{biome.ToString().ToLower()}";
-
     private int FormatPercentage(float value) => (int)(value * 100 - 100);
-
     public string GetPrestigeTooltip()
     {
         StringBuilder stringBuilder = new StringBuilder();
@@ -559,8 +439,9 @@ public class Talent
                 if (m_values.m_forageModifier is { Value: > 0 }) stringBuilder.Append($"$almanac_foragemod: <color=orange>{FormatPercentage(GetForageModifier(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetForageModifier(GetLevel() + 1))}%</color>\n");
                 if (m_values.m_speedReduction is { Value: > 0 }) stringBuilder.Append($"$almanac_speed: <color=orange>{FormatPercentage(GetSpeedReduction(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetSpeedReduction(GetLevel() + 1))}%</color>\n");
                 if (m_values.m_runStaminaDrain is {Value: > 0}) stringBuilder.Append($"$se_runstamina: <color=orange>{FormatPercentage(GetRunStaminaDrain(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetRunStaminaDrain(GetLevel() + 1))}%</color>\n");
-                if (m_values.m_attackSpeedReduction is { Value: > 0 }) stringBuilder.Append($"$almanac_attackspeedmod $almanac_reduction: <color=orange>{FormatPercentage(GetAttackSpeedReduction(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetAttackSpeedReduction(GetLevel() + 1))}</color>\n");
-
+                if (m_values.m_attackSpeedReduction is { Value: > 0 }) stringBuilder.Append($"$almanac_attackspeedmod $almanac_reduction: <color=orange>{FormatPercentage(GetAttackSpeedReduction(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetAttackSpeedReduction(GetLevel() + 1))}%</color>\n");
+                if (m_values.m_sneakStaminaUsage is { Value: > 0 }) stringBuilder.Append($"$se_sneakstamina: <color=orange>{FormatPercentage(GetSneakStaminaUsage(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetSneakStaminaUsage(GetLevel() + 1))}%</color>\n");
+                if (m_values.m_attackStaminaUsage is { Value: > 0 }) stringBuilder.Append($"$se_attackstamina: <color=orange>{FormatPercentage(GetAttackStaminaUsage(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetAttackStaminaUsage(GetLevel() + 1))}%</color>\n");
             }
 
             if (m_damages != null)
@@ -725,7 +606,7 @@ public static class TalentManager
             m_cost = _Plugin.config("Warrior - Survivor", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock ability", new AcceptableValueRange<int>(1, 10))),
             m_alt = _Plugin.config("Warrior - Survivor", "Enable", Toggle.Off, "If on, replaces dual wield talent"),
             m_startEffects = LoadedAssets.VFX_SongOfSpirit,
-            m_cap = _Plugin.config("Warrior - Survivor", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+            m_cap = _Plugin.config("Warrior - Survivor", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
         };
         survivor.m_alt.SettingChanged += (sender, args) =>
         {
@@ -1119,7 +1000,8 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Ranger - Hunter", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Ranger - Hunter", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Ranger - Hunter", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Ranger - Hunter", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Ranger - Hunter", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_effectsEnabled = _Plugin.config("Ranger - Hunter", "Effects Enabled", Toggle.On, "If on, start effects are enabled"),
             },
             new()
             {
@@ -1155,7 +1037,8 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Ranger - Quick Shot", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Ranger - Quick Shot", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Ranger - Quick Shot", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Ranger - Quick Shot", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Ranger - Quick Shot", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_effectsEnabled = _Plugin.config("Ranger - Quick Shot", "Effects Enabled", Toggle.On, "If on, start effects are enabled"),
             },
             new()
             {
@@ -1473,7 +1356,8 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Shaman - Shield", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Shaman - Shield", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Shaman - Shield", "Eitr Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Shaman - Shield", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Shaman - Shield", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_effectsEnabled = _Plugin.config("Shaman - Shield", "Effects Enabled", Toggle.On, "If on, start effects are enabled"),
             },
             new()
             {
@@ -1494,7 +1378,8 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Shaman - Regeneration", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Shaman - Regeneration", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Shaman - Regeneration", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Shaman - Regeneration", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Shaman - Regeneration", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_effectsEnabled = _Plugin.config("Shaman - Regeneration", "Effects Enabled", Toggle.On, "If on, start effects are enabled"),
             },
             new()
             {
@@ -1511,7 +1396,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Shaman - Summon", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Shaman - Summon", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Shaman - Summon", "Eitr Cost", 25f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Shaman - Summon", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Shaman - Summon", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
             },
             new()
             {
@@ -1625,7 +1510,8 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Bard - Song of Damage", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Damage", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Bard - Song of Damage", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Bard - Song of Damage", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Bard - Song of Damage", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_effectsEnabled = _Plugin.config("Bard - Song of Damage", "Effects Enabled", Toggle.On, "If on, start effects are enabled"),
             },
             new()
             {
@@ -1646,7 +1532,8 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Bard - Song of Healing", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Healing", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Bard - Song of Healing", "Eitr Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Bard - Song of Healing", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Bard - Song of Healing", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_effectsEnabled = _Plugin.config("Bard - Song of Healing", "Effects Enabled", Toggle.On, "If on, start effects are enabled"),
             },
             new()
             {
@@ -1667,7 +1554,8 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Bard - Song of Vitality", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Vitality", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Bard - Song of Vitality", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Bard - Song of Vitality", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Bard - Song of Vitality", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_effectsEnabled = _Plugin.config("Bard - Song of Vitality", "Effects Enabled", Toggle.On, "If on, start effects are enabled"),
             },
             new()
             {
@@ -1688,7 +1576,8 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Bard - Song of Speed", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Speed", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Bard - Song of Speed", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Bard - Song of Speed", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Bard - Song of Speed", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_effectsEnabled = _Plugin.config("Bard - Song of Speed", "Effects Enabled", Toggle.On, "If on, start effects are enabled"),
             },
             new()
             {
@@ -1709,7 +1598,8 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Bard - Song of Attrition", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Attrition", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Bard - Song of Attrition", "Eitr Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Bard - Song of Attrition", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Bard - Song of Attrition", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_effectsEnabled = _Plugin.config("Bard - Song of Attrition", "Effects Enabled", Toggle.On, "If on, start effects are enabled"),
             }
         };
     }
@@ -1804,7 +1694,8 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Rogue - Quick Step", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Rogue - Quick Step", "Stamina Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Rogue - Quick Step", "Eitr Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Rogue - Quick Step", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Rogue - Quick Step", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_effectsEnabled = _Plugin.config("Rogue - Quick Step", "Effects Enabled", Toggle.On, "If on, start effects are enabled"),
             },
             new()
             {
@@ -1813,11 +1704,13 @@ public static class TalentManager
                 m_statusEffectHash = "SE_RogueStamina".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
                 m_cooldown = _Plugin.config("Rogue - Swift", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
-                m_cost = _Plugin.config("Rogue - Quick Hands", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
+                m_cost = _Plugin.config("Rogue - Swift", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
                     m_staminaRegen = _Plugin.config("Rogue - Swift", "Stamina Regeneration", 1.05f, new ConfigDescription("Set the multiplier", new AcceptableValueRange<float>(1f, 2f))),
-                    m_stamina = _Plugin.config("Rogue - Swift", "Stamina", 10f, new ConfigDescription("Set the amount", new AcceptableValueRange<float>(0f, 100f)))
+                    m_stamina = _Plugin.config("Rogue - Swift", "Stamina", 10f, new ConfigDescription("Set the amount", new AcceptableValueRange<float>(0f, 100f))),
+                    m_attackStaminaUsage = _Plugin.config("Rogue - Swift", "Attack Stamina Usage", 0.1f, new ConfigDescription("Set the modifier", new AcceptableValueRange<float>(0f, 1f))),
+                    m_sneakStaminaUsage = _Plugin.config("Rogue - Swift", "Sneak Stamina Usage", 0.2f, new ConfigDescription("Set the modifier", new AcceptableValueRange<float>(0f, 1f)))
                 },
                 m_length = _Plugin.config("Rogue - Swift", "Length", 60f, new ConfigDescription("Set the length of effect", new AcceptableValueRange<float>(1f, 1000f))),
                 m_sprite = SpriteManager.Relentless_Icon,
@@ -1826,7 +1719,8 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Rogue - Swift", "Health Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Rogue - Swift", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Rogue - Swift", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Rogue - Swift", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Rogue - Swift", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_effectsEnabled = _Plugin.config("Rogue - Swift", "Effects Enabled", Toggle.On, "If on, start effects are enabled"),
             },
             new()
             {
@@ -1847,7 +1741,8 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Rogue - Retaliation", "Health Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Rogue - Retaliation", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Rogue - Retaliation", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Rogue - Retaliation", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Rogue - Retaliation", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_effectsEnabled = _Plugin.config("Rogue - Retaliation", "Effects Enabled", Toggle.On, "If on, start effects are enabled"),
             },
             new()
             {
@@ -1868,7 +1763,8 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Rogue - Backstab", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Rogue - Backstab", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Rogue - Backstab", "Eitr Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Rogue - Backstab", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Rogue - Backstab", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_effectsEnabled = _Plugin.config("Rogue - Backstab", "Effects Enabled", Toggle.On, "If on, start effects are enabled"),
             },
             new()
             {
@@ -1889,7 +1785,8 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Rogue - Bleed", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Rogue - Bleed", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Rogue - Bleed", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Rogue - Bleed", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Rogue - Bleed", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_effectsEnabled = _Plugin.config("Rogue - Bleed", "Effects Enabled", Toggle.On, "If on, start effects are enabled"),
             }
         };
     }
@@ -1983,7 +1880,8 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Warrior - Power", "Health Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Warrior - Power", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Warrior - Power", "Eitr Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Warrior - Power", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Warrior - Power", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_effectsEnabled = _Plugin.config("Warrior - Power", "Effects Enabled", Toggle.On, "If on, start effects are enabled"),
             },
             new()
             {
@@ -2005,7 +1903,8 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Warrior - Vitality", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Warrior - Vitality", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Warrior - Vitality", "Eitr Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Warrior - Vitality", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Warrior - Vitality", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_effectsEnabled = _Plugin.config("Warrior - Vitality", "Effects Enabled", Toggle.On, "If on, start effects are enabled"),
             },
             new()
             {
@@ -2018,7 +1917,7 @@ public static class TalentManager
                     m_damageReduction = _Plugin.config("Warrior - Monkey Wrench", "Damage Decrease", 0f, new ConfigDescription("Set the damage reduction", new AcceptableValueRange<float>(0f, 1f))),
                     m_attackSpeedReduction = _Plugin.config("Warrior - Monkey Wrench", "Attack Speed Reduction", 0.5f, new ConfigDescription("Set the attack speed reduction modifier", new AcceptableValueRange<float>(0f, 1f)))
                 },
-                m_cap = _Plugin.config("Warrior - Monkey Wrench", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Warrior - Monkey Wrench", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
             },
             new()
             {
@@ -2041,7 +1940,8 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Warrior - Fortification", "Health Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Warrior - Fortification", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Warrior - Fortification", "Eitr Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
-                m_cap = _Plugin.config("Warrior - Fortification", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Warrior - Fortification", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_effectsEnabled = _Plugin.config("Warrior - Fortification", "Effects Enabled", Toggle.On, "If on, start effects are enabled"),
             },
             new()
             {

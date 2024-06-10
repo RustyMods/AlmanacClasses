@@ -9,7 +9,8 @@ public static class ShamanHeal
     {
         Character character = Player.m_localPlayer.GetHoverCreature();
         character.Heal(amount);
-        LoadedAssets.FX_Heal.Create(character.transform.position, character.transform.rotation, character.transform);
+        Transform transform = character.transform;
+        LoadedAssets.FX_Heal.Create(transform.position, transform.rotation, transform);
         // if (character is not Player player) return false;
         //
         // player.Heal(amount);

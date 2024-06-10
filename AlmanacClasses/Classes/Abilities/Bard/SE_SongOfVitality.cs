@@ -5,6 +5,8 @@ namespace AlmanacClasses.Classes.Abilities.Bard;
 public class SE_SongOfVitality : StatusEffect
 {
     private readonly string m_key = "SongOfVitality";
+    private Talent m_talent = null!;
+    public float m_modifier;
     
     private float m_searchTimer;
     private float m_boostTimer;
@@ -16,6 +18,7 @@ public class SE_SongOfVitality : StatusEffect
         if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
         m_ttl = talent.GetLength();
         m_startEffects = talent.GetEffectList();
+        m_talent = talent;
         base.Setup(character);
     }
 
@@ -31,7 +34,7 @@ public class SE_SongOfVitality : StatusEffect
         m_searchTimer += dt;
         if (m_searchTimer < 1f) return;
         m_searchTimer = 0.0f;
-        
+        m_players.Clear();
         Player.GetPlayersInRange(m_character.transform.position, 10f, m_players);
     }
 
@@ -41,15 +44,19 @@ public class SE_SongOfVitality : StatusEffect
         if (m_boostTimer < 1f) return;
         m_boostTimer = 0.0f;
 
-        foreach (var player in m_players)
+        foreach (Player player in m_players)
         {
             if (player.GetSEMan().HaveStatusEffect(name.GetStableHashCode())) continue;
-            player.GetSEMan().AddStatusEffect(name.GetStableHashCode());
+            StatusEffect effect = player.GetSEMan().AddStatusEffect(name.GetStableHashCode());
+            if (effect is SE_SongOfVitality song)
+            {
+                song.m_modifier = m_talent.GetHealthRegen(m_talent.GetLevel());
+            }
         }
     }
 
     public override void ModifyHealthRegen(ref float regenMultiplier)
     {
-        regenMultiplier *= 1.1f;
+        regenMultiplier *= m_modifier == 0f ? m_talent.GetHealthRegen(m_talent.GetLevel()) : m_modifier;
     }
 }

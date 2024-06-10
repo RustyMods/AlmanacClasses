@@ -3,11 +3,19 @@
 public class SE_Resourceful : StatusEffect
 {
     private readonly string m_key = "Resourceful";
+    private Talent m_talent = null!;
+
+    public override void Setup(Character character)
+    {
+        if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
+        m_talent = talent;
+        m_startEffects = talent.GetEffectList();
+        base.Setup(character);
+    }
 
     public override void ModifyAttack(Skills.SkillType skill, ref HitData hitData)
     {
-        if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
-        HitData.DamageTypes damages = talent.GetDamages(talent.GetLevel());
+        HitData.DamageTypes damages = m_talent.GetDamages(m_talent.GetLevel());
         if (hitData.m_damage.m_chop > 0f)
         {
             hitData.m_damage.m_chop += damages.m_chop;

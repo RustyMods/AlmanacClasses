@@ -5,6 +5,7 @@ namespace AlmanacClasses.Classes.Abilities.Rogue;
 public class SE_Bleed : StatusEffect
 {
     private readonly string m_key = "RogueBleed";
+    private Talent m_talent = null!;
     
     public float m_damageInterval = 1f;
     public float m_bleedTimer;
@@ -12,8 +13,10 @@ public class SE_Bleed : StatusEffect
 
     public override void Setup(Character character)
     {
+        if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
         m_ttl = 5f;
         m_startEffects = LoadedAssets.BleedEffects;
+        m_talent = talent;
         base.Setup(character);
     }
 
@@ -23,14 +26,12 @@ public class SE_Bleed : StatusEffect
         m_bleedTimer += dt;
         if (m_bleedTimer < m_damageInterval) return;
         m_bleedTimer = 0.0f;
-
-        if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
         
         HitData hit = new()
         {
             m_point = m_character.GetCenterPoint()
         };
-        hit.m_damage.m_pierce = m_stack * talent.GetBleed(talent.GetLevel());
+        hit.m_damage.m_pierce = m_stack * m_talent.GetBleed(m_talent.GetLevel());
         hit.m_hitType = HitData.HitType.PlayerHit;
         hit.m_blockable = false;
         hit.m_dodgeable = false;

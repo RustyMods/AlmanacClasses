@@ -6,12 +6,14 @@ namespace AlmanacClasses.Classes.Abilities.Warrior;
 public class SE_Survivor : StatusEffect
 {
     private readonly string m_key = "Survivor";
+    private Talent m_talent = null!;
     public override void Setup(Character character)
     {
         if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
         m_ttl = 10f;
         m_startEffects = talent.GetEffectList();
         m_name = talent.GetName();
+        m_talent = talent;
         base.Setup(character);
     }
     public override void OnDamaged(HitData hit, Character attacker)
@@ -33,7 +35,7 @@ public static class Survivor
             if (__result > 0.0) return;
             if (PlayerManager.m_playerTalents.TryGetValue("Survivor", out Talent talent))
             {
-                if (__instance.GetSEMan().HaveStatusEffect("SE_Survivor".GetStableHashCode())) return;
+                if (__instance.GetSEMan().HaveStatusEffect(talent.m_statusEffectHash)) return;
                 float chance = talent.GetChance(talent.GetLevel());
                 float random = Random.Range(0, 101f);
                 if (random < chance)
@@ -42,7 +44,7 @@ public static class Survivor
                     __instance.Heal(quarter);
                     __result = quarter;
                     // if (AlmanacClassesPlugin._SurvivorFX.Value is AlmanacClassesPlugin.Toggle.Off) return;
-                    __instance.GetSEMan().AddStatusEffect("SE_Survivor".GetStableHashCode());
+                    __instance.GetSEMan().AddStatusEffect(talent.m_statusEffectHash);
                 }
             }
         }

@@ -4,19 +4,18 @@ namespace AlmanacClasses.Classes.Abilities.Warrior;
 public class SE_WarriorVitality : StatusEffect
 {
     private readonly string m_key = "WarriorVitality";
-    
+    private Talent m_talent = null!;
     public override void Setup(Character character)
     {
         if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
         m_ttl = talent.GetLength();
         m_startEffects = talent.GetEffectList();
-        
+        m_talent = talent;
         base.Setup(character);
     }
 
     public override void ModifyHealthRegen(ref float regenMultiplier)
     {
-        if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
-        regenMultiplier *= talent.GetHealthRegen(talent.GetLevel());
+        regenMultiplier *= m_talent.GetHealthRegen(m_talent.GetLevel());
     }
 }

@@ -34,7 +34,7 @@ public static class StatusEffectManager
 
     private static List<StatusEffect> LoadCore()
     {
-        var IceBreaker = ScriptableObject.CreateInstance<StatusEffect>();
+        StatusEffect IceBreaker = ScriptableObject.CreateInstance<StatusEffect>();
         IceBreaker.name = "SE_IceBreaker";
         IceBreaker.m_ttl = 10f;
         IceBreaker.m_name = "Iced";
@@ -56,12 +56,16 @@ public static class StatusEffectManager
     {
         SE_SongOfAttrition SongOfAttrition = ScriptableObject.CreateInstance<SE_SongOfAttrition>();
         SongOfAttrition.name = "SE_SongOfAttrition";
+        
         SE_SongOfDamage SongOfDamage = ScriptableObject.CreateInstance<SE_SongOfDamage>();
         SongOfDamage.name = "SE_SongOfDamage";
+        
         SE_SongOfHealing SongOfHealing = ScriptableObject.CreateInstance<SE_SongOfHealing>();
         SongOfHealing.name = "SE_SongOfHealing";
+        
         SE_SongOfSpeed SongOfSpeed = ScriptableObject.CreateInstance<SE_SongOfSpeed>();
         SongOfSpeed.name = "SE_SongOfSpeed";
+        
         SE_SongOfVitality SongOfVitality = ScriptableObject.CreateInstance<SE_SongOfVitality>();
         SongOfVitality.name = "SE_SongOfVitality";
 

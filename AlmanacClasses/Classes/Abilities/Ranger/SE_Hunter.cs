@@ -5,6 +5,8 @@ namespace AlmanacClasses.Classes.Abilities.Ranger;
 public class SE_Hunter : StatusEffect
 {
     private readonly string m_key = "RangerHunter";
+    private Talent m_talent = null!;
+    
     private float m_searchTimer;
     private float m_affectTimer;
     
@@ -15,6 +17,8 @@ public class SE_Hunter : StatusEffect
         if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
         m_ttl = talent.GetLength();
         m_startEffects = talent.GetEffectList();
+        m_talent = talent;
+        
         base.Setup(character);
     }
 
@@ -40,7 +44,7 @@ public class SE_Hunter : StatusEffect
         if (m_affectTimer < 1f) return;
         m_affectTimer = 0.0f;
 
-        foreach (var character in m_characters)
+        foreach (Character character in m_characters)
         {
             if (character is Player) continue;
             if (character.GetSEMan().HaveStatusEffect("SE_SlowDown".GetStableHashCode())) continue;
