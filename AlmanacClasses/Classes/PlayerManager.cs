@@ -133,9 +133,9 @@ public static class PlayerManager
 
             if (talent.m_alt?.Value is AlmanacClassesPlugin.Toggle.Off) continue;
 
-            RemoveOriginalTalent(button);
+            // RemoveOriginalTalent(button);
             
-            m_playerTalents[talent.m_key] = talent;
+            // m_playerTalents[talent.m_key] = talent;
             
             LoadUI.ChangeButton(talent, false, talent.GetFillLine());
         }
