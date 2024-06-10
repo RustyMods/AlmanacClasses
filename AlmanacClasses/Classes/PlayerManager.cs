@@ -113,7 +113,7 @@ public static class PlayerManager
 
     private static void CheckAltTalents()
     {
-        foreach (var kvp in TalentManager.m_altTalentsByButton)
+        foreach (KeyValuePair<string, Talent> kvp in TalentManager.m_altTalentsByButton)
         {
             Talent talent = kvp.Value;
             string button = kvp.Key;
@@ -124,7 +124,7 @@ public static class PlayerManager
             
             m_playerTalents[talent.m_key] = talent;
             
-            LoadUI.ChangeButton(talent);
+            LoadUI.ChangeButton(talent, false, talent.GetFillLine());
         }
     }
 

@@ -38,6 +38,8 @@ public class Talent
     public TalentCreatures? m_creatures;
     public ConfigEntry<string>? m_creature;
     public ResistancePercentages? m_resistances;
+    public float m_line = 1f;
+    public float GetFillLine() => m_line;
     public int GetLevel() => m_level;
     public void AddLevel() => ++m_level;
     public int GetPrestigeCap() => m_cap?.Value ?? int.MaxValue;
@@ -605,6 +607,7 @@ public static class TalentManager
     private static void LoadAltTalents()
     {
         List<Talent> talents = new();
+        talents.AddRange(LoadAltCore());
         talents.AddRange(LoadAltWarrior());
 
         foreach (Talent talent in talents)
@@ -616,7 +619,30 @@ public static class TalentManager
                 m_talentsByStatusEffect[talent.m_statusEffectHash] = talent;
             }
         }
-        
+    }
+
+    private static List<Talent> LoadAltCore()
+    {
+        Talent TreasureHunter = new Talent()
+        {
+            m_key = "TreasureHunter",
+            m_button = "$button_treasure",
+            m_statusEffectHash = "SE_TreasureHunter".GetStableHashCode(),
+            m_type = TalentType.StatusEffect,
+            m_sprite = SpriteManager.Wishbone_Icon,
+            m_cost = _Plugin.config("Core - Treasure Hunter", "Purchase Cost", 3, new ConfigDescription("Set cost to unlock ability", new AcceptableValueRange<int>(1, 10))),
+            m_cooldown = _Plugin.config("Core - Treasure Hunter", "Cooldown", 180f, new ConfigDescription("Set cooldown of ability", new AcceptableValueRange<float>(1f, 1000f))),
+            m_length = _Plugin.config("Core - Treasure Hunter", "Length", 60f, new ConfigDescription("Set length of ability", new AcceptableValueRange<float>(1f, 1000f))),
+            m_alt = _Plugin.config("Core - Treasure Hunter", "Enable", Toggle.Off, "If on, replaces forage talent"),
+            m_cap = _Plugin.config("Core - Treasure Hunter", "Prestige Cap", 1, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 10))),
+            m_line = 0.7f,
+        };
+        TreasureHunter.m_alt.SettingChanged += (sender, args) =>
+        {
+            LoadUI.ChangeButton(TreasureHunter, TreasureHunter.m_alt.Value is Toggle.Off, TreasureHunter.m_line);
+        };
+
+        return new List<Talent>() { TreasureHunter };
     }
 
     private static List<Talent> LoadAltWarrior()
@@ -990,7 +1016,7 @@ public static class TalentManager
                 m_button = "$button_ranger_talent_3",
                 m_ability = "TriggerHunterSpawn",
                 m_type = TalentType.Ability,
-                m_cooldown = _Plugin.config("Ranger - Summon", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Ranger - Summon", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Ranger - Summon", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_creatures = new Talent.TalentCreatures()
                 {
@@ -1018,7 +1044,7 @@ public static class TalentManager
                 m_button = "$button_ranger_talent_1",
                 m_statusEffectHash = "SE_Hunter".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
-                m_cooldown = _Plugin.config("Ranger - Hunter", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Ranger - Hunter", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Ranger - Hunter", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
@@ -1039,7 +1065,8 @@ public static class TalentManager
                 m_button = "$button_ranger_talent_2",
                 m_statusEffectHash = "SE_LuckyShot".GetStableHashCode(),
                 m_type = TalentType.Passive,
-                m_cooldown = _Plugin.config("Ranger - Lucky Shot", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_sprite = SpriteManager.LuckyShot_Icon,
+                m_cooldown = _Plugin.config("Ranger - Lucky Shot", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Ranger - Lucky Shot", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
@@ -1054,7 +1081,7 @@ public static class TalentManager
                 m_button = "$button_ranger_talent_5",
                 m_statusEffectHash = "SE_QuickShot".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
-                m_cooldown = _Plugin.config("Ranger - Quick Shot", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Ranger - Quick Shot", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Ranger - Quick Shot", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
@@ -1076,7 +1103,7 @@ public static class TalentManager
                 m_button = "$button_ranger_talent_4",
                 m_ability = "TriggerSpawnTrap",
                 m_type = TalentType.Ability,
-                m_cooldown = _Plugin.config("Ranger - Trap", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Ranger - Trap", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Ranger - Trap", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_damages = new Talent.TalentDamages()
                 {
@@ -1181,7 +1208,7 @@ public static class TalentManager
                 m_button = "$button_sage_talent_4",
                 m_ability = "TriggerLightningAOE",
                 m_type = TalentType.Ability,
-                m_cooldown = _Plugin.config("Sage - Lightning", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Sage - Lightning", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Sage - Lightning", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_damages = new Talent.TalentDamages()
                 {
@@ -1201,7 +1228,7 @@ public static class TalentManager
                 m_button = "$button_sage_talent_3",
                 m_ability = "TriggerMeteor",
                 m_type = TalentType.Ability,
-                m_cooldown = _Plugin.config("Sage - Meteor", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Sage - Meteor", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Sage - Meteor", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_damages = new Talent.TalentDamages()
                 {
@@ -1221,7 +1248,7 @@ public static class TalentManager
                 m_button = "$button_sage_talent_1",
                 m_ability = "TriggerStoneThrow",
                 m_type = TalentType.Ability,
-                m_cooldown = _Plugin.config("Sage - Stone", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Sage - Stone", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Sage - Stone", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_damages = new Talent.TalentDamages()
                 {
@@ -1240,7 +1267,7 @@ public static class TalentManager
                 m_button = "$button_sage_talent_2",
                 m_ability = "TriggerGoblinBeam",
                 m_type = TalentType.Ability,
-                m_cooldown = _Plugin.config("Sage - Beam", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Sage - Beam", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Sage - Beam", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_damages = new Talent.TalentDamages()
                 {
@@ -1261,7 +1288,7 @@ public static class TalentManager
                 m_button = "$button_sage_talent_5",
                 m_ability = "TriggerIceBreath",
                 m_type = TalentType.Ability,
-                m_cooldown = _Plugin.config("Sage - Ice Breath", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Sage - Ice Breath", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Sage - Ice Breath", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_damages = new Talent.TalentDamages()
                 {
@@ -1354,7 +1381,7 @@ public static class TalentManager
                 m_button = "$button_shaman_talent_1",
                 m_ability = "TriggerHeal",
                 m_type = TalentType.Ability,
-                m_cooldown = _Plugin.config("Shaman - Heal", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Shaman - Heal", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Shaman - Heal", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
@@ -1373,7 +1400,7 @@ public static class TalentManager
                 m_button = "$button_shaman_talent_5",
                 m_statusEffectHash = "SE_ShamanShield".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
-                m_cooldown = _Plugin.config("Shaman - Shield", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Shaman - Shield", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Shaman - Shield", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
@@ -1395,7 +1422,7 @@ public static class TalentManager
                 m_button = "$button_shaman_talent_4",
                 m_statusEffectHash = "SE_ShamanRegeneration".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
-                m_cooldown = _Plugin.config("Shaman - Regeneration", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Shaman - Regeneration", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Shaman - Regeneration", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
@@ -1418,7 +1445,7 @@ public static class TalentManager
                 m_button = "$button_shaman_talent_3",
                 m_ability = "TriggerShamanSpawn",
                 m_type = TalentType.Ability,
-                m_cooldown = _Plugin.config("Shaman - Summon", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Shaman - Summon", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Shaman - Summon", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_creature = _Plugin.config("Shaman - Summon", "Creature Name", "Ghost", "Set the creature to summon"),
                 m_length = _Plugin.config("Shaman - Summon", "Length", 100f, new ConfigDescription("Set the length of time until de-spawn", new AcceptableValueRange<float>(1f, 1000f))),
@@ -1435,7 +1462,7 @@ public static class TalentManager
                 m_button = "$button_shaman_talent_2",
                 m_ability = "TriggerRootBeam",
                 m_type = TalentType.Ability,
-                m_cooldown = _Plugin.config("Shaman - Roots", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Shaman - Roots", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Shaman - Roots", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_damages = new Talent.TalentDamages()
                 {
@@ -1528,7 +1555,7 @@ public static class TalentManager
                 m_button = "$button_bard_talent_3",
                 m_statusEffectHash = "SE_SongOfDamage".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
-                m_cooldown = _Plugin.config("Bard - Song of Damage", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Bard - Song of Damage", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Bard - Song of Damage", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
@@ -1550,7 +1577,7 @@ public static class TalentManager
                 m_button = "$button_bard_talent_4",
                 m_statusEffectHash = "SE_SongOfHealing".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
-                m_cooldown = _Plugin.config("Bard - Song of Healing", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Bard - Song of Healing", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Bard - Song of Healing", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
@@ -1572,7 +1599,7 @@ public static class TalentManager
                 m_button = "$button_bard_talent_2",
                 m_statusEffectHash = "SE_SongOfVitality".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
-                m_cooldown = _Plugin.config("Bard - Song of Vitality", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Bard - Song of Vitality", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Bard - Song of Vitality", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
@@ -1594,7 +1621,7 @@ public static class TalentManager
                 m_button = "$button_bard_talent_1",
                 m_statusEffectHash = "SE_SongOfSpeed".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
-                m_cooldown = _Plugin.config("Bard - Song of Speed", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Bard - Song of Speed", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Bard - Song of Speed", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
@@ -1616,7 +1643,7 @@ public static class TalentManager
                 m_button = "$button_bard_talent_5",
                 m_statusEffectHash = "SE_SongOfAttrition".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
-                m_cooldown = _Plugin.config("Bard - Song of Attrition", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Bard - Song of Attrition", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Bard - Song of Attrition", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_damages = new Talent.TalentDamages()
                 {
@@ -1711,7 +1738,7 @@ public static class TalentManager
                 m_button = "$button_rogue_talent_1",
                 m_statusEffectHash = "SE_RogueSpeed".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
-                m_cooldown = _Plugin.config("Rogue - Quick Step", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Rogue - Quick Step", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Rogue - Quick Step", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
@@ -1734,7 +1761,7 @@ public static class TalentManager
                 m_button = "$button_rogue_talent_4",
                 m_statusEffectHash = "SE_RogueStamina".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
-                m_cooldown = _Plugin.config("Rogue - Swift", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Rogue - Swift", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Rogue - Swift", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
@@ -1759,7 +1786,7 @@ public static class TalentManager
                 m_button = "$button_rogue_talent_2",
                 m_statusEffectHash = "SE_RogueReflect".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
-                m_cooldown = _Plugin.config("Rogue - Retaliation", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Rogue - Retaliation", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Rogue - Retaliation", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
@@ -1781,7 +1808,7 @@ public static class TalentManager
                 m_button = "$button_rogue_talent_3",
                 m_statusEffectHash = "SE_RogueBackstab".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
-                m_cooldown = _Plugin.config("Rogue - Backstab", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Rogue - Backstab", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Rogue - Backstab", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values =  new Talent.TalentValues()
                 {
@@ -1803,7 +1830,7 @@ public static class TalentManager
                 m_button = "$button_rogue_talent_5",
                 m_statusEffectHash = "SE_RogueBleed".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
-                m_cooldown = _Plugin.config("Rogue - Bleed", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Rogue - Bleed", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Rogue - Bleed", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
@@ -1898,7 +1925,7 @@ public static class TalentManager
                 m_button = "$button_warrior_talent_1",
                 m_statusEffectHash = "SE_WarriorStrength".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
-                m_cooldown = _Plugin.config("Warrior - Power", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Warrior - Power", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Warrior - Power", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
@@ -1920,7 +1947,7 @@ public static class TalentManager
                 m_button = "$button_warrior_talent_2",
                 m_statusEffectHash = "SE_WarriorVitality".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
-                m_cooldown = _Plugin.config("Warrior - Vitality", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Warrior - Vitality", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Warrior - Vitality", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
@@ -1956,7 +1983,7 @@ public static class TalentManager
                 m_button = "$button_warrior_talent_3",
                 m_statusEffectHash = "SE_WarriorResistance".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
-                m_cooldown = _Plugin.config("Warrior - Fortification", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cooldown = _Plugin.config("Warrior - Fortification", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Warrior - Fortification", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_resistances = new Talent.ResistancePercentages()
                 {

@@ -910,7 +910,7 @@ public static class LoadUI
         SetButton(WarriorTalents, "$button_warrior_talent_4", new(){{"$button_warrior_6", LineWarrior4LeftUp}}, 1f, "MonkeyWrench");
         SetButton(WarriorTalents, "$button_warrior_talent_5", new(){{"$button_warrior_talent_2", LineCoreWarrior}}, 1f, "DualWield");
     }
-    public static void ChangeButton(Talent talent, bool revert = false)
+    public static void ChangeButton(Talent talent, bool revert = false, float line = 1f)
     {
         if (!ButtonMap.TryGetValue(talent.m_button, out Button button)) return;
         if (!TalentManager.m_talentsByButton.TryGetValue(talent.m_button, out Talent original)) return;
@@ -930,7 +930,7 @@ public static class LoadUI
             {
                 PlayerManager.m_playerTalents.Remove(original.m_key);
             }
-            RemapButton(talent.m_button, ButtonFillLineMap[button], 1f, talent.m_key);
+            RemapButton(talent.m_button, ButtonFillLineMap[button], line, talent.m_key);
         }
     }
 

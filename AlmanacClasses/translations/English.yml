@@ -92,8 +92,8 @@ button_center_desc: "Purchase a talent, then click on it again to highlight. Pre
 
 talent_prestige: "Prestige"
 talent_prestige_desc: "Clears the board of all talents and levels them up to the next tier. <color=orange>Increasing their attributes.</color>"
-talent_sneaky: "Sneaky"
-talent_sneaky_desc: "Makes player more sneaky"
+talent_treasurehunter: "Treasure Hunter"
+talent_treasurehunter_desc: "Works like the wishbone to find treasure"
 talent_pickpocket: "Pickpocket"
 talent_pickpocket_desc: "Chance to get double loot from backstab damage"
 talent_sailor: "Sailor"

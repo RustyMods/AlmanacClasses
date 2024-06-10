@@ -10,10 +10,11 @@ public static class Pickpocket
     public static void CheckDoubleLoot(Character instance)
     {
         if (instance.m_lastHit == null || !instance.m_localPlayerHasHit) return;
-        if (!PlayerManager.m_playerTalents.TryGetValue("CoreMerchant", out Talent ability)) return;
-        var attacker = instance.m_lastHit.GetAttacker();
+        if (!PlayerManager.m_playerTalents.TryGetValue("DoubleLoot", out Talent ability)) return;
+        Character? attacker = instance.m_lastHit.GetAttacker();
         if (attacker == null) return;
-        if (instance.m_baseAI == null || instance.m_baseAI.CanSeeTarget(attacker)) return;
+        if (instance.m_baseAI == null) return;
+        if (instance.m_baseAI.CanSeeTarget(attacker)) return;
         if (!instance.TryGetComponent(out CharacterDrop characterDrop)) return;
         if (ability.m_values == null) return;
         

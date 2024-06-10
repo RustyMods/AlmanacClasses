@@ -49,7 +49,13 @@ public static class StatusEffectManager
         StatusEffect enlightened = ScriptableObject.CreateInstance<StatusEffect>();
         enlightened.name = "SE_Enlightened";
 
-        return new List<StatusEffect> { IceBreaker, characteristic, resourceful, enlightened };
+        StatusEffect treasureHunter = ScriptableObject.CreateInstance<SE_TreasureHunter>();
+        treasureHunter.name = "SE_TreasureHunter";
+
+        StatusEffect PackMule = ScriptableObject.CreateInstance<SE_PackMule>();
+        PackMule.name = "SE_PackMule";
+
+        return new List<StatusEffect> { IceBreaker, characteristic, resourceful, enlightened, treasureHunter, PackMule };
     }
 
     private static List<StatusEffect> LoadBard()
