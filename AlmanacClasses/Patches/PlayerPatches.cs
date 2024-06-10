@@ -7,6 +7,8 @@ using AlmanacClasses.LoadAssets;
 using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.Rendering;
+using Valheim.SettingsGui;
 using YamlDotNet.Serialization;
 
 namespace AlmanacClasses.Patches;
@@ -77,7 +79,6 @@ public static class PlayerPatches
             if (PlayerManager.m_playerTalents.ContainsKey("MonkeyWrench"))
             {
                 LoadTwoHanded.ModifyTwoHandedWeapons();
-
             }
             initiated = true;
         } 

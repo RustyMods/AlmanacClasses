@@ -680,7 +680,18 @@ public static class LoadUI
         TalentManager.ResetTalentLevels();
         SelectedTalent = null;
         SetAllButtonColors(Color.white);
+        UnEquipWeapons();
         if (!command) TalentBook.ShowUI();
+    }
+
+    private static void UnEquipWeapons()
+    {
+        Player player = Player.m_localPlayer;
+        if (!player) return;
+        ItemDrop.ItemData? right = player.GetRightItem();
+        ItemDrop.ItemData? left = player.GetLeftItem();
+        if (right != null) player.UnequipItem(right);
+        if (left != null) player.UnequipItem(left);
     }
     private static void AddSFXToTalentButtons()
     {

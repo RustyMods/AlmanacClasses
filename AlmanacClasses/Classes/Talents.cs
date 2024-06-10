@@ -562,6 +562,7 @@ public enum TalentType { Ability, Passive, StatusEffect, Characteristic }
 
 public static class TalentManager
 {
+    private static bool m_initiated;
     public static readonly Dictionary<string, Talent> m_talents = new();
     public static readonly Dictionary<string, Talent> m_talentsByButton = new();
     public static readonly Dictionary<string, Talent> m_altTalentsByButton = new();
@@ -574,12 +575,14 @@ public static class TalentManager
 
     public static void InitializeTalents()
     {
+        if (m_initiated) return;
         FilePaths.CreateFolders();
         AlmanacClassesLogger.LogDebug("Initializing talents");
         m_talents.Clear();
         m_talentsByButton.Clear();
         LoadTalents();
         LoadAltTalents();
+        m_initiated = true;
     }
 
     private static void LoadTalents()
@@ -662,7 +665,7 @@ public static class TalentManager
             m_cost = _Plugin.config("Warrior - Survivor", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock ability", new AcceptableValueRange<int>(1, 10))),
             m_alt = _Plugin.config("Warrior - Survivor", "Enable", Toggle.Off, "If on, replaces dual wield talent"),
             m_startEffects = LoadedAssets.VFX_SongOfSpirit,
-            m_cap = _Plugin.config("Warrior - Survivor", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+            m_cap = _Plugin.config("Warrior - Survivor", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
         };
         survivor.m_alt.SettingChanged += (sender, args) =>
         {
@@ -1082,7 +1085,7 @@ public static class TalentManager
                 m_statusEffectHash = "SE_QuickShot".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
                 m_cooldown = _Plugin.config("Ranger - Quick Shot", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
-                m_cost = _Plugin.config("Ranger - Quick Shot", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
+                m_cost = _Plugin.config("Ranger - Quick Shot", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
                     m_speed = _Plugin.config("Ranger - Quick Shot", "Draw Speed Modifier", 1.05f, new ConfigDescription("Set the draw speed multiplier", new AcceptableValueRange<float>(1f, 2f)))
@@ -1289,7 +1292,7 @@ public static class TalentManager
                 m_ability = "TriggerIceBreath",
                 m_type = TalentType.Ability,
                 m_cooldown = _Plugin.config("Sage - Ice Breath", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
-                m_cost = _Plugin.config("Sage - Ice Breath", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
+                m_cost = _Plugin.config("Sage - Ice Breath", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_damages = new Talent.TalentDamages()
                 {
                     m_slash = _Plugin.config("Sage - Ice Breath", "Slash Damage", 10f, new ConfigDescription("Set damages", new AcceptableValueRange<float>(0f, 1000f))),
@@ -1401,7 +1404,7 @@ public static class TalentManager
                 m_statusEffectHash = "SE_ShamanShield".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
                 m_cooldown = _Plugin.config("Shaman - Shield", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
-                m_cost = _Plugin.config("Shaman - Shield", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
+                m_cost = _Plugin.config("Shaman - Shield", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
                     m_absorb = _Plugin.config("Shaman - Shield", "Absorb", 50f, new ConfigDescription("Set amount absorbed my shield", new AcceptableValueRange<float>(0f, 1000f)))
@@ -1644,13 +1647,13 @@ public static class TalentManager
                 m_statusEffectHash = "SE_SongOfAttrition".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
                 m_cooldown = _Plugin.config("Bard - Song of Attrition", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
-                m_cost = _Plugin.config("Bard - Song of Attrition", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
+                m_cost = _Plugin.config("Bard - Song of Attrition", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_damages = new Talent.TalentDamages()
                 {
                     m_spirit = _Plugin.config("Bard - Song of Attrition", "Spirit Damage", 10f, new ConfigDescription("Set the damages", new AcceptableValueRange<float>(0f, 1000f))),
                     m_slash = _Plugin.config("Bard - Song of Attrition", "Slash Damage", 1f, new ConfigDescription("Set the damages", new AcceptableValueRange<float>(0f, 1000f)))
                 },
-                m_length = _Plugin.config("Bard - Song of Attrition", "Length", 60f, new ConfigDescription("Set the length of effect", new AcceptableValueRange<float>(1f, 1000f))),
+                m_length = _Plugin.config("Bard - Song of Attrition", "Length", 10f, new ConfigDescription("Set the length of effect", new AcceptableValueRange<float>(1f, 1000f))),
                 m_sprite = SpriteManager.SongOfSpirit_Icon,
                 m_startEffects = LoadedAssets.VFX_SongOfSpirit,
                 m_animation = "LutePlay",
@@ -1985,7 +1988,7 @@ public static class TalentManager
                 m_statusEffectHash = "SE_WarriorResistance".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
                 m_cooldown = _Plugin.config("Warrior - Fortification", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
-                m_cost = _Plugin.config("Warrior - Fortification", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
+                m_cost = _Plugin.config("Warrior - Fortification", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_resistances = new Talent.ResistancePercentages()
                 {
                     m_blunt =  _Plugin.config("Warrior - Fortification", "Blunt Resistance", 0.9f, new ConfigDescription("Set resistance modifier", new AcceptableValueRange<float>(0f, 1f))),
@@ -2007,7 +2010,7 @@ public static class TalentManager
                 m_key = "DualWield",
                 m_button = "$button_warrior_talent_5",
                 m_type = TalentType.Passive,
-                m_cost = _Plugin.config("Warrior - Dual Wield", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
+                m_cost = _Plugin.config("Warrior - Dual Wield", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
                     m_damageReduction = _Plugin.config("Warrior - Dual Wield", "Damage Decrease", 0.5f, new ConfigDescription("Set the damage reduction", new AcceptableValueRange<float>(0f, 1f)))

@@ -6,6 +6,7 @@ using AlmanacClasses.LoadAssets;
 using AlmanacClasses.Managers;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace AlmanacClasses.Patches;
 
@@ -29,6 +30,11 @@ public static class ObjectDBPatches
             ExperienceManager.CreateExperienceOrb(100, "ExperienceOrb_Legendary", "Legendary Orb", new Color(1f, 0.9f, 1f, 1f), new Color32(150, 150, 255, 255), new Color(0.6f, 1f, 1f, 0.6f), new Color(0.5f, 0.7f, 1f, 1f), SpriteManager.HourGlass_Icon);
             // ExperienceManager.CreateExperienceOrb(150, "ExperienceOrb_Plains", "Goblin Orb", new Color(1f, 0.9f, 0.4f, 1f), new Color32(255, 255, 0, 255), new Color(0.5f, 1f, 0.5f, 0.6f), new Color(0.5f, 0.7f, 0.5f, 1f));
             // ExperienceManager.CreateExperienceOrb(300, "ExperienceOrb_Mistlands", "Runic Orb", new Color(0f, 0.9f, 1f, 1f), new Color32(100, 150, 200, 255), new Color(0f, 0.5f, 1f, 0.6f), new Color(0f, 0.7f, 0.5f, 1f));
+
+            if (SystemInfo.graphicsDeviceType is GraphicsDeviceType.Null)
+            {
+                TalentManager.InitializeTalents();
+            } 
         }
     }
 }

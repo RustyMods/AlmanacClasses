@@ -62,7 +62,7 @@ public static class DualWield
             if (__instance.GetRightItem() == null) return true;
             if (item.m_shared.m_name == "$item_spear_chitin") return true;
             if (item.m_shared.m_itemType != ItemDrop.ItemData.ItemType.OneHandedWeapon) return true;
-            if (!PlayerManager.m_playerTalents.ContainsKey("DualWield")) return true;
+            if (!PlayerManager.m_playerTalents.TryGetValue("DualWield", out Talent talent)) return true;
             if (__instance.GetLeftItem() != null)
             {
                 __instance.UnequipItem(__instance.GetLeftItem(), false);
@@ -98,8 +98,7 @@ public static class DualWield
             rightItem.m_shared.m_damages.m_spirit += leftItem.m_shared.m_damages.m_spirit / 2;
 
             if (!leftItem.m_shared.m_equipStatusEffect)
-                leftItem.m_shared.m_equipStatusEffect =
-                    ObjectDB.instance.GetStatusEffect("SE_DualWield".GetStableHashCode());
+                leftItem.m_shared.m_equipStatusEffect = ObjectDB.instance.GetStatusEffect(talent.m_statusEffectHash);
 
             isDualWielding = true;
             __result = true;
@@ -116,7 +115,7 @@ public static class DualWield
     {
         private static void Postfix(ItemDrop.ItemData item)
         {
-            if (isDualWielding && (item == leftItem || item == leftItem))
+            if (isDualWielding && item == leftItem)
             {
                 if (rightItem == null) return;
                 rightItem.m_shared.m_attack.m_attackStamina -= leftItem.m_shared.m_attack.m_attackStamina;
