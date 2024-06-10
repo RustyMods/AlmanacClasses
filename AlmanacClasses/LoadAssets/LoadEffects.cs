@@ -24,7 +24,6 @@ public static class LoadedAssets
     public static EffectList SoothEffects = null!;
     public static EffectList UnSummonEffects = null!;
     public static EffectList TrapArmedEffects = null!;
-    public static EffectList FX_MusicNotes = null!;
 
     public static EffectList FX_Electric = null!;
     
@@ -34,10 +33,6 @@ public static class LoadedAssets
     public static EffectList VFX_SongOfSpirit = null!;
     
     public static EffectList FX_DvergerPower = null!;
-    public static EffectList FX_HealthPotion = null!;
-    // public static EffectList FX_EikthyrStomp = null!;
-
-    // public static GameObject VFX_DragonBreath = null!;
     public static EffectList DragonBreath = null!;
 
     public static EffectList DragonBreathHit = null!;
@@ -50,15 +45,14 @@ public static class LoadedAssets
 
     public static EffectList FX_Heal = null!;
     public static EffectList FX_RogueBleed = null!;
+
+    public static EffectList SFX_Dverger_Shot = null!;
     
     private static readonly int EmissionColor = Shader.PropertyToID("_EmissionColor");
 
     public static void InitVFX()
     {
         ZNetScene instance = ZNetScene.instance;
-        
-        StatusEffect SE_PotionHealthMajor = ObjectDB.instance.GetStatusEffect("Potion_health_major".GetStableHashCode());
-        FX_HealthPotion = SE_PotionHealthMajor.m_startEffects;
 
         SE_Finder = ObjectDB.instance.GetStatusEffect("Wishbone".GetStableHashCode()) as SE_Finder;
         GP_Moder = ObjectDB.instance.GetStatusEffect("GP_Moder".GetStableHashCode());
@@ -143,7 +137,7 @@ public static class LoadedAssets
         VFX_UndeadBurn.name = "vfx_SongOfSpirit";
         RegisterToZNetScene(VFX_UndeadBurn);
 
-        VFX_SongOfSpirit = new()
+        VFX_SongOfSpirit = new EffectList
         {
             m_effectPrefabs = new[]
             {
@@ -169,19 +163,7 @@ public static class LoadedAssets
         RegisterToZNetScene(VFX_BardNotes);
         RegisterToZNetScene(VFX_MagicRunes);
         RegisterToZNetScene(VFX_BardNotesBurn);
-
-        FX_MusicNotes = new()
-        {
-            m_effectPrefabs = new[]
-            {
-                new EffectList.EffectData()
-                {
-                    m_prefab = VFX_BardNotesBurn,
-                    m_enabled = true,
-                    m_attach = true
-                }
-            }
-        };
+        
         DragonBreath = new EffectList()
         {
             m_effectPrefabs = new[]
@@ -227,33 +209,11 @@ public static class LoadedAssets
             aoe.m_hitFriendly = false;
         }
         Object.Destroy(customLightning.transform.Find("AOE_AREA").gameObject);
-        // if (customLightning.transform.Find("AOE_AREA").TryGetComponent(out Aoe component))
-        // {
-        //     component.m_useTriggers = true;
-        //     component.m_triggerEnterOnly = true;
-        //     component.m_blockable = true;
-        //     component.m_dodgeable = true;
-        //     component.m_hitProps = false;
-        //     component.m_hitOwner = false;
-        //     component.m_hitParent = false;
-        //     component.m_hitFriendly = false;
-        // }
         RegisterToZNetScene(customLightning);
 
         lightning_AOE = customLightning;
         GoblinBeam = instance.GetPrefab("projectile_beam");
         Meteor = instance.GetPrefab("projectile_meteor");
-        // FX_EikthyrStomp = new EffectList()
-        // {
-        //     m_effectPrefabs = new[]
-        //     {
-        //         new EffectList.EffectData()
-        //         {
-        //             m_prefab = ZNetScene.instance.GetPrefab("fx_eikthyr_stomp"),
-        //             m_enabled = true,
-        //         }
-        //     }
-        // };
         TrollStone = instance.GetPrefab("troll_throw_projectile");
         GDKingRoots = instance.GetPrefab("gdking_root_projectile");
         GameObject customTrap = Object.Instantiate(instance.GetPrefab("piece_trap_troll"), AlmanacClassesPlugin._Root.transform, false);
@@ -439,6 +399,25 @@ public static class LoadedAssets
                 }
             }
         };
+
+        GameObject sfx_dverger_fireball_rain_shot = instance.GetPrefab("sfx_dverger_fireball_rain_shot");
+        GameObject fx_fader_spin = instance.GetPrefab("fx_Fader_Spin");
+        SFX_Dverger_Shot = new EffectList()
+        {
+            m_effectPrefabs = new[]
+            {
+                new EffectList.EffectData()
+                {
+                    m_prefab = sfx_dverger_fireball_rain_shot,
+                    m_enabled = true,
+                },
+                new EffectList.EffectData()
+                {
+                    m_prefab = fx_fader_spin,
+                    m_enabled = true,
+                }
+            }
+        };
     }
 
     private static void RegisterToZNetScene(GameObject prefab)
@@ -465,27 +444,19 @@ public static class LoadedAssets
         VFX.name = name;
         RegisterToZNetScene(VFX);
 
-        foreach (var renderer in VFX.GetComponentsInChildren<Renderer>())
+        foreach (Renderer renderer in VFX.GetComponentsInChildren<Renderer>())
         {
             List<Material> newMats = new();
-            foreach (var mat in renderer.materials)
+            foreach (Material mat in renderer.materials)
             {
                 Material material = new Material(mat);
                 material.color = color;
-                // material.SetColor(EmissionColor, color);
                 newMats.Add(material);
             }
 
             renderer.materials = newMats.ToArray();
             renderer.sharedMaterials = newMats.ToArray();
         }
-
-        // ParticleSystem[] FX_PS = VFX.GetComponentsInChildren<ParticleSystem>();
-        // foreach (ParticleSystem ps in FX_PS)
-        // {
-        //     ParticleSystem.MainModule mainModule = ps.main;
-        //     mainModule.startColor = color;
-        // }
         
         effects.Add(new EffectList.EffectData()
         {
@@ -510,19 +481,13 @@ public static class LoadedAssets
                 mainModule.loop = false;
             }
             
-            effects.Add(new ()
+            effects.Add(new EffectList.EffectData
             {
                 m_prefab = Runes,
                 m_enabled = true,
             });
         }
 
-        effects.Add(new()
-        {
-            m_prefab = ZNetScene.instance.GetPrefab("sfx_dverger_fireball_rain_shot"),
-            m_enabled = true
-        });
-        
         output = new EffectList()
         {
             m_effectPrefabs = effects.ToArray()

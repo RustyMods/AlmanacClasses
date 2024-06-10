@@ -14,7 +14,7 @@ public static class AbilityManager
 {
     private static readonly List<string> m_castedSpells = new();
     public static readonly Dictionary<string, float> m_cooldownMap = new();
-
+    public static bool OnCooldown() => m_cooldownMap.Count > 0;
     public static void CheckInput()
     {
         if (AlmanacClassesPlugin._SpellAlt.Value is not KeyCode.None)

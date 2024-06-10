@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AlmanacClasses.Classes;
+using AlmanacClasses.Classes.Abilities;
 using AlmanacClasses.LoadAssets;
 using AlmanacClasses.Managers;
 using BepInEx.Configuration;
@@ -656,20 +657,27 @@ public static class LoadUI
         {
             component.transition = Selectable.Transition.SpriteSwap;
             component.spriteState = buttonComponent.spriteState;
-            component.onClick.AddListener(() =>
-            {
-                if (Player.m_localPlayer.GetInventory().CountItems("$item_coins") < AlmanacClassesPlugin._ResetCost.Value)
-                {
-                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"Cost {AlmanacClassesPlugin._ResetCost.Value} $item_coins to reset talents");
-                    return;
-                }
-
-                Player.m_localPlayer.GetInventory().RemoveItem("$item_coins", AlmanacClassesPlugin._ResetCost.Value);
-                ResetTalents();
-            });
+            component.onClick.AddListener(OnReset);
         }
 
         resetButton.gameObject.AddComponent<ButtonSfx>().m_sfxPrefab = sfx.m_sfxPrefab;
+    }
+
+    private static void OnReset()
+    {
+        if (Player.m_localPlayer.GetInventory().CountItems("$item_coins") < AlmanacClassesPlugin._ResetCost.Value)
+        {
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"Cost {AlmanacClassesPlugin._ResetCost.Value} $item_coins to reset talents");
+            return;
+        }
+
+        if (AbilityManager.OnCooldown())
+        {
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_on_cooldown");
+            return;
+        }
+        Player.m_localPlayer.GetInventory().RemoveItem("$item_coins", AlmanacClassesPlugin._ResetCost.Value);
+        ResetTalents();
     }
     public static void ResetTalents(bool command = false)
     {

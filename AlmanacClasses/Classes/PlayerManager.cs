@@ -129,29 +129,10 @@ public static class PlayerManager
         foreach (KeyValuePair<string, Talent> kvp in TalentManager.m_altTalentsByButton)
         {
             Talent talent = kvp.Value;
-            string button = kvp.Key;
-
             if (talent.m_alt?.Value is AlmanacClassesPlugin.Toggle.Off) continue;
-
-            // RemoveOriginalTalent(button);
-            
-            // m_playerTalents[talent.m_key] = talent;
-            
             LoadUI.ChangeButton(talent, false, talent.GetFillLine());
         }
     }
-
-    private static void RemoveOriginalTalent(string button)
-    {
-        Talent? original = m_playerTalents.Values.ToList().Find(x => x.m_button == button);
-        if (original == null) return;
-        m_playerTalents.Remove(original.m_key);
-        if (m_tempPlayerData.m_boughtTalents.ContainsKey(original.m_key))
-        {
-            m_tempPlayerData.m_boughtTalents.Remove(original.m_key);
-        }
-    }
-
     private static void SaveSpellBook()
     {
         foreach (var kvp in SpellBook.m_abilities)
@@ -159,7 +140,6 @@ public static class PlayerManager
             m_tempPlayerData.m_spellBook[kvp.Key] = kvp.Value.m_data.m_key;
         }
     }
-
     public static void SavePlayerData()
     {
         if (!Player.m_localPlayer) return;
@@ -171,7 +151,7 @@ public static class PlayerManager
         Player.m_localPlayer.m_customData[m_playerDataKey] = data;
     }
 
-    public static int GetTotalAddedHealth()
+    private static int GetTotalAddedHealth()
     {
         int output = (int)(CharacteristicManager.GetCharacteristic(Characteristic.Constitution) /
                       AlmanacClassesPlugin._HealthRatio.Value);

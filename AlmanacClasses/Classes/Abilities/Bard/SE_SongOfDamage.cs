@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using AlmanacClasses.LoadAssets;
+using UnityEngine;
 
 namespace AlmanacClasses.Classes.Abilities.Bard;
 
@@ -19,6 +21,8 @@ public class SE_SongOfDamage : StatusEffect
         m_startEffects = talent.GetEffectList();
         m_talent = talent;
         base.Setup(character);
+        Transform transform = m_character.transform;
+        LoadedAssets.SFX_Dverger_Shot.Create(transform.position, transform.rotation, transform);
     }
 
     public override void UpdateStatusEffect(float dt)

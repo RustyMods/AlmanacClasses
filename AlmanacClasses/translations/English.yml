@@ -97,6 +97,7 @@ msg_failed_to_get_talent: "Failed to get talent"
 msg_purchased: "Purchased talent"
 msg_select_talent: "Select a talent to prestige"
 msg_prestige_cap: "Talent already max level"
+msg_on_cooldown: "Talents are cooling down"
 
 button_center: "Select a talent to prestige"
 button_center_desc: "Purchase a talent, then click on it again to highlight. Press this button to upgrade it."
