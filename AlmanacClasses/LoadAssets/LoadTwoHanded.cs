@@ -7,6 +7,9 @@ public static class LoadTwoHanded
 {
     private static readonly Dictionary<ItemDrop, TwoHandedData> TwoHandedWeapons = new();
 
+    public static bool IsMonkeyWrenchItem(string sharedName) =>
+        TwoHandedWeapons.Keys.ToList().Find(x => x.m_itemData.m_shared.m_name == sharedName) != null;
+
     private static readonly List<string> WarfareItems = new()
     {
         "DualAxeKrom_TW",

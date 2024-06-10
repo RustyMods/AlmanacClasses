@@ -1,9 +1,8 @@
-﻿using AlmanacClasses.Classes;
-using HarmonyLib;
+﻿using HarmonyLib;
 
-namespace AlmanacClasses.Patches;
+namespace AlmanacClasses.Classes.Abilities.Core;
 
-public static class SEManPatches
+public static class RainProof
 {
     [HarmonyPatch(typeof(SEMan), nameof(SEMan.AddStatusEffect), typeof(int), typeof(bool), typeof(int), typeof(float))]
     private static class SEMan_AddStatusEffect_Patch1

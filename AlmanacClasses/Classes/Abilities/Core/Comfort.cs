@@ -1,10 +1,9 @@
-﻿using AlmanacClasses.Classes;
-using HarmonyLib;
+﻿using HarmonyLib;
 using UnityEngine;
 
-namespace AlmanacClasses.Patches;
+namespace AlmanacClasses.Classes.Abilities.Core;
 
-public static class SE_Rested_Patches
+public static class Comfort
 {
     [HarmonyPatch(typeof(SE_Rested), nameof(SE_Rested.CalculateComfortLevel),typeof(Player))]
     [HarmonyPatch(typeof(SE_Rested), nameof(SE_Rested.CalculateComfortLevel),typeof(bool),typeof(Vector3))]

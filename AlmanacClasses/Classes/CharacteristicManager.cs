@@ -23,21 +23,26 @@ public static class CharacteristicManager
     public static float GetHealthRatio() => GetCharacteristic(Characteristic.Constitution) / AlmanacClassesPlugin._HealthRatio.Value;
     public static float GetStaminaRatio() => GetCharacteristic(Characteristic.Dexterity) / AlmanacClassesPlugin._StaminaRatio.Value;
     public static float GetEitrRatio() => GetCharacteristic(Characteristic.Wisdom) / AlmanacClassesPlugin._EitrRatio.Value;
-    public static float GetStrengthModifier() => GetDamageRatio(Characteristic.Strength);
-    public static float GetIntelligenceModifier() => GetDamageRatio(Characteristic.Intelligence);
+
+    public static float GetStrengthModifier()
+    {
+        int characteristic = GetCharacteristic(Characteristic.Strength);
+        float output = characteristic / AlmanacClassesPlugin._PhysicalRatio.Value;
+        return 1 + output / 100f;
+    }
+
+    public static float GetIntelligenceModifier()
+    {
+        int characteristic = GetCharacteristic(Characteristic.Intelligence);
+        float output = characteristic / AlmanacClassesPlugin._ElementalRatio.Value;
+        return 1 + output / 100f;
+    }
     public static float GetDexterityModifier()
     {
         int characteristic = GetCharacteristic(Characteristic.Dexterity);
         float output = characteristic / AlmanacClassesPlugin._SpeedRatio.Value;
         return 1 + output / 100f;
     }
-    private static float GetDamageRatio(Characteristic type)
-    {
-        int characteristic = GetCharacteristic(type);
-        float output = characteristic / AlmanacClassesPlugin._DamageRatio.Value;
-        return 1 + output / 100f;
-    }
-
 }
 
 public enum Characteristic

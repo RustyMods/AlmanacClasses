@@ -1,11 +1,8 @@
 ﻿using AlmanacClasses.Classes;
-using AlmanacClasses.Classes.Abilities;
 using AlmanacClasses.Classes.Abilities.Core;
 using AlmanacClasses.Classes.Abilities.Rogue;
-using AlmanacClasses.Data;
 using BepInEx;
 using HarmonyLib;
-using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace AlmanacClasses.Patches;
@@ -87,30 +84,5 @@ public static class CharacterPatches
         Player.m_localPlayer.AddStamina(random);
         // if (AlmanacClassesPlugin._BattleFuryFX.Value is AlmanacClassesPlugin.Toggle.Off) return;
         Player.m_localPlayer.GetSEMan().AddStatusEffect("SE_BattleFury".GetStableHashCode());
-    }
-    
-    [HarmonyPatch(typeof(Character), nameof(Character.GetHealth))]
-    private static class Player_GetHealth_Patch
-    {
-        private static void Postfix(Character __instance, ref float __result)
-        {
-            if (!__instance) return;
-            if (__instance != Player.m_localPlayer) return;
-            if (__result > 0.0) return;
-            if (PlayerManager.m_playerTalents.TryGetValue("Survivor", out Talent talent))
-            {
-                if (__instance.GetSEMan().HaveStatusEffect("SE_Survivor".GetStableHashCode())) return;
-                float chance = talent.GetChance(talent.GetLevel());
-                float random = Random.Range(0, 101f);
-                if (random < chance)
-                {
-                    float quarter = __instance.GetMaxHealth() / 4f;
-                    __instance.Heal(quarter);
-                    __result = quarter;
-                    // if (AlmanacClassesPlugin._SurvivorFX.Value is AlmanacClassesPlugin.Toggle.Off) return;
-                    __instance.GetSEMan().AddStatusEffect("SE_Survivor".GetStableHashCode());
-                }
-            }
-        }
     }
 }

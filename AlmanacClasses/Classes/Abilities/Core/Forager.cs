@@ -1,9 +1,8 @@
-﻿using AlmanacClasses.Classes;
-using HarmonyLib;
+﻿using HarmonyLib;
 
-namespace AlmanacClasses.Patches;
+namespace AlmanacClasses.Classes.Abilities.Core;
 
-public static class ForagerPatches
+public static class Forager
 {
     [HarmonyPatch(typeof(Pickable), nameof(Pickable.Interact))]
     private static class Pickable_Interact_Postfix

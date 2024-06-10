@@ -25,6 +25,10 @@ public class Talent
     public void AddLevel() => ++m_level;
     
     public ConfigEntry<Toggle>? m_alt;
+
+    public ConfigEntry<int>? m_cap = null!;
+
+    public int GetPrestigeCap() => m_cap?.Value ?? int.MaxValue;
     public void SetLevel(int level) => m_level = level;
     public TalentType m_type;
     public string GetTalentType() => $"$almanac_{m_type.ToString().ToLower()}";
@@ -186,6 +190,12 @@ public class Talent
         if (m_values == null) return 1f;
         return Mathf.Clamp(1 - (m_values.m_runStaminaDrain?.Value ?? 0f) * level, 0f, 1f);
     }
+
+    public float GetAttackSpeedReduction(int level)
+    {
+        if (m_values == null) return 1f;
+        return Mathf.Clamp01(1 - ((m_values.m_attackSpeedReduction?.Value ?? 1f) - 0.1f * (level - 1)));
+    }
     
     public TalentResistances? m_resistances;
 
@@ -262,6 +272,7 @@ public class Talent
         public ConfigEntry<float>? m_forageModifier;
         public ConfigEntry<float>? m_speedReduction;
         public ConfigEntry<float>? m_runStaminaDrain;
+        public ConfigEntry<float>? m_attackSpeedReduction;
     }
     public class TalentCreatures
     {
@@ -390,6 +401,7 @@ public class Talent
                 if (m_values.m_forageModifier is { Value: > 0 }) stringBuilder.Append($"$almanac_foragemod: <color=orange>{FormatPercentage(GetForageModifier(GetLevel()))}%</color>\n");
                 if (m_values.m_speedReduction is { Value: > 0 }) stringBuilder.Append($"$almanac_speed: <color=orange>{FormatPercentage(GetSpeedReduction(GetLevel()))}%</color>\n");
                 if (m_values.m_runStaminaDrain is {Value: > 0}) stringBuilder.Append($"$se_runstamina: <color=orange>{FormatPercentage(GetRunStaminaDrain(GetLevel()))}%</color>\n");
+                if (m_values.m_attackSpeedReduction is { Value: > 0 }) stringBuilder.Append($"$almanac_attackspeedmod $almanac_reduction: <color=orange>{FormatPercentage(GetAttackSpeedReduction(GetLevel()))}%</color>\n");
             }
 
             if (m_damages != null)
@@ -547,6 +559,8 @@ public class Talent
                 if (m_values.m_forageModifier is { Value: > 0 }) stringBuilder.Append($"$almanac_foragemod: <color=orange>{FormatPercentage(GetForageModifier(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetForageModifier(GetLevel() + 1))}%</color>\n");
                 if (m_values.m_speedReduction is { Value: > 0 }) stringBuilder.Append($"$almanac_speed: <color=orange>{FormatPercentage(GetSpeedReduction(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetSpeedReduction(GetLevel() + 1))}%</color>\n");
                 if (m_values.m_runStaminaDrain is {Value: > 0}) stringBuilder.Append($"$se_runstamina: <color=orange>{FormatPercentage(GetRunStaminaDrain(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetRunStaminaDrain(GetLevel() + 1))}%</color>\n");
+                if (m_values.m_attackSpeedReduction is { Value: > 0 }) stringBuilder.Append($"$almanac_attackspeedmod $almanac_reduction: <color=orange>{FormatPercentage(GetAttackSpeedReduction(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetAttackSpeedReduction(GetLevel() + 1))}</color>\n");
+
             }
 
             if (m_damages != null)
@@ -710,7 +724,8 @@ public static class TalentManager
             },
             m_cost = _Plugin.config("Warrior - Survivor", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock ability", new AcceptableValueRange<int>(1, 10))),
             m_alt = _Plugin.config("Warrior - Survivor", "Enable", Toggle.Off, "If on, replaces dual wield talent"),
-            m_startEffects = LoadedAssets.VFX_SongOfSpirit
+            m_startEffects = LoadedAssets.VFX_SongOfSpirit,
+            m_cap = _Plugin.config("Warrior - Survivor", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
         };
         survivor.m_alt.SettingChanged += (sender, args) =>
         {
@@ -724,7 +739,8 @@ public static class TalentManager
             m_statusEffectHash = "$SE_BattleFury".GetStableHashCode(),
             m_cost = _Plugin.config("Warrior - Battle Fury", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock talent", new AcceptableValueRange<int>(1, 10))),
             m_alt = _Plugin.config("Warrior - Battle Fury", "Enable", Toggle.Off, "If on, replaces monkey wrench talent"),
-            m_startEffects = LoadedAssets.FX_BattleFury
+            m_startEffects = LoadedAssets.FX_BattleFury,
+            m_cap = _Plugin.config("Warrior - Battle Fury", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
         };
         battleFury.m_alt.SettingChanged += (sender, args) =>
         {
@@ -748,7 +764,7 @@ public static class TalentManager
                     m_type = Characteristic.Wisdom,
                     m_amount = 10
                 },
-                m_button = "$button_core_1"
+                m_button = "$button_core_1",
             },
             new()
             {
@@ -881,7 +897,8 @@ public static class TalentManager
                 m_values = new Talent.TalentValues()
                 {
                     m_eitr = _Plugin.config("Core - Wise", "Eitr", 15f, new ConfigDescription("Set the amount of eitr", new AcceptableValueRange<float>(0f, 101f)))
-                }
+                },
+                m_cap = _Plugin.config("Core - Wise", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -889,7 +906,8 @@ public static class TalentManager
                 m_button = "$button_lumberjack",
                 m_type = TalentType.Passive,
                 m_cost = _Plugin.config("Core - Air Bender", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
-                m_eitrCost = _Plugin.config("Core - Air Bender", "Eitr Cost", 10f, new ConfigDescription("Set the eitr cost to jump in the air", new AcceptableValueRange<float>(0f, 1000f)))
+                m_eitrCost = _Plugin.config("Core - Air Bender", "Eitr Cost", 10f, new ConfigDescription("Set the eitr cost to jump in the air", new AcceptableValueRange<float>(0f, 1000f))),
+                m_cap = _Plugin.config("Core - Air Bender", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -901,6 +919,7 @@ public static class TalentManager
                 {
                     m_comfort = _Plugin.config("Core - Relax", "Comfort", 1f, new ConfigDescription("Set comfort amount", new AcceptableValueRange<float>(0f, 10f)))
                 },
+                m_cap = _Plugin.config("Core - Relax", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -913,7 +932,8 @@ public static class TalentManager
                 {
                     m_chop = _Plugin.config("Core - Resourceful", "Chop Damage", 10f, new ConfigDescription("Set damages", new AcceptableValueRange<float>(0f, 101f))),
                     m_pickaxe = _Plugin.config("Core - Resourceful", "Pickaxe Damage", 10f, new ConfigDescription("Set damages", new AcceptableValueRange<float>(0f, 101f)))
-                }
+                },
+                m_cap = _Plugin.config("Core - Resourceful", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -925,6 +945,7 @@ public static class TalentManager
                 {
                     m_foodModifier = _Plugin.config("Core - Chef", "Modifier", 1.1f, new ConfigDescription("Set the modifier", new AcceptableValueRange<float>(1f, 2f)))
                 },
+                m_cap = _Plugin.config("Core - Chef", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -936,14 +957,16 @@ public static class TalentManager
                 m_values = new Talent.TalentValues()
                 {
                     m_carryWeight = _Plugin.config("Core - Pack Mule", "Carry Weight", 30, new ConfigDescription("Set increase carry weight", new AcceptableValueRange<int>(0, 1000)))
-                }
+                },
+                m_cap = _Plugin.config("Core - Pack Mule", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
                 m_key = "RainProof",
                 m_button = "$button_rain",
                 m_type = TalentType.Passive,
-                m_cost = _Plugin.config("Core - Rain Proof", "Purchase Cost", 10, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)))
+                m_cost = _Plugin.config("Core - Rain Proof", "Purchase Cost", 10, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
+                m_cap = _Plugin.config("Core - Rain Proof", "Prestige Cap", 1, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -954,7 +977,8 @@ public static class TalentManager
                 m_values = new Talent.TalentValues()
                 {
                     m_chance = _Plugin.config("Core - Double Loot", "Chance", 10f, new ConfigDescription("Set the chance to get loot", new AcceptableValueRange<float>(0f, 100f)))
-                }
+                },
+                m_cap = _Plugin.config("Core - Double Loot", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -962,6 +986,7 @@ public static class TalentManager
                 m_button = "$button_sail",
                 m_type = TalentType.Passive,
                 m_cost = _Plugin.config("Core - Trader", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
+                m_cap = _Plugin.config("Core - Trader", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -973,6 +998,7 @@ public static class TalentManager
                 {
                     m_forageModifier = _Plugin.config("Core - Forager", "Modifier", 1.25f, new ConfigDescription("Set the multiplier of foraged amount", new AcceptableValueRange<float>(0f, 10f)))
                 },
+                m_cap = _Plugin.config("Core - Forager", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             }
         };
     }
@@ -1073,6 +1099,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Ranger - Summon", "Health Cost", 10f, new ConfigDescription("Set health cost to summon", new AcceptableValueRange<float>(0f, 100f))),
                 m_staminaCost = _Plugin.config("Ranger - Summon", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Ranger - Summon", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Ranger - Summon", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1092,11 +1119,13 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Ranger - Hunter", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Ranger - Hunter", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Ranger - Hunter", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Ranger - Hunter", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
                 m_key = "LuckyShot",
                 m_button = "$button_ranger_talent_2",
+                m_statusEffectHash = "SE_LuckyShot".GetStableHashCode(),
                 m_type = TalentType.Passive,
                 m_cooldown = _Plugin.config("Ranger - Lucky Shot", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Ranger - Lucky Shot", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
@@ -1104,7 +1133,8 @@ public static class TalentManager
                 {
                     m_chance = _Plugin.config("Ranger - Lucky Shot", "Chance", 10f, new ConfigDescription("Set the chance to not consume projectile", new AcceptableValueRange<float>(0f, 100f)))
                 },
-                m_startEffects = LoadedAssets.SoothEffects
+                m_startEffects = LoadedAssets.SoothEffects,
+                m_cap = _Plugin.config("Ranger - Lucky Shot", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1125,6 +1155,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Ranger - Quick Shot", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Ranger - Quick Shot", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Ranger - Quick Shot", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Ranger - Quick Shot", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1145,6 +1176,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Ranger - Trap", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Ranger - Trap", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Ranger - Trap", "Eitr Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Ranger - Trap", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             }
         };
     }
@@ -1248,6 +1280,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Sage - Lightning", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Sage - Lightning", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Sage - Lightning", "Eitr Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Sage - Lightning", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1267,6 +1300,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Sage - Meteor", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Sage - Meteor", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Sage - Meteor", "Eitr Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Sage - Meteor", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1285,6 +1319,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Sage - Stone", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Sage - Stone", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Sage - Stone", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Sage - Stone", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1305,6 +1340,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Sage - Beam", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Sage - Beam", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Sage - Beam", "Eitr Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Sage - Beam", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1324,6 +1360,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Sage - Ice Breath", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Sage - Ice Breath", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Sage - Ice Breath", "Eitr Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Sage - Ice Breath", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             }
         };
     }
@@ -1415,6 +1452,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Shaman - Heal", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Shaman - Heal", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Shaman - Heal", "Eitr Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Shaman - Heal", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1435,6 +1473,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Shaman - Shield", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Shaman - Shield", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Shaman - Shield", "Eitr Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Shaman - Shield", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1455,6 +1494,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Shaman - Regeneration", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Shaman - Regeneration", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Shaman - Regeneration", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Shaman - Regeneration", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1471,6 +1511,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Shaman - Summon", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Shaman - Summon", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Shaman - Summon", "Eitr Cost", 25f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Shaman - Summon", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1490,6 +1531,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Shaman - Roots", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Shaman - Roots", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Shaman - Roots", "Eitr Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Shaman - Roots", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             }
         };
     }
@@ -1583,6 +1625,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Bard - Song of Damage", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Damage", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Bard - Song of Damage", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Bard - Song of Damage", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1603,6 +1646,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Bard - Song of Healing", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Healing", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Bard - Song of Healing", "Eitr Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Bard - Song of Healing", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1623,6 +1667,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Bard - Song of Vitality", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Vitality", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Bard - Song of Vitality", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Bard - Song of Vitality", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1643,6 +1688,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Bard - Song of Speed", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Speed", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Bard - Song of Speed", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Bard - Song of Speed", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1651,7 +1697,7 @@ public static class TalentManager
                 m_statusEffectHash = "SE_SongOfAttrition".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
                 m_cooldown = _Plugin.config("Bard - Song of Attrition", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
-                m_cost = _Plugin.config("Bard - song of Attrition", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
+                m_cost = _Plugin.config("Bard - Song of Attrition", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_damages = new Talent.TalentDamages()
                 {
                     m_spirit = _Plugin.config("Bard - Song of Attrition", "Spirit Damage", 10f, new ConfigDescription("Set the damages", new AcceptableValueRange<float>(0f, 1000f)))
@@ -1663,6 +1709,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Bard - Song of Attrition", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Attrition", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Bard - Song of Attrition", "Eitr Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Bard - Song of Attrition", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             }
         };
     }
@@ -1757,6 +1804,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Rogue - Quick Step", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Rogue - Quick Step", "Stamina Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Rogue - Quick Step", "Eitr Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Rogue - Quick Step", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1778,6 +1826,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Rogue - Swift", "Health Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Rogue - Swift", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Rogue - Swift", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Rogue - Swift", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1798,6 +1847,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Rogue - Retaliation", "Health Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Rogue - Retaliation", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Rogue - Retaliation", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Rogue - Retaliation", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1818,6 +1868,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Rogue - Backstab", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Rogue - Backstab", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Rogue - Backstab", "Eitr Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Rogue - Backstab", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1838,6 +1889,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Rogue - Bleed", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Rogue - Bleed", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Rogue - Bleed", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Rogue - Bleed", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             }
         };
     }
@@ -1931,6 +1983,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Warrior - Power", "Health Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Warrior - Power", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Warrior - Power", "Eitr Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Warrior - Power", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1952,6 +2005,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Warrior - Vitality", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Warrior - Vitality", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Warrior - Vitality", "Eitr Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Warrior - Vitality", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1961,8 +2015,10 @@ public static class TalentManager
                 m_cost = _Plugin.config("Warrior - Monkey Wrench", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
-                    m_damageReduction = _Plugin.config("Warrior - Monkey Wrench", "Damage Decrease", 0.5f, new ConfigDescription("Set the damage reduction", new AcceptableValueRange<float>(0f, 1f)))
+                    m_damageReduction = _Plugin.config("Warrior - Monkey Wrench", "Damage Decrease", 0f, new ConfigDescription("Set the damage reduction", new AcceptableValueRange<float>(0f, 1f))),
+                    m_attackSpeedReduction = _Plugin.config("Warrior - Monkey Wrench", "Attack Speed Reduction", 0.5f, new ConfigDescription("Set the attack speed reduction modifier", new AcceptableValueRange<float>(0f, 1f)))
                 },
+                m_cap = _Plugin.config("Warrior - Monkey Wrench", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1985,6 +2041,7 @@ public static class TalentManager
                 m_healthCost = _Plugin.config("Warrior - Fortification", "Health Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Warrior - Fortification", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Warrior - Fortification", "Eitr Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
+                m_cap = _Plugin.config("Warrior - Fortification", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             },
             new()
             {
@@ -1995,7 +2052,8 @@ public static class TalentManager
                 m_values = new Talent.TalentValues()
                 {
                     m_damageReduction = _Plugin.config("Warrior - Dual Wield", "Damage Decrease", 0.5f, new ConfigDescription("Set the damage reduction", new AcceptableValueRange<float>(0f, 1f)))
-                }
+                },
+                m_cap = _Plugin.config("Warrior - Dual Wield", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             }
         };
     }

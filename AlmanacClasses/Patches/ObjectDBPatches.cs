@@ -16,8 +16,7 @@ public static class ObjectDBPatches
     {
         private static void Postfix(ObjectDB __instance)
         {
-            if (!__instance) return;
-            if (!ZNetScene.instance) return;
+            if (!__instance || !ZNetScene.instance) return;
             SpriteManager.LoadSpriteResources();
             LoadedAssets.InitVFX();
             RavenTutorialManager.InitCustomTutorials();

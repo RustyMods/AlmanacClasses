@@ -1,7 +1,4 @@
-﻿using AlmanacClasses.Data;
-using BepInEx.Configuration;
-
-namespace AlmanacClasses.Classes.Abilities.Warrior;
+﻿namespace AlmanacClasses.Classes.Abilities.Warrior;
 
 public class SE_MonkeyWrench : StatusEffect
 {

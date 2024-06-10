@@ -340,6 +340,13 @@ public static class LoadUI
                 Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_not_enough_tp");
                 return;
             }
+
+            if (SelectedTalent.GetLevel() == SelectedTalent.GetPrestigeCap())
+            {
+                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_prestige_cap");
+                return;
+            }
+            
             AddLevel(SelectedTalent);
             CharacteristicManager.UpdateCharacteristics();
             Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_prestiged " + SelectedTalent.GetName() + " $almanac_to lvl " + SelectedTalent.GetLevel());

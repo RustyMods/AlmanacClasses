@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using HarmonyLib;
+using UnityEngine;
 
 namespace AlmanacClasses.Classes.Abilities.Warrior;
 
@@ -25,3 +26,4 @@ public class SE_BattleFury : StatusEffect
         m_character.AddStamina(10f);
     }
 }
+

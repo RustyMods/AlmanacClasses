@@ -7,22 +7,6 @@ namespace AlmanacClasses.Patches;
 
 public static class HumanoidPatches
 {
-    [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.GetAttackDrawPercentage))]
-    private static class Humanoid_GetAttackDrawPercentage_Patch
-    {
-        private static void Postfix(Humanoid __instance, ref float __result)
-        {
-            if (!__instance.IsPlayer()) return;
-            if (!__instance.GetSEMan().HaveStatusEffect("SE_QuickShot".GetStableHashCode())) return;
-            ItemDrop.ItemData currentWeapon = __instance.GetCurrentWeapon();
-            if (currentWeapon.m_shared.m_skillType is not Skills.SkillType.Bows) return;
-            if (!PlayerManager.m_playerTalents.TryGetValue("QuickShot", out Talent talent)) return;
-            __result *= talent.GetSpeedModifier(talent.GetLevel());
-            
-            // __result = Mathf.Clamp(__result / talent.GetSpeed(), 0f, 1f);
-        }
-    }
-
     [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.Awake))]
     private static class Humanoid_Awake_Patch
     {
@@ -44,106 +28,5 @@ public static class HumanoidPatches
         instance.m_boss = false;
         Classes.Abilities.SpawnSystem.SetSpawnTameable(instance.gameObject, "Friendly " + instance.name.Replace("_", " ").Replace("(Clone)",""), true);
         Classes.Abilities.SpawnSystem.RemoveCharacterDrops(instance.gameObject);
-    }
-
-    private static ItemDrop.ItemData? rightItem;
-    private static ItemDrop.ItemData? leftItem;
-    private static bool isDualWielding;
-
-    [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.EquipItem))]
-    private static class Humanoid_EquipItem_Patch
-    {
-        private static bool Prefix(Humanoid __instance, ItemDrop.ItemData item, bool triggerEquipEffects, ref bool __result)
-        {
-            if (!__instance.IsPlayer()) return true;
-            if (__instance.GetRightItem() == null) return true;
-            if (item.m_shared.m_name == "$item_spear_chitin") return true;
-            if (item.m_shared.m_itemType != ItemDrop.ItemData.ItemType.OneHandedWeapon) return true;
-            if (!PlayerManager.m_playerTalents.ContainsKey("DualWield")) return true;
-            if (__instance.GetLeftItem() != null)
-            {
-                __instance.UnequipItem(__instance.GetLeftItem(), false);
-            }
-
-            __instance.m_leftItem = item;
-            __instance.m_leftItem.m_equipped = true;
-            __instance.m_hiddenLeftItem = null;
-            __instance.m_hiddenRightItem = null;
-                
-            rightItem = __instance.GetRightItem();
-            leftItem = item;
-
-            rightItem.m_shared.m_attack.m_attackStamina += leftItem.m_shared.m_attack.m_attackStamina;
-            rightItem.m_shared.m_attack.m_attackEitr += leftItem.m_shared.m_attack.m_attackEitr;
-            rightItem.m_shared.m_attack.m_attackHealth += leftItem.m_shared.m_attack.m_attackHealth;
-            rightItem.m_shared.m_attack.m_attackHealthPercentage += leftItem.m_shared.m_attack.m_attackHealthPercentage;
-
-            rightItem.m_shared.m_secondaryAttack.m_attackStamina += leftItem.m_shared.m_secondaryAttack.m_attackStamina;
-            rightItem.m_shared.m_secondaryAttack.m_attackEitr += leftItem.m_shared.m_secondaryAttack.m_attackEitr;
-            rightItem.m_shared.m_secondaryAttack.m_attackHealth += leftItem.m_shared.m_secondaryAttack.m_attackHealth;
-            rightItem.m_shared.m_secondaryAttack.m_attackHealthPercentage += leftItem.m_shared.m_secondaryAttack.m_attackHealthPercentage;
-                
-            rightItem.m_shared.m_damages.m_blunt += leftItem.m_shared.m_damages.m_blunt / 2;
-            rightItem.m_shared.m_damages.m_slash += leftItem.m_shared.m_damages.m_slash / 2;
-            rightItem.m_shared.m_damages.m_pierce += leftItem.m_shared.m_damages.m_pierce / 2;
-            rightItem.m_shared.m_damages.m_chop += leftItem.m_shared.m_damages.m_chop;
-            rightItem.m_shared.m_damages.m_pickaxe += leftItem.m_shared.m_damages.m_pickaxe;
-            rightItem.m_shared.m_damages.m_fire += leftItem.m_shared.m_damages.m_fire / 2;
-            rightItem.m_shared.m_damages.m_frost += leftItem.m_shared.m_damages.m_frost / 2;
-            rightItem.m_shared.m_damages.m_lightning += leftItem.m_shared.m_damages.m_lightning / 2;
-            rightItem.m_shared.m_damages.m_poison += leftItem.m_shared.m_damages.m_poison / 2;
-            rightItem.m_shared.m_damages.m_spirit += leftItem.m_shared.m_damages.m_spirit / 2;
-
-            if (!leftItem.m_shared.m_equipStatusEffect)
-                leftItem.m_shared.m_equipStatusEffect =
-                    ObjectDB.instance.GetStatusEffect("SE_DualWield".GetStableHashCode());
-
-            isDualWielding = true;
-            __result = true;
-
-            if (__instance.IsItemEquiped(item)) item.m_equipped = true;
-            __instance.SetupEquipment();
-            if (triggerEquipEffects) __instance.TriggerEquipEffect(item);
-            return false;
-        }
-    }
-
-    [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.UnequipItem))]
-    private static class Humanoid_UnequipItem_Patch
-    {
-        private static void Postfix(ItemDrop.ItemData item)
-        {
-            if (isDualWielding && (item == leftItem || item == leftItem))
-            {
-                if (rightItem == null) return;
-                rightItem.m_shared.m_attack.m_attackStamina -= leftItem.m_shared.m_attack.m_attackStamina;
-                rightItem.m_shared.m_attack.m_attackEitr -= leftItem.m_shared.m_attack.m_attackEitr;
-                rightItem.m_shared.m_attack.m_attackHealth -= leftItem.m_shared.m_attack.m_attackHealth;
-                rightItem.m_shared.m_attack.m_attackHealthPercentage -= leftItem.m_shared.m_attack.m_attackHealthPercentage;
-                
-                rightItem.m_shared.m_secondaryAttack.m_attackStamina -= leftItem.m_shared.m_secondaryAttack.m_attackStamina;
-                rightItem.m_shared.m_secondaryAttack.m_attackEitr -= leftItem.m_shared.m_secondaryAttack.m_attackEitr;
-                rightItem.m_shared.m_secondaryAttack.m_attackHealth -= leftItem.m_shared.m_secondaryAttack.m_attackHealth;
-                rightItem.m_shared.m_secondaryAttack.m_attackHealthPercentage -= leftItem.m_shared.m_secondaryAttack.m_attackHealthPercentage;
-                
-                rightItem.m_shared.m_damages.m_blunt -= leftItem.m_shared.m_damages.m_blunt / 2;
-                rightItem.m_shared.m_damages.m_pierce -= leftItem.m_shared.m_damages.m_pierce / 2;
-                rightItem.m_shared.m_damages.m_slash -= leftItem.m_shared.m_damages.m_slash / 2;
-                rightItem.m_shared.m_damages.m_chop -= leftItem.m_shared.m_damages.m_chop;
-                rightItem.m_shared.m_damages.m_pickaxe -= leftItem.m_shared.m_damages.m_pickaxe;
-                rightItem.m_shared.m_damages.m_fire -= leftItem.m_shared.m_damages.m_fire / 2;
-                rightItem.m_shared.m_damages.m_frost -= leftItem.m_shared.m_damages.m_frost / 2;
-                rightItem.m_shared.m_damages.m_lightning -= leftItem.m_shared.m_damages.m_lightning / 2;
-                rightItem.m_shared.m_damages.m_poison -= leftItem.m_shared.m_damages.m_poison / 2;
-                rightItem.m_shared.m_damages.m_spirit -= leftItem.m_shared.m_damages.m_spirit / 2;
-
-                if (leftItem.m_shared.m_equipStatusEffect && leftItem.m_shared.m_equipStatusEffect.name == "SE_DualWield")
-                {
-                    leftItem.m_shared.m_equipStatusEffect = null;
-                }
-
-                isDualWielding = false;
-            }
-        }
     }
 }

@@ -167,7 +167,7 @@ public static class PlayerManager
             if (!StatusEffectManager.IsClassEffect(status.name)) continue;
             if (!TalentManager.m_talentsByStatusEffect.TryGetValue(status.m_nameHash, out Talent talent)) continue;
             if (talent.m_values == null) continue;
-            output += (int)(talent.m_values.m_health?.Value ?? 0f);
+            output += (int)talent.GetHealth(talent.GetLevel());
         }
         return output;
     }
@@ -182,7 +182,7 @@ public static class PlayerManager
             if (!StatusEffectManager.IsClassEffect(status.name)) continue;
             if (!TalentManager.m_talentsByStatusEffect.TryGetValue(status.m_nameHash, out Talent talent)) continue;
             if (talent.m_values == null) continue;
-            output += (int)(talent.m_values.m_stamina?.Value ?? 0f);
+            output += (int)talent.GetStamina(talent.GetLevel());
         }
         return output;
     }
@@ -197,7 +197,7 @@ public static class PlayerManager
             if (!StatusEffectManager.IsClassEffect(status.name)) continue;
             if (!TalentManager.m_talentsByStatusEffect.TryGetValue(status.m_nameHash, out Talent talent)) continue;
             if (talent.m_values == null) continue;
-            output += (int)(talent.m_values.m_eitr?.Value ?? 0f);
+            output += (int)talent.GetEitr(talent.GetLevel());
         }
 
         return output;
