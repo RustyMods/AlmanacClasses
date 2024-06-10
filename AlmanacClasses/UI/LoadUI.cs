@@ -63,6 +63,7 @@ public static class LoadUI
     public static readonly Dictionary<string, Button> ButtonMap = new();
     public static readonly Dictionary<Button, Dictionary<string, Image>> ButtonFillLineMap = new();
     public static readonly Dictionary<Button, float> ButtonCoreLineAmountMap = new();
+    public static readonly Dictionary<Button, Sprite> ButtonOriginalSpriteMap = new();
     private static readonly List<Button> CheckedTalents = new();
     #region All Fill Lines Images
     #region Line Up
@@ -291,7 +292,7 @@ public static class LoadUI
 
         LoadCloseButton();
         LoadResetButton();
-        AddSFXToTalentButtons();
+        RegisterButtons();
         
         SetPrestigeButton();
         SetLineFill();
@@ -353,7 +354,6 @@ public static class LoadUI
             TalentBook.ShowUI();
         });
     }
-
     private static void AddLevel(Talent ability)
     {
         if (PlayerManager.m_tempPlayerData.m_boughtTalents.ContainsKey(ability.m_key))
@@ -683,7 +683,6 @@ public static class LoadUI
         UnEquipWeapons();
         if (!command) TalentBook.ShowUI();
     }
-
     private static void UnEquipWeapons()
     {
         Player player = Player.m_localPlayer;
@@ -693,7 +692,7 @@ public static class LoadUI
         if (right != null) player.UnequipItem(right);
         if (left != null) player.UnequipItem(left);
     }
-    private static void AddSFXToTalentButtons()
+    private static void RegisterButtons()
     {
         TalentButtons.Clear();
         Transform talents = Utils.FindChild(SkillTree_UI.transform, "$part_talents");
@@ -702,7 +701,19 @@ public static class LoadUI
         {
             TalentButtons.Add(button);
             ButtonMap[button.name] = button;
-            button.gameObject.AddComponent<ButtonSfx>().m_sfxPrefab = sfx.m_sfxPrefab;
+            RegisterSpriteMap(button);
+            AddSFX(button);
+        }
+    }
+
+    private static void AddSFX(Button button) => button.gameObject.AddComponent<ButtonSfx>().m_sfxPrefab = sfx.m_sfxPrefab;
+    private static void RegisterSpriteMap(Button button)
+    {
+        Transform icon = button.transform.Find("icon");
+        if (!icon) return;
+        if (icon.TryGetComponent(out Image component))
+        {
+            ButtonOriginalSpriteMap[button] = component.sprite;
         }
     }
     private static void SetAllButtonEvents()
@@ -921,9 +932,21 @@ public static class LoadUI
         SetButton(WarriorTalents, "$button_warrior_talent_4", new(){{"$button_warrior_6", LineWarrior4LeftUp}}, 1f, "MonkeyWrench");
         SetButton(WarriorTalents, "$button_warrior_talent_5", new(){{"$button_warrior_talent_2", LineCoreWarrior}}, 1f, "DualWield");
     }
+
+    private static void SetButtonIcons(Button button, Sprite sprite)
+    {
+        Transform icon = button.transform.Find("icon");
+        Transform checkmark = button.transform.Find("Checkmark");
+        if (!icon || !checkmark) return;
+        if (!icon.TryGetComponent(out Image iconImage)) return;
+        if (!checkmark.TryGetComponent(out Image checkmarkImage)) return;
+        iconImage.sprite = sprite;
+        checkmarkImage.sprite = sprite;
+    }
     public static void ChangeButton(Talent talent, bool revert = false, float line = 1f)
     {
         if (!ButtonMap.TryGetValue(talent.m_button, out Button button)) return;
+        if (!ButtonOriginalSpriteMap.TryGetValue(button, out Sprite originalSprite)) return;
         if (!TalentManager.m_talentsByButton.TryGetValue(talent.m_button, out Talent original)) return;
         if (!TalentManager.m_altTalentsByButton.TryGetValue(talent.m_button, out Talent alt)) return;
         
@@ -934,6 +957,7 @@ public static class LoadUI
                 PlayerManager.m_playerTalents.Remove(alt.m_key);
             }
             RemapButton(talent.m_button, ButtonFillLineMap[button], line, talent.m_key);
+            if (talent.m_altButtonSprite != null) SetButtonIcons(button, talent.m_altButtonSprite);
         }
         else
         {
@@ -942,6 +966,7 @@ public static class LoadUI
                 PlayerManager.m_playerTalents.Remove(original.m_key);
             }
             RemapButton(talent.m_button, ButtonFillLineMap[button], line, talent.m_key);
+            SetButtonIcons(button, originalSprite);
         }
     }
 

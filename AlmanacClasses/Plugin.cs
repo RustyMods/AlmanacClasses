@@ -57,6 +57,9 @@ namespace AlmanacClasses
             SetupWatcher();
             
             AddAttackSpeedModifiers();
+            
+            Watcher.InitWatcher();
+
         }
 
         public void Update()

@@ -1,4 +1,5 @@
 ﻿using AlmanacClasses.LoadAssets;
+using HarmonyLib;
 using UnityEngine;
 
 namespace AlmanacClasses.Classes.Abilities.Core;
@@ -6,7 +7,17 @@ namespace AlmanacClasses.Classes.Abilities.Core;
 public static class AirBender
 {
     private static int JumpCount;
-
+    
+    [HarmonyPatch(typeof(Player), nameof(Player.Update))]
+    private static class Player_Update_Patch
+    {
+        private static void Postfix(Player __instance)
+        {
+            if (!__instance) return;
+            if (__instance != Player.m_localPlayer) return;
+            CheckDoubleJump(__instance);
+        }
+    }
     public static void CheckDoubleJump(Player instance)
     {
         if (!instance) return;

@@ -39,6 +39,7 @@ public class Talent
     public ConfigEntry<string>? m_creature;
     public ResistancePercentages? m_resistances;
     public float m_line = 1f;
+    public Sprite? m_altButtonSprite;
     public float GetFillLine() => m_line;
     public int GetLevel() => m_level;
     public void AddLevel() => ++m_level;
@@ -153,6 +154,7 @@ public class Talent
     private string GetDescription() => $"$talent_{m_key.ToLower()}_desc";
     private float GetCreatureLength(int level) => m_creature == null ? 0f : GetLength(level);
     private float GetCreaturesLength(int level) => m_creatures == null ? 0f : GetLength(level);
+    public float GetArmor(int level) => m_values == null ? 0f : (m_values.m_armor?.Value ?? 0f) + (level - 1) * 2f;
     public string GetTooltip()
     {
         StringBuilder stringBuilder = new StringBuilder();
@@ -244,6 +246,8 @@ public class Talent
                     stringBuilder.Append($"$se_sneakstamina: <color=orange>{FormatPercentage(GetSneakStaminaUsage(GetLevel()))}%</color>\n");
                 if (m_values.m_attackStaminaUsage is { Value: > 0 }) 
                     stringBuilder.Append($"$se_attackstamina: <color=orange>{FormatPercentage(GetAttackStaminaUsage(GetLevel()))}%</color>\n");
+                if (m_values.m_armor is { Value: > 0 })
+                    stringBuilder.Append($"$inventory_armor: <color=orange>+{GetArmor(GetLevel())}</color>\n");
             }
 
             if (m_damages != null)
@@ -430,6 +434,8 @@ public class Talent
                     stringBuilder.Append($"$se_sneakstamina: <color=orange>{FormatPercentage(GetSneakStaminaUsage(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetSneakStaminaUsage(GetLevel() + 1))}%</color>\n");
                 if (m_values.m_attackStaminaUsage is { Value: > 0 }) 
                     stringBuilder.Append($"$se_attackstamina: <color=orange>{FormatPercentage(GetAttackStaminaUsage(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetAttackStaminaUsage(GetLevel() + 1))}%</color>\n");
+                if (m_values.m_armor is {Value: > 0})
+                    stringBuilder.Append($"$inventory_armor: <color=orange>+{GetArmor(GetLevel())}</color> --> <color={m_prestigeColor}>+{GetArmor(GetLevel() + 1)}</color>\n");
             }
 
             if (m_damages != null)
@@ -514,6 +520,7 @@ public class Talent
         public ConfigEntry<float>? m_attackSpeedReduction;
         public ConfigEntry<float>? m_attackStaminaUsage;
         public ConfigEntry<float>? m_sneakStaminaUsage;
+        public ConfigEntry<float>? m_armor;
     }
     public class TalentCreatures
     {
@@ -576,8 +583,8 @@ public static class TalentManager
     public static void InitializeTalents()
     {
         if (m_initiated) return;
-        FilePaths.CreateFolders();
         AlmanacClassesLogger.LogDebug("Initializing talents");
+        FilePaths.CreateFolders();
         m_talents.Clear();
         m_talentsByButton.Clear();
         LoadTalents();
@@ -639,13 +646,55 @@ public static class TalentManager
             m_alt = _Plugin.config("Core - Treasure Hunter", "Enable", Toggle.Off, "If on, replaces forage talent"),
             m_cap = _Plugin.config("Core - Treasure Hunter", "Prestige Cap", 1, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 10))),
             m_line = 0.7f,
+            m_altButtonSprite = SpriteManager.ScrollMap
         };
         TreasureHunter.m_alt.SettingChanged += (sender, args) =>
         {
             LoadUI.ChangeButton(TreasureHunter, TreasureHunter.m_alt.Value is Toggle.Off, TreasureHunter.m_line);
         };
 
-        return new List<Talent>() { TreasureHunter };
+        Talent Berzerk = new Talent()
+        {
+            m_key = "Berzerk",
+            m_button = "$button_rain",
+            m_type = TalentType.Passive,
+            m_cost = _Plugin.config("Core - Berzerk", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock ability", new AcceptableValueRange<int>(1, 10))),
+            m_values = new Talent.TalentValues()
+            {
+                m_armor = _Plugin.config("Core - Berzerk", "Armor", 3f, new ConfigDescription("Set base added passive armor", new AcceptableValueRange<float>(0f, 10f))),
+            },
+            m_alt = _Plugin.config("Core - Berzerk", "Enable", Toggle.Off, "If on, replaces the rain proof talent"),
+            m_cap =  _Plugin.config("Core - Berzerk", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 10))), 
+            m_altButtonSprite = SpriteManager.ShieldIcon
+        };
+        Berzerk.m_alt.SettingChanged += (sender, args) =>
+        {
+            LoadUI.ChangeButton(Berzerk, Berzerk.m_alt.Value is Toggle.Off);
+        };
+
+        Talent Sailor = new Talent()
+        {
+            m_key = "Sailor",
+            m_button = "$button_sail",
+            m_statusEffectHash = "SE_Sailor".GetStableHashCode(),
+            m_type = TalentType.StatusEffect,
+            m_cost = _Plugin.config("Core - Sailor", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock ability", new AcceptableValueRange<int>(1, 10))),
+            m_alt = _Plugin.config("Core - Sailor", "Enable", Toggle.Off, "If on replaces the gypsy talent"),
+            m_cap = _Plugin.config("Core - Sailor", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 10))),
+            m_startEffects = LoadedAssets.GP_Moder.m_startEffects,
+            m_animation = "gpower",
+            m_length = _Plugin.config("Core - Sailor", "Length", 50f, new ConfigDescription("Set the duration of effect", new AcceptableValueRange<float>(1f, 1000f))),
+            m_cooldown = _Plugin.config("Core - Sailor", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(1f, 1000f))),
+            m_sprite = SpriteManager.Sail_Icon,
+            m_staminaCost = _Plugin.config("Core - Sailor", "Stamina Cost", 5f, new ConfigDescription("Set cost to activate", new AcceptableValueRange<float>(0f, 101f))),
+            m_altButtonSprite = SpriteManager.WindIcon
+        };
+        Sailor.m_alt.SettingChanged += (sender, args) =>
+        {
+            LoadUI.ChangeButton(Sailor, Sailor.m_alt.Value is Toggle.Off);
+        };
+
+        return new List<Talent>() { TreasureHunter, Berzerk, Sailor };
     }
 
     private static List<Talent> LoadAltWarrior()
@@ -656,6 +705,7 @@ public static class TalentManager
             m_button = "$button_warrior_talent_5",
             m_type = TalentType.Passive,
             m_statusEffectHash = "SE_Survivor".GetStableHashCode(),
+            m_altButtonSprite = SpriteManager.CrownIcon,
             m_values = new Talent.TalentValues()
             {
                 m_chance = _Plugin.config("Warrior - Survivor", "Chance", 20f,
@@ -680,7 +730,11 @@ public static class TalentManager
             m_cost = _Plugin.config("Warrior - Battle Fury", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock talent", new AcceptableValueRange<int>(1, 10))),
             m_alt = _Plugin.config("Warrior - Battle Fury", "Enable", Toggle.Off, "If on, replaces monkey wrench talent"),
             m_startEffects = LoadedAssets.FX_BattleFury,
-            m_cap = _Plugin.config("Warrior - Battle Fury", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+            m_cap = _Plugin.config("Warrior - Battle Fury", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+            m_values = new Talent.TalentValues()
+            {
+                m_chance = _Plugin.config("Warrior - Battle Fury", "Chance", 10f, new ConfigDescription("Set chance to trigger ability", new AcceptableValueRange<float>(0f, 100f)))
+            }
         };
         battleFury.m_alt.SettingChanged += (sender, args) =>
         {

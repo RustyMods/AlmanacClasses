@@ -5,10 +5,9 @@ namespace AlmanacClasses.LoadAssets;
 
 public static class LoadTwoHanded
 {
+    private static bool m_modified;
     private static readonly Dictionary<ItemDrop, TwoHandedData> TwoHandedWeapons = new();
-
-    public static bool IsMonkeyWrenchItem(string sharedName) =>
-        TwoHandedWeapons.Keys.ToList().Find(x => x.m_itemData.m_shared.m_name == sharedName) != null;
+    public static bool IsMonkeyWrenchItem(string sharedName) => TwoHandedWeapons.Keys.ToList().Find(x => x.m_itemData.m_shared.m_name == sharedName) != null;
 
     private static readonly List<string> WarfareItems = new()
     {
@@ -46,9 +45,9 @@ public static class LoadTwoHanded
         }
         
     }
-
     public static void ModifyTwoHandedWeapons()
     {
+        if (m_modified) return;
         foreach (KeyValuePair<ItemDrop, TwoHandedData> kvp in TwoHandedWeapons)
         {
             kvp.Key.m_itemData.m_shared.m_itemType = ItemDrop.ItemData.ItemType.OneHandedWeapon;
@@ -89,8 +88,9 @@ public static class LoadTwoHanded
             
             AddEquipStatusEffect(item);
         }
-    }
 
+        m_modified = true;
+    }
     private static void ChangeToOneHandedAxe(ItemDrop.ItemData item)
     {
         item.m_shared.m_attack.m_attackType = Attack.AttackType.Horizontal;
@@ -98,7 +98,6 @@ public static class LoadTwoHanded
         item.m_shared.m_secondaryAttack.m_attackType = Attack.AttackType.Vertical;
         item.m_shared.m_secondaryAttack.m_attackAnimation = "axe_secondary";
     }
-
     private static void ChangeToOneHandedSword(ItemDrop.ItemData item)
     {
         item.m_shared.m_attack.m_attackType = Attack.AttackType.Horizontal;
@@ -106,13 +105,11 @@ public static class LoadTwoHanded
         item.m_shared.m_secondaryAttack.m_attackType = Attack.AttackType.Horizontal;
         item.m_shared.m_secondaryAttack.m_attackAnimation = "sword_secondary";
     }
-
     private static void AddEquipStatusEffect(ItemDrop.ItemData item)
     {
         if (item.m_shared.m_equipStatusEffect) return;
         item.m_shared.m_equipStatusEffect = ObjectDB.instance.GetStatusEffect("SE_MonkeyWrench".GetStableHashCode());
     }
-
     public static void ResetTwoHandedWeapons()
     {
         foreach (KeyValuePair<ItemDrop, TwoHandedData> kvp in TwoHandedWeapons)
@@ -151,8 +148,9 @@ public static class LoadTwoHanded
                 item.m_shared.m_equipStatusEffect = null;
             }
         }
-    }
 
+        m_modified = false;
+    }
     private class TwoHandedData
     {
         public ItemDrop.ItemData.ItemType m_type = ItemDrop.ItemData.ItemType.TwoHandedWeapon;

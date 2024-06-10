@@ -1,4 +1,5 @@
 ﻿using AlmanacClasses.LoadAssets;
+using HarmonyLib;
 
 namespace AlmanacClasses.Classes.Abilities.Rogue;
 
@@ -48,6 +49,22 @@ public class SE_Bleed : StatusEffect
 
 public static class BleedTrigger
 {
+    [HarmonyPatch(typeof(Character),nameof(Character.Damage))]
+    [HarmonyPatch(typeof(Character), nameof(Character.RPC_Damage))]
+    private static class Character_RPC_Damage_Patch
+    {
+        private static void Prefix(Character __instance, HitData hit)
+        {
+            if (!__instance || __instance.IsPlayer() || !hit.HaveAttacker()) return;
+            if (!hit.GetAttacker().IsPlayer()) return;
+            if (hit.GetAttacker() != Player.m_localPlayer) return;
+            if (!PlayerManager.m_playerTalents.TryGetValue("RogueBleed", out Talent ability)) return;
+            if (!hit.GetAttacker().GetSEMan().HaveStatusEffect(ability.m_statusEffectHash)) return;
+            if (__instance.m_nview.IsValid()) __instance.m_nview.ClaimOwnership();
+            TriggerBleeding(__instance);
+        }
+    }
+    
     public static void TriggerBleeding(Character __instance)
     {
         if (__instance.GetSEMan().HaveStatusEffect("SE_Bleed".GetStableHashCode()))

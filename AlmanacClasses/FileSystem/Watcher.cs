@@ -23,6 +23,7 @@ public static class Watcher
 
     private static void OnExperienceMapChange(object sender, FileSystemEventArgs e)
     {
+        if (!ZNet.instance) return;
         if (!ZNet.instance.IsServer()) return;
         string fileName = Path.GetFileName(e.Name);
         switch (e.ChangeType)

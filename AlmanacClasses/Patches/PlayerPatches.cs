@@ -1,15 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AlmanacClasses.Classes;
-using AlmanacClasses.Classes.Abilities.Core;
-using AlmanacClasses.Data;
 using AlmanacClasses.LoadAssets;
 using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
-using UnityEngine.Rendering;
-using Valheim.SettingsGui;
-using YamlDotNet.Serialization;
 
 namespace AlmanacClasses.Patches;
 
@@ -34,26 +29,7 @@ public static class PlayerPatches
             stamina += PlayerManager.GetTotalAddedStamina();
         }
     }
-
-    [HarmonyPatch(typeof(Player), nameof(Player.GetTotalFoodValue))]
-    private static class Player_GetTotalFoodValue_Postfix
-    {
-        private static void Postfix(Player __instance, ref float hp, ref float stamina, ref float eitr)
-        {
-            if (!PlayerManager.m_playerTalents.TryGetValue("MasterChef", out Talent ability)) return;
-            float modifier = ability.GetFoodModifier(ability.GetLevel());
-            hp = __instance.m_baseHP;
-            stamina = __instance.m_baseStamina;
-            eitr = 0.0f;
-            foreach (Player.Food? food in __instance.m_foods)
-            {
-                hp += food.m_health *= modifier;
-                stamina += food.m_stamina *= modifier;
-                eitr += food.m_eitr *= modifier;
-            }
-        }
-    }
-
+    
     [HarmonyPatch(typeof(Player), nameof(Player.Save))]
     private static class Player_Save_Patch
     {
@@ -64,14 +40,12 @@ public static class PlayerPatches
         }
     }
 
-    public static bool initiated;
     [HarmonyPatch(typeof(Player), nameof(Player.OnSpawned))]
     private static class Player_OnSpawned_Patch
     {
         private static void Postfix(Player __instance)
         {
             if (__instance != Player.m_localPlayer) return;
-            if (initiated) return;
             PlayerManager.InitPlayerData();
             TalentManager.InitializeTalents();
             PlayerManager.InitPlayerTalents();
@@ -80,7 +54,6 @@ public static class PlayerPatches
             {
                 LoadTwoHanded.ModifyTwoHandedWeapons();
             }
-            initiated = true;
         } 
     }
 
@@ -94,17 +67,6 @@ public static class PlayerPatches
         }
     }
 
-    [HarmonyPatch(typeof(Player), nameof(Player.Update))]
-    private static class Player_Update_Patch
-    {
-        private static void Postfix(Player __instance)
-        {
-            if (!__instance) return;
-            if (__instance != Player.m_localPlayer) return;
-            AirBender.CheckDoubleJump(__instance);
-        }
-    }
-    
     [HarmonyPatch(typeof(Player), nameof(Player.UseHotbarItem))]
     private static class Player_UseHotbarItem_Patch
     {

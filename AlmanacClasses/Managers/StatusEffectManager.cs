@@ -24,7 +24,7 @@ public static class StatusEffectManager
         effects.AddRange(LoadRogue());
         effects.AddRange(LoadWarrior());
         effects.AddRange(LoadShaman());
-        foreach (var effect in effects)
+        foreach (StatusEffect? effect in effects)
         {
             m_statusEffects[effect.name] = effect;
             if (__instance.m_StatusEffects.Contains(effect)) continue;
@@ -55,7 +55,10 @@ public static class StatusEffectManager
         StatusEffect PackMule = ScriptableObject.CreateInstance<SE_PackMule>();
         PackMule.name = "SE_PackMule";
 
-        return new List<StatusEffect> { IceBreaker, characteristic, resourceful, enlightened, treasureHunter, PackMule };
+        StatusEffect sailor = ScriptableObject.CreateInstance<SE_Sailor>();
+        sailor.name = "SE_Sailor";
+
+        return new List<StatusEffect> { IceBreaker, characteristic, resourceful, enlightened, treasureHunter, PackMule, sailor };
     }
 
     private static List<StatusEffect> LoadBard()

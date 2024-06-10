@@ -14,10 +14,7 @@ public static class CommandsManager
     [HarmonyPatch(typeof(Terminal), nameof(Terminal.Awake))]
     private static class Terminal_Awake_Patch
     {
-        private static void Postfix()
-        {
-            AddCommands();
-        }
+        private static void Postfix() => AddCommands();
     }
 
     private static void AddCommands()

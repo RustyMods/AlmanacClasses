@@ -16,6 +16,7 @@ text_magic_dmg: "Magic Damage"
 
 tooltip_increase: "Increase"
 tooltip_by: "by"
+inventory_armor: "Armor"
 
 almanac_cost: "cost"
 almanac_cooldown: "cooldown"
@@ -51,8 +52,8 @@ almanac_creature: "Creature"
 almanac_damage_reduction: "Damage reduction"
 almanac_allows_to_tp: "Can teleport items above tier "
 almanac_current: "Current"
-almanac_physical: "physical damage"
-almanac_elemental: "elemental damage"
+almanac_physical: "Physical damage"
+almanac_elemental: "Elemental damage"
 almanac_to: "to"
 almanac_jumps: "Added jumps "
 almanac_bleed: "Bleeding"
@@ -184,6 +185,8 @@ talent_builder: "Builder"
 talent_builder_desc: "Decrease cost of building"
 talent_trader: "Gipsy"
 talent_trader_desc: "Allows to teleport non-teleportable materials based on talent level"
+talent_berzerk: "Berzerk"
+talent_berzerk_desc: "Passively adds armor"
 
 almanac_class_altar_info: 
   "Welcome to the wonderful world of almanac class system 

@@ -134,14 +134,17 @@
         <Compile Include="Classes\Abilities\Bard\SE_SongOfSpeed.cs" />
         <Compile Include="Classes\Abilities\Bard\SE_SongOfVitality.cs" />
         <Compile Include="Classes\Abilities\Core\AirBender.cs" />
+        <Compile Include="Classes\Abilities\Core\Berzerker.cs" />
         <Compile Include="Classes\Abilities\Core\Comfort.cs" />
         <Compile Include="Classes\Abilities\Core\Forager.cs" />
+        <Compile Include="Classes\Abilities\Core\MasterChef.cs" />
         <Compile Include="Classes\Abilities\Core\Pickpocket.cs" />
         <Compile Include="Classes\Abilities\Core\RainProof.cs" />
         <Compile Include="Classes\Abilities\Core\SE_Characteristics.cs" />
         <Compile Include="Classes\Abilities\Core\SE_ExperienceOrb.cs" />
         <Compile Include="Classes\Abilities\Core\SE_PackMule.cs" />
         <Compile Include="Classes\Abilities\Core\SE_Resourceful.cs" />
+        <Compile Include="Classes\Abilities\Core\SE_Sailor.cs" />
         <Compile Include="Classes\Abilities\Core\SE_TreasureHunter.cs" />
         <Compile Include="Classes\Abilities\Core\Trader.cs" />
         <Compile Include="Classes\Abilities\Ranger\RangerSpawn.cs" />
@@ -181,7 +184,6 @@
         <Compile Include="Data\DefaultData.cs" />
         <Compile Include="Data\StatusEffectData.cs" />
         <Compile Include="FileSystem\FilePaths.cs" />
-        <Compile Include="FileSystem\SyncManager.cs" />
         <Compile Include="FileSystem\Watcher.cs" />
         <Compile Include="LoadAssets\AltarEffectFade.cs" />
         <Compile Include="LoadAssets\AnimationReplacer.cs" />
@@ -190,7 +192,6 @@
         <Compile Include="LoadAssets\LoadTwoHanded.cs" />
         <Compile Include="Managers\AnimationManager.cs" />
         <Compile Include="Managers\CommandsManager.cs" />
-        <Compile Include="Managers\ItemEffectReplacer.cs" />
         <Compile Include="Managers\LocalizationManager.cs" />
         <Compile Include="Managers\MaterialReplacer.cs" />
         <Compile Include="Managers\PieceManager.cs" />
@@ -210,8 +211,6 @@
         <Compile Include="Patches\PlayerPatches.cs" />
         <Compile Include="Patches\PlayerProfilePatches.cs" />
         <Compile Include="Patches\StoreGUIPatches.cs" />
-        <Compile Include="Patches\TextDialogPatches.cs" />
-        <Compile Include="Patches\ZNetPatches.cs" />
         <Compile Include="Plugin.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="UI\ExperienceBarMove.cs" />

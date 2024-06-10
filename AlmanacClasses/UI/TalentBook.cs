@@ -70,7 +70,6 @@ public class TalentBook : MonoBehaviour, Interactable, Hoverable
         {
             LoadUI.RequiredPoints.text = Localization.instance.Localize("$text_required_points_to_prestige: <color=orange>0</color>");
         }
-
     }
 
     public static void HideUI()

@@ -143,26 +143,15 @@ public static class SpellBook
                 stringBuilder.Append("\n");
             }
             TextsDialog.TextInfo text = new TextsDialog.TextInfo("$title_spell_book", Localization.instance.Localize(stringBuilder.ToString()));
-            if (GetPassives(out string output))
-            {
-                TextsDialog.TextInfo passive = new TextsDialog.TextInfo("$title_passive_abilities", output);
-                __instance.m_texts.Insert(0, passive);
-            }
+            TextsDialog.TextInfo passive = new TextsDialog.TextInfo("$title_passive_abilities", GetPassives());
+            __instance.m_texts.Insert(0, passive);
             __instance.m_texts.Insert(0, text);
         }
 
-        private static bool GetPassives(out string output)
+        private static string GetPassives()
         {
-            output = "";
-            int count = 0;
             StringBuilder stringBuilder = new StringBuilder();
-            StatusEffect status = Player.m_localPlayer.GetSEMan().GetStatusEffect("SE_Characteristic".GetStableHashCode());
-            if (status)
-            {
-                stringBuilder.Append(status.GetTooltipString());
-                stringBuilder.Append("\n");
-                ++count;
-            }
+            stringBuilder.Append(CharacteristicManager.GetTooltip() + "\n");
             foreach (KeyValuePair<string, Talent> kvp in PlayerManager.m_playerTalents)
             {
                 if (kvp.Value.m_type is not TalentType.Passive) continue;
@@ -170,12 +159,9 @@ public static class SpellBook
                 stringBuilder.Append($"<color=orange>{data.GetName()}</color>\n");
                 stringBuilder.Append(data.GetTooltip());
                 stringBuilder.Append("\n");
-                ++count;
             }
             
-            if (count == 0) return false;
-            output = Localization.instance.Localize(stringBuilder.ToString());
-            return true;
+            return Localization.instance.Localize(stringBuilder.ToString());
         }
     }
 }

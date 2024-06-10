@@ -27,6 +27,8 @@ public class PlayerDataOld
 }
 public static class PlayerManager
 {
+    private static bool m_initiatedPlayerData;
+    private static bool m_initiatedPlayerTalents;
     private static readonly string m_oldKey = "AlmanacClassesPlayerData";
     private static readonly string m_playerDataKey = "AlmanacClassesPlayerData_New";
     public static PlayerData m_tempPlayerData = new();
@@ -34,6 +36,7 @@ public static class PlayerManager
     public static void InitPlayerData()
     {
         if (!Player.m_localPlayer) return;
+        if (m_initiatedPlayerData) return;
         IDeserializer deserializer = new DeserializerBuilder().Build();
         try
         {
@@ -58,6 +61,7 @@ public static class PlayerManager
                 m_tempPlayerData = deserializer.Deserialize<PlayerData>(data);
                 AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Loaded classes data");
             }
+            m_initiatedPlayerData = true;
         }
         catch
         {
@@ -90,6 +94,7 @@ public static class PlayerManager
 
     public static void InitPlayerTalents()
     {
+        if (m_initiatedPlayerTalents) return;
         AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Loaded saved player talents");
         foreach (KeyValuePair<int, string> kvp in m_tempPlayerData.m_spellBook)
         {
@@ -109,6 +114,7 @@ public static class PlayerManager
             CharacteristicManager.AddCharacteristic(match.GetCharacteristicType(), match.GetCharacteristic(match.GetLevel()));
         }
         CheckAltTalents();
+        m_initiatedPlayerTalents = true;
     }
 
     private static void CheckAltTalents()

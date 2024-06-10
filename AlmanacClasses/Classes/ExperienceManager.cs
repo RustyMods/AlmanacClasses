@@ -17,7 +17,17 @@ public static class ExperienceManager
 {
     private static readonly CustomSyncedValue<string> ServerExperienceMap = new(AlmanacClassesPlugin.ConfigSync, "ServerTalentsExperienceMap", "");
 
-    public static void InitServerExperienceMap()
+    [HarmonyPatch(typeof(ZNet), nameof(ZNet.Start))]
+    private static class ZNet_Start_Patch
+    {
+        private static void Postfix(ZNet __instance)
+        {
+            if (!__instance) return;
+            InitServerExperienceMap();
+        }
+    }
+    
+    private static void InitServerExperienceMap()
     {
         if (!ZNet.instance) return;
         FilePaths.CreateFolders();
@@ -200,21 +210,6 @@ public static class ExperienceManager
         PlayerManager.m_tempPlayerData.m_experience += amount;
     }
 
-    public static void RPC_AddExperience(long sender, int amount)
-    {
-        AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Invoked RPC to add experience");
-        PlayerManager.AddExperience(amount);
-    }
-
-    [HarmonyPatch(typeof(ZNetScene), nameof(ZNetScene.Awake))]
-    private static class ZNetScene_Awake_Patch
-    {
-        private static void Postfix()
-        {
-            ZRoutedRpc.instance.Register<int>(nameof(RPC_AddExperience), RPC_AddExperience);
-        }
-    }
-    
     private static readonly Dictionary<PlayerStatType, int> ExperienceMap = new()
     {
         { PlayerStatType.TreeChops , 1},
@@ -311,26 +306,22 @@ public static class ExperienceManager
 
     public static void DropOrb(Character instance)
     {
-        var number = Random.Range(0, 100);
+        int number = Random.Range(0, 100);
         if (number > AlmanacClassesPlugin._ChanceForOrb.Value) return;
         Heightmap.Biome biome = Player.m_localPlayer.GetCurrentBiome();
         switch (biome)
         {
             case Heightmap.Biome.Swamp or Heightmap.Biome.Mountain:
-                Object.Instantiate(ZNetScene.instance.GetPrefab("ExperienceOrb_Magic"), instance.transform.position,
-                    Quaternion.identity);
+                Object.Instantiate(ZNetScene.instance.GetPrefab("ExperienceOrb_Magic"), instance.transform.position, Quaternion.identity);
                 break;
             case Heightmap.Biome.Plains or Heightmap.Biome.Mistlands:
-                Object.Instantiate(ZNetScene.instance.GetPrefab("ExperienceOrb_Epic"), instance.transform.position,
-                    Quaternion.identity);
+                Object.Instantiate(ZNetScene.instance.GetPrefab("ExperienceOrb_Epic"), instance.transform.position, Quaternion.identity);
                 break;
             case Heightmap.Biome.Ocean:
-                Object.Instantiate(ZNetScene.instance.GetPrefab("ExperienceOrb_Legendary"), instance.transform.position,
-                    Quaternion.identity);
+                Object.Instantiate(ZNetScene.instance.GetPrefab("ExperienceOrb_Legendary"), instance.transform.position, Quaternion.identity);
                 break;
             default:
-                Object.Instantiate(ZNetScene.instance.GetPrefab("ExperienceOrb_Simple"), instance.transform.position,
-                    Quaternion.identity);
+                Object.Instantiate(ZNetScene.instance.GetPrefab("ExperienceOrb_Simple"), instance.transform.position, Quaternion.identity);
                 break;
         }
     }
