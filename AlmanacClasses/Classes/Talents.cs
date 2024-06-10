@@ -160,7 +160,7 @@ public class Talent
     public float GetDamageReduction(int level)
     {
         if (m_values == null) return 1f;
-        return (1 - (m_values.m_damageReduction?.Value ?? 1f)) * level;
+        return Mathf.Clamp01(1 - ((m_values.m_damageReduction?.Value ?? 1f) - 0.1f * (level - 1)));
     }
 
     public float GetFoodModifier(int level)
@@ -178,7 +178,7 @@ public class Talent
     public float GetSpeedReduction(int level)
     {
         if (m_values == null) return 1f;
-        return Mathf.Clamp((1 - (m_values.m_speedReduction?.Value ?? 1f)) * level, 0f, 1f);
+        return Mathf.Clamp01(1 - ((m_values.m_speedReduction?.Value ?? 1f) + 0.1f * (level - 1)));
     }
 
     public float GetRunStaminaDrain(int level)
@@ -352,7 +352,7 @@ public class Talent
         }
         else
         {
-            stringBuilder.Append(GetDescription() + "\n");
+            stringBuilder.Append(GetDescription() + "\n\n");
             if (m_cooldown != null)
             {
                 stringBuilder.Append($"$almanac_cooldown: <color=orange>{GetCooldown()}</color>sec\n");
@@ -371,7 +371,7 @@ public class Talent
                 if (m_values.m_absorb is { Value: > 0 }) stringBuilder.Append($"$almanac_damage_absorb: <color=orange>{GetAbsorb(GetLevel())}</color>\n");
                 if (m_values.m_chance is { Value: > 0 }) stringBuilder.Append($"$almanac_chance: <color=orange>{GetChance(GetLevel())}%</color>\n");
                 if (m_values.m_reflect is { Value: > 0 }) stringBuilder.Append($"$almanac_reflect: <color=orange>{FormatPercentage(GetReflect(GetLevel()) + 1f)}%</color>\n");
-                if (m_values.m_bleed is { Value: > 0 }) stringBuilder.Append($"$se_bleed: <color=orange>{GetBleed(GetLevel())}/tick</color>\n");
+                if (m_values.m_bleed is { Value: > 0 }) stringBuilder.Append($"$almanac_bleed: <color=orange>{GetBleed(GetLevel())}/tick</color>\n");
                 if (m_values.m_eitr is {Value: > 0}) stringBuilder.Append($"$se_eitr: <color=orange>{GetEitr(GetLevel())}</color>\n");
                 if (m_values.m_heal is {Value: > 0}) stringBuilder.Append($"$almanac_heal: <color=orange>{GetHealAmount(GetLevel())}</color>\n");
                 if (m_values.m_health is {Value: > 0}) stringBuilder.Append($"$se_health: <color=orange>{GetHealth(GetLevel())}</color>\n");
@@ -507,7 +507,7 @@ public class Talent
         }
         else
         {
-            stringBuilder.Append(GetDescription() + "\n");
+            stringBuilder.Append(GetDescription() + "\n\n");
             if (m_cooldown != null)
             {
                 stringBuilder.Append($"$almanac_cooldown: <color=orange>{GetCooldown()}</color>sec\n");
@@ -526,7 +526,7 @@ public class Talent
                 if (m_values.m_absorb is { Value: > 0 }) stringBuilder.Append($"$almanac_damage_absorb: <color=orange>{GetAbsorb(GetLevel())}</color> --> <color={m_prestigeColor}>{GetAbsorb(GetLevel() + 1)}</color>\n");
                 if (m_values.m_chance is { Value: > 0 }) stringBuilder.Append($"$almanac_chance: <color=orange>{GetChance(GetLevel())}%</color> --> <color={m_prestigeColor}>{GetChance(GetLevel() + 1)}%</color>\n");
                 if (m_values.m_reflect is { Value: > 0 }) stringBuilder.Append($"$almanac_reflect: <color=orange>{FormatPercentage(GetReflect(GetLevel()) + 1f)}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetReflect(GetLevel() + 1) + 1f)}%</color>\n");
-                if (m_values.m_bleed is { Value: > 0 }) stringBuilder.Append($"$se_bleed: <color=orange>{GetBleed(GetLevel())}/tick</color> --> <color={m_prestigeColor}>{GetBleed(GetLevel() + 1)}/tick</color>\n");
+                if (m_values.m_bleed is { Value: > 0 }) stringBuilder.Append($"$almanac_bleed: <color=orange>{GetBleed(GetLevel())}/tick</color> --> <color={m_prestigeColor}>{GetBleed(GetLevel() + 1)}/tick</color>\n");
                 if (m_values.m_eitr is {Value: > 0}) stringBuilder.Append($"$se_eitr: <color=orange>{GetEitr(GetLevel())}</color> --> <color={m_prestigeColor}>{GetEitr(GetLevel() + 1)}</color>\n");
                 if (m_values.m_heal is {Value: > 0}) stringBuilder.Append($"$almanac_heal: <color=orange>{GetHealAmount(GetLevel())}</color> --> <color={m_prestigeColor}>{GetHealAmount(GetLevel() + 1)}</color>\n");
                 if (m_values.m_health is {Value: > 0}) stringBuilder.Append($"$se_health: <color=orange>{GetHealth(GetLevel())}</color> --> <color={m_prestigeColor}>{GetHealth(GetLevel() + 1)}</color>\n");
@@ -1822,7 +1822,7 @@ public static class TalentManager
                 m_statusEffectHash = "SE_RogueBleed".GetStableHashCode(),
                 m_type = TalentType.StatusEffect,
                 m_cooldown = _Plugin.config("Rogue - Bleed", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
-                m_cost = _Plugin.config("Rogue - Bleed", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
+                m_cost = _Plugin.config("Rogue - Bleed", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
                     m_bleed = _Plugin.config("Rogue - Bleed", "Damage Per Tick", 1f, new ConfigDescription("Set the damage per tick, stackable", new AcceptableValueRange<float>(1f, 10f)))

@@ -40,32 +40,32 @@ public static class StatusEffectManager
         IceBreaker.m_name = "Iced";
         IceBreaker.m_startEffects = LoadedAssets.DragonBreathHit;
 
-        var characteristic = ScriptableObject.CreateInstance<SE_Characteristics>();
+        SE_Characteristics characteristic = ScriptableObject.CreateInstance<SE_Characteristics>();
         characteristic.name = "SE_Characteristic";
 
-        var resourceful = ScriptableObject.CreateInstance<SE_Resourceful>();
+        SE_Resourceful resourceful = ScriptableObject.CreateInstance<SE_Resourceful>();
         resourceful.name = "SE_Resourceful";
 
-        var enlightened = ScriptableObject.CreateInstance<StatusEffect>();
+        StatusEffect enlightened = ScriptableObject.CreateInstance<StatusEffect>();
         enlightened.name = "SE_Enlightened";
 
-        return new() { IceBreaker, characteristic, resourceful, enlightened };
+        return new List<StatusEffect> { IceBreaker, characteristic, resourceful, enlightened };
     }
 
     private static List<StatusEffect> LoadBard()
     {
-        var SongOfAttrition = ScriptableObject.CreateInstance<SE_SongOfAttrition>();
+        SE_SongOfAttrition SongOfAttrition = ScriptableObject.CreateInstance<SE_SongOfAttrition>();
         SongOfAttrition.name = "SE_SongOfAttrition";
-        var SongOfDamage = ScriptableObject.CreateInstance<SE_SongOfDamage>();
+        SE_SongOfDamage SongOfDamage = ScriptableObject.CreateInstance<SE_SongOfDamage>();
         SongOfDamage.name = "SE_SongOfDamage";
-        var SongOfHealing = ScriptableObject.CreateInstance<SE_SongOfHealing>();
+        SE_SongOfHealing SongOfHealing = ScriptableObject.CreateInstance<SE_SongOfHealing>();
         SongOfHealing.name = "SE_SongOfHealing";
-        var SongOfSpeed = ScriptableObject.CreateInstance<SE_SongOfSpeed>();
+        SE_SongOfSpeed SongOfSpeed = ScriptableObject.CreateInstance<SE_SongOfSpeed>();
         SongOfSpeed.name = "SE_SongOfSpeed";
-        var SongOfVitality = ScriptableObject.CreateInstance<SE_SongOfVitality>();
+        SE_SongOfVitality SongOfVitality = ScriptableObject.CreateInstance<SE_SongOfVitality>();
         SongOfVitality.name = "SE_SongOfVitality";
 
-        return new()
+        return new List<StatusEffect>
         {
             SongOfAttrition, SongOfDamage, SongOfHealing, SongOfSpeed, SongOfVitality
         };
@@ -73,16 +73,16 @@ public static class StatusEffectManager
 
     private static List<StatusEffect> LoadRanger()
     {
-        var Hunter = ScriptableObject.CreateInstance<SE_Hunter>();
+        SE_Hunter Hunter = ScriptableObject.CreateInstance<SE_Hunter>();
         Hunter.name = "SE_Hunter";
-        var LuckyShot = ScriptableObject.CreateInstance<SE_LuckyShot>();
+        SE_LuckyShot LuckyShot = ScriptableObject.CreateInstance<SE_LuckyShot>();
         LuckyShot.name = "SE_LuckyShot";
-        var QuickShot = ScriptableObject.CreateInstance<SE_QuickShot>();
+        SE_QuickShot QuickShot = ScriptableObject.CreateInstance<SE_QuickShot>();
         QuickShot.name = "SE_QuickShot";
-        var SlowDown = ScriptableObject.CreateInstance<SE_SlowDown>();
+        SE_SlowDown SlowDown = ScriptableObject.CreateInstance<SE_SlowDown>();
         SlowDown.name = "SE_SlowDown";
         
-        return new() { Hunter, LuckyShot, QuickShot, SlowDown };
+        return new List<StatusEffect> { Hunter, LuckyShot, QuickShot, SlowDown };
     }
 
     private static List<StatusEffect> LoadRogue()
@@ -105,25 +105,25 @@ public static class StatusEffectManager
 
     private static List<StatusEffect> LoadWarrior()
     {
-        var Strength = ScriptableObject.CreateInstance<SE_WarriorStrength>();
+        SE_WarriorStrength Strength = ScriptableObject.CreateInstance<SE_WarriorStrength>();
         Strength.name = "SE_WarriorStrength";
         
-        var vitality = ScriptableObject.CreateInstance<SE_WarriorVitality>();
+        SE_WarriorVitality vitality = ScriptableObject.CreateInstance<SE_WarriorVitality>();
         vitality.name = "SE_WarriorVitality";
         
-        var wrench = ScriptableObject.CreateInstance<SE_MonkeyWrench>();
+        SE_MonkeyWrench wrench = ScriptableObject.CreateInstance<SE_MonkeyWrench>();
         wrench.name = "SE_MonkeyWrench";
         
-        var dual = ScriptableObject.CreateInstance<SE_DualWield>();
+        SE_DualWield dual = ScriptableObject.CreateInstance<SE_DualWield>();
         dual.name = "SE_DualWield";
         
-        var resistance = ScriptableObject.CreateInstance<SE_WarriorResistance>();
+        SE_WarriorResistance resistance = ScriptableObject.CreateInstance<SE_WarriorResistance>();
         resistance.name = "SE_WarriorResistance";
 
-        var survivor = ScriptableObject.CreateInstance<SE_Survivor>();
+        SE_Survivor survivor = ScriptableObject.CreateInstance<SE_Survivor>();
         survivor.name = "SE_Survivor";
 
-        var battleFury = ScriptableObject.CreateInstance<SE_BattleFury>();
+        SE_BattleFury battleFury = ScriptableObject.CreateInstance<SE_BattleFury>();
         battleFury.name = "SE_BattleFury";
 
         return new List<StatusEffect> { Strength, vitality, wrench, dual, resistance, survivor, battleFury };
@@ -131,12 +131,12 @@ public static class StatusEffectManager
 
     private static List<StatusEffect> LoadShaman()
     {
-        var shield = ScriptableObject.CreateInstance<SE_ShamanShield>();
+        SE_ShamanShield shield = ScriptableObject.CreateInstance<SE_ShamanShield>();
         shield.name = "SE_ShamanShield";
         
-        var regen = ScriptableObject.CreateInstance<SE_ShamanRegeneration>();
+        SE_ShamanRegeneration regen = ScriptableObject.CreateInstance<SE_ShamanRegeneration>();
         regen.name = "SE_ShamanRegeneration";
 
-        return new() {shield, regen};
+        return new List<StatusEffect> {shield, regen};
     }
 }
