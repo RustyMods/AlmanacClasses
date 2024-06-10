@@ -13,7 +13,7 @@ namespace AlmanacClasses.UI;
 
 public static class LoadUI
 {
-    public static readonly List<Selectable> TalentButtons = new();
+    private static readonly List<Selectable> TalentButtons = new();
     private static ButtonSfx sfx = null!;
     private static Button buttonComponent = null!;
     
@@ -52,6 +52,14 @@ public static class LoadUI
     public static Text SpellBarHotKeyTooltip = null!;
     public static Image ExperienceBarFill = null!;
 
+    public static Text ResetButtonText = null!;
+    public static Text ClassBardText = null!;
+    public static Text ClassShamanText = null!;
+    public static Text ClassSageText = null!;
+    public static Text ClassWarriorText = null!;
+    public static Text ClassRogueText = null!;
+    public static Text ClassRangerText = null!;
+
     public static GameObject MenuInfoPanel = null!;
 
     private static Button CenterButton = null!;
@@ -59,10 +67,10 @@ public static class LoadUI
     public static Talent? SelectedTalent;
     
     public static bool m_initLineFillSet;
-    public static readonly Dictionary<string, Button> ButtonMap = new();
-    public static readonly Dictionary<Button, Dictionary<string, Image>> ButtonFillLineMap = new();
-    public static readonly Dictionary<Button, float> ButtonCoreLineAmountMap = new();
-    public static readonly Dictionary<Button, Sprite> ButtonOriginalSpriteMap = new();
+    private static readonly Dictionary<string, Button> ButtonMap = new();
+    private static readonly Dictionary<Button, Dictionary<string, Image>> ButtonFillLineMap = new();
+    private static readonly Dictionary<Button, float> ButtonCoreLineAmountMap = new();
+    private static readonly Dictionary<Button, Sprite> ButtonOriginalSpriteMap = new();
     private static readonly List<Button> CheckedTalents = new();
     #region All Fill Lines Images
     #region Line Up
@@ -177,6 +185,8 @@ public static class LoadUI
         { "$button_rogue_talent_5", new(){"$button_rogue_1", "$button_rogue_2", "$button_rogue_talent_2"}},
         { "$button_warrior_talent_5", new(){"$button_warrior_1", "$button_warrior_2", "$button_warrior_talent_2"}},
     };
+
+    public static void OnLogout() => m_initLineFillSet = false;
     private static bool IsEXPBarVisible() => ExperienceBarHUD && ExperienceBarHUD.activeInHierarchy;
     public static bool IsTalentButton(Selectable button) => TalentButtons.Contains(button);
     public static void InitHudExperienceBar(Hud instance)
@@ -268,13 +278,18 @@ public static class LoadUI
         StrengthText = Utils.FindChild(SkillTree_UI.transform, "$text_strength").GetComponent<Text>();
         WisdomText = Utils.FindChild(SkillTree_UI.transform, "$text_wisdom").GetComponent<Text>();
         SpellBarHotKeyTooltip = Utils.FindChild(SkillTree_UI.transform, "$part_hotkey_tooltip").GetComponent<Text>();
-        SpellBarHotKeyTooltip.text = $"Alt Spell Book Key: <color=orange>{AlmanacClassesPlugin._SpellAlt.Value}</color>";
+        SpellBarHotKeyTooltip.text = Localization.instance.Localize($"$info_spellbook_key: <color=orange>{AlmanacClassesPlugin._SpellAlt.Value}</color>");
         ExperienceBarFill = Utils.FindChild(SkillTree_UI.transform, "$image_experience_fill").GetComponent<Image>();
 
         PointsUsed = Utils.FindChild(SkillTree_UI.transform, "$text_used_points").GetComponent<Text>();
         RequiredPoints = Utils.FindChild(SkillTree_UI.transform, "$text_prestige_needed").GetComponent<Text>();
 
-        
+        ClassBardText = Utils.FindChild(SkillTree_UI.transform, "$text_bard").GetComponent<Text>();
+        ClassShamanText = Utils.FindChild(SkillTree_UI.transform, "$text_shaman").GetComponent<Text>();
+        ClassSageText = Utils.FindChild(SkillTree_UI.transform, "$text_sage").GetComponent<Text>();
+        ClassWarriorText = Utils.FindChild(SkillTree_UI.transform, "$text_warrior").GetComponent<Text>();
+        ClassRogueText = Utils.FindChild(SkillTree_UI.transform, "$text_rogue").GetComponent<Text>();
+        ClassRangerText = Utils.FindChild(SkillTree_UI.transform, "$text_ranger").GetComponent<Text>();
 
         // Static Elements
         Utils.FindChild(SkillTree_UI.transform, "$text_title").GetComponent<Text>().text = "$title_talents";
@@ -634,6 +649,9 @@ public static class LoadUI
     private static void LoadResetButton()
     {
         Transform resetButton = Utils.FindChild(SkillTree_UI.transform, "$button_reset");
+
+        ResetButtonText = resetButton.GetChild(0).GetComponent<Text>();
+        
         if (resetButton.TryGetComponent(out Button component))
         {
             component.transition = Selectable.Transition.SpriteSwap;
@@ -951,21 +969,31 @@ public static class LoadUI
         
         if (!revert)
         {
-            if (PlayerManager.m_playerTalents.ContainsKey(alt.m_key))
-            {
-                PlayerManager.m_playerTalents.Remove(alt.m_key);
-            }
-            RemapButton(talent.m_button, ButtonFillLineMap[button], line, talent.m_key);
+            RemapButton(talent.m_button, ButtonFillLineMap[button], line, alt.m_key);
             if (talent.m_altButtonSprite != null) SetButtonIcons(button, talent.m_altButtonSprite);
-        }
-        else
-        {
             if (PlayerManager.m_playerTalents.ContainsKey(original.m_key))
             {
                 PlayerManager.m_playerTalents.Remove(original.m_key);
+                PlayerManager.m_tempPlayerData.m_boughtTalents[alt.m_key] = PlayerManager.m_tempPlayerData.m_boughtTalents[original.m_key];
+                PlayerManager.m_tempPlayerData.m_boughtTalents.Remove(original.m_key);
+                PlayerManager.m_playerTalents[alt.m_key] = alt;
+                if (SpellBook.RemoveAbility(original));
+                    if (alt.m_type is TalentType.Ability or TalentType.StatusEffect) AddToSpellBook(alt);
             }
-            RemapButton(talent.m_button, ButtonFillLineMap[button], line, talent.m_key);
+        }
+        else
+        {
+            RemapButton(talent.m_button, ButtonFillLineMap[button], line, original.m_key);
             SetButtonIcons(button, originalSprite);
+            if (PlayerManager.m_playerTalents.ContainsKey(alt.m_key))
+            {
+                PlayerManager.m_playerTalents.Remove(alt.m_key);
+                PlayerManager.m_tempPlayerData.m_boughtTalents[original.m_key] = PlayerManager.m_tempPlayerData.m_boughtTalents[alt.m_key];
+                PlayerManager.m_tempPlayerData.m_boughtTalents.Remove(alt.m_key);
+                PlayerManager.m_playerTalents[original.m_key] = original;
+                if (SpellBook.RemoveAbility(alt));
+                    if (original.m_type is TalentType.Ability or TalentType.StatusEffect) AddToSpellBook(original);
+            }
         }
     }
 

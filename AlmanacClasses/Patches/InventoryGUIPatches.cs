@@ -32,5 +32,4 @@ public static class InventoryGUIPatches
             __instance.m_playerName.text = Game.instance.GetPlayerProfile().GetName() + " LVL " + level;
         }
     }
-
 }

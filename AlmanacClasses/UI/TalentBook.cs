@@ -45,7 +45,7 @@ public class TalentBook : MonoBehaviour, Interactable, Hoverable
         LoadUI.ExperienceTitleText.text = Localization.instance.Localize("$text_experience");
         LoadUI.LevelText.text = Localization.instance.Localize("$text_level") + ": " + $"<color=orange>{level}</color>";
         LoadUI.ExperienceText.text = $"<color=orange>{experience}</color>" + " / " + $"<color=orange>{nextXP}</color>";
-        LoadUI.ExperienceBarFill.fillAmount = ((float)experience / (float)nextXP);
+        LoadUI.ExperienceBarFill.fillAmount = (float)experience / (float)nextXP;
         LoadUI.TalentPointsText.text = Localization.instance.Localize("$text_talent_points") + ": " + $"<color=orange>{availableTalents}</color>";
         LoadUI.CharacteristicsTitleText.text = Localization.instance.Localize("$almanac_characteristic");
         LoadUI.ConstitutionText.text = $"<color=orange>{constitution}</color>";
@@ -53,7 +53,16 @@ public class TalentBook : MonoBehaviour, Interactable, Hoverable
         LoadUI.IntelligenceText.text = $"<color=orange>{intelligence}</color>";
         LoadUI.StrengthText.text = $"<color=orange>{strength}</color>";
         LoadUI.WisdomText.text = $"<color=orange>{wisdom}</color>";
+        
+        LoadUI.ClassBardText.text = Localization.instance.Localize("$class_bard");
+        LoadUI.ClassShamanText.text = Localization.instance.Localize("$class_shaman");
+        LoadUI.ClassSageText.text = Localization.instance.Localize("$class_sage");
+        LoadUI.ClassWarriorText.text = Localization.instance.Localize("$class_warrior");
+        LoadUI.ClassRogueText.text = Localization.instance.Localize("$class_rogue");
+        LoadUI.ClassRangerText.text = Localization.instance.Localize("$class_ranger");
 
+        LoadUI.ResetButtonText.text = Localization.instance.Localize("$info_reset_talents");
+        
         int usedPoints = TalentManager.GetTotalBoughtTalentPoints();
         
         LoadUI.PointsUsed.text = Localization.instance.Localize($"$text_talent_points_used: <color=orange>{usedPoints}</color>");

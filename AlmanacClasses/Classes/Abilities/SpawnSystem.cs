@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using AlmanacClasses.LoadAssets;
+using HarmonyLib;
 using UnityEngine;
 
 namespace AlmanacClasses.Classes.Abilities;
@@ -116,14 +117,12 @@ public static class SpawnSystem
     }
     private static void SetSpawnBaseAI(GameObject creature)
     {
-        if (creature.TryGetComponent(out BaseAI baseAI))
-        {
-            baseAI.Alert();
-            baseAI.SetAggravated(baseAI.IsAggravated(), BaseAI.AggravatedReason.Damage);
-            baseAI.m_passiveAggresive = true;
-        }
+        if (!creature.TryGetComponent(out BaseAI baseAI)) return;
+        baseAI.Alert();
+        baseAI.SetAggravated(baseAI.IsAggravated(), BaseAI.AggravatedReason.Damage);
+        baseAI.m_passiveAggresive = true;
     }
-    public static void SetSpawnTameable(GameObject creature, string name, bool patch = false)
+    private static void SetSpawnTameable(GameObject creature, string name, bool patch = false)
     {
         if (creature.TryGetComponent(out Tameable component))
         {
@@ -148,11 +147,34 @@ public static class SpawnSystem
         }
         
     }
-    public static void RemoveCharacterDrops(GameObject creature)
+    private static void RemoveCharacterDrops(GameObject creature)
     {
         if (creature.TryGetComponent(out CharacterDrop characterDrop))
         {
             characterDrop.m_drops = new();
         }
+    }
+    
+    [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.Awake))]
+    private static class Humanoid_Awake_Patch
+    {
+        private static void Postfix(Humanoid __instance)
+        {
+            if (!__instance) return;
+            if (__instance.IsPlayer()) return;
+            SetFriendlySpawns(__instance);
+        }
+    }
+
+    private static void SetFriendlySpawns(Humanoid instance)
+    {
+        if (!instance.m_nview.IsValid()) return;
+        if (!instance.m_nview.GetZDO().GetBool(FriendlyKey)) return;
+        instance.m_nview.GetZDO().Persistent = false;
+        instance.m_faction = Character.Faction.Players;
+        instance.m_name = "Friendly " + instance.name.Replace("_", " ").Replace("(Clone)","");
+        instance.m_boss = false;
+        SetSpawnTameable(instance.gameObject, "Friendly " + instance.name.Replace("_", " ").Replace("(Clone)",""), true);
+        RemoveCharacterDrops(instance.gameObject);
     }
 }

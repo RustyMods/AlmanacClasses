@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AlmanacClasses.Managers;
 using AlmanacClasses.UI;
+using HarmonyLib;
 using UnityEngine;
 using YamlDotNet.Serialization;
 
@@ -29,6 +30,12 @@ public static class PlayerManager
 {
     private static bool m_initiatedPlayerData;
     private static bool m_initiatedPlayerTalents;
+    
+    public static void OnLogout()
+    {
+        m_initiatedPlayerData = false;
+        m_initiatedPlayerTalents = false;
+    }
     private static readonly string m_oldKey = "AlmanacClassesPlayerData";
     private static readonly string m_playerDataKey = "AlmanacClassesPlayerData_New";
     public static PlayerData m_tempPlayerData = new();
@@ -46,7 +53,7 @@ public static class PlayerManager
                 {
                     if (Player.m_localPlayer.m_customData.TryGetValue(m_oldKey, out string old))
                     {
-                        var oldData = deserializer.Deserialize<PlayerDataOld>(old);
+                        PlayerDataOld oldData = deserializer.Deserialize<PlayerDataOld>(old);
                         m_tempPlayerData.m_experience = oldData.m_experience;
                         Player.m_localPlayer.m_customData.Remove(m_oldKey);
                     }
@@ -212,4 +219,16 @@ public static class PlayerManager
     public static int GetRequiredExperience(int level) => (int)Math.Pow(level, 2) * 100;
     public static void AddExperience(int amount) => m_tempPlayerData.m_experience += amount;
     public static int GetExperience() => m_tempPlayerData.m_experience;
+    
+    [HarmonyPatch(typeof(Character), nameof(Character.SetMaxHealth))]
+    private static class Character_SetMaxHealth_Patch
+    {
+        private static void Prefix(Character __instance, ref float health)
+        {
+            if (!__instance) return;
+            if (!__instance.IsPlayer()) return;
+            if (__instance != Player.m_localPlayer) return;
+            health += GetTotalAddedHealth();
+        }
+    }
 }

@@ -195,8 +195,14 @@ public static class ExperienceManager
                 return 1;
         }
     }
+    
+    [HarmonyPatch(typeof(PlayerProfile), nameof(PlayerProfile.IncrementStat))]
+    private static class PlayerProfile_IncrementStat_Patch
+    {
+        private static void Postfix(PlayerStatType stat, float amount) => AddExperience(stat, amount);
+    }
 
-    public static void AddExperience(PlayerStatType stat, float amount)
+    private static void AddExperience(PlayerStatType stat, float amount)
     {
         if (!ExperienceMap.TryGetValue(stat, out int value)) return;
         int total = (int)(value * amount);
@@ -217,12 +223,10 @@ public static class ExperienceManager
         { PlayerStatType.Logs , 1},
         { PlayerStatType.MineHits , 1},
         { PlayerStatType.CreatureTamed , 10},
-        // { PlayerStatType.ArrowsShot , 1},
         { PlayerStatType.ItemsPickedUp , 1},
     };
 
     private static readonly int EmissionColor = Shader.PropertyToID("_EmissionColor");
-
     public static void CreateExperienceOrb(float amount, string name, string displayName, Color color, Color32 emission, Color shellColor, Color lightColor, Sprite icon)
     {
         GameObject UpgradeItem = ZNetScene.instance.GetPrefab("StaminaUpgrade_Greydwarf");
@@ -303,7 +307,6 @@ public static class ExperienceManager
         ZNetScene.instance.m_prefabs.Add(item);
         ZNetScene.instance.m_namedPrefabs[item.name.GetStableHashCode()] = item;
     }
-
     public static void DropOrb(Character instance)
     {
         int number = Random.Range(0, 100);
@@ -323,6 +326,24 @@ public static class ExperienceManager
             default:
                 Object.Instantiate(ZNetScene.instance.GetPrefab("ExperienceOrb_Simple"), instance.transform.position, Quaternion.identity);
                 break;
+        }
+    }
+    
+    [HarmonyWrapSafe]
+    [HarmonyPatch(typeof(Character), nameof(Character.GetHoverName))]
+    private static class Character_GetHoverName_Patch
+    {
+        private static void Postfix(Character __instance, ref string __result)
+        {
+            if (!__instance || __result.IsNullOrWhiteSpace()) return;
+            if (__instance.IsBoss() || __instance.IsPlayer()) return;
+            if (__instance.name.IsNullOrWhiteSpace()) return;
+            if (AlmanacClassesPlugin._DisplayExperience.Value is AlmanacClassesPlugin.Toggle.Off) return;
+            if (!__instance.m_nview) return;
+            if (!__instance.m_nview.IsValid()) return;
+            if (__instance.m_nview.GetZDO().GetBool(Classes.Abilities.SpawnSystem.FriendlyKey)) return;
+            int exp = GetExperienceAmount(__instance);
+            __result += $" [<color=orange>{exp}</color>]";
         }
     }
 }

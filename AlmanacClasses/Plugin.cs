@@ -22,7 +22,7 @@ namespace AlmanacClasses
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
-        internal const string ModVersion = "0.4.4";
+        internal const string ModVersion = "0.4.5";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
         private static readonly string ConfigFileName = ModGUID + ".cfg";
@@ -242,7 +242,11 @@ namespace AlmanacClasses
         private void InitKeyCodeConfigs()
         {
             _SpellAlt = config("3 - Spell Keys", "Alt Key", KeyCode.LeftAlt, "Set the alt key code, If None, then it ignores", false);
-            _SpellAlt.SettingChanged += (sender, args) => LoadUI.SpellBarHotKeyTooltip.text = $"Spell Book Alt Key: <color=orange>{_SpellAlt.Value}</color>";
+            _SpellAlt.SettingChanged += (sender, args) =>
+            {
+                if (Localization.instance == null) return;
+                LoadUI.SpellBarHotKeyTooltip.text = Localization.instance.Localize($"$info_spellbook_key: <color=orange>{_SpellAlt.Value}</color>");
+            };
             _Spell1 = config("3 - Spell Keys", "Spell 1", KeyCode.Alpha1, "Set the key code for spell 1", false);
             _Spell2 = config("3 - Spell Keys", "Spell 2", KeyCode.Alpha2, "Set the key code for spell 2", false);
             _Spell3 = config("3 - Spell Keys", "Spell 3", KeyCode.Alpha3, "Set the key code for spell 3", false);

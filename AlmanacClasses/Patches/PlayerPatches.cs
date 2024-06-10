@@ -46,6 +46,7 @@ public static class PlayerPatches
         private static void Postfix(Player __instance)
         {
             if (__instance != Player.m_localPlayer) return;
+            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Initializing Player Data");
             PlayerManager.InitPlayerData();
             TalentManager.InitializeTalents();
             PlayerManager.InitPlayerTalents();

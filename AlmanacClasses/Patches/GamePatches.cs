@@ -14,11 +14,12 @@ public static class GamePatches
             PlayerManager.m_tempPlayerData = new();
             PlayerManager.m_playerTalents.Clear();
             SpellBook.m_abilities.Clear();
+            PlayerManager.OnLogout();
             AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Game logout: Clearing temporary player talent data");
         }
         private static void Prefix()
         {
-            LoadUI.m_initLineFillSet = false;
+            LoadUI.OnLogout();
         }
     }
 }

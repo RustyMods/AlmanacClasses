@@ -39,6 +39,14 @@ public class Talent
     public ResistancePercentages? m_resistances;
     public float m_line = 1f;
     public Sprite? m_altButtonSprite;
+    public ConfigEntry<string>? m_forageItems;
+    public List<string> GetCustomForageItems()
+    {
+        List<string> output = new();
+        if (m_forageItems == null) return output;
+        output.AddRange(m_forageItems.Value.Split(':'));
+        return output;
+    }
     public float GetFillLine() => m_line;
     public int GetLevel() => m_level;
     public void AddLevel() => ++m_level;
@@ -991,6 +999,7 @@ public static class TalentManager
                 {
                     m_forageModifier = _Plugin.config("Core - Forager", "Modifier", 1.25f, new ConfigDescription("Set the multiplier of foraged amount", new AcceptableValueRange<float>(0f, 10f)))
                 },
+                m_forageItems = _Plugin.config("Core - Forager", "Custom Forage Item Names", "Thistle:Dandelion", "Define custom forage item list, [prefabName]:[prefabName]:..."),
                 m_cap = _Plugin.config("Core - Forager", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             }
         };
@@ -1163,7 +1172,7 @@ public static class TalentManager
                 m_cost = _Plugin.config("Ranger - Trap", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_damages = new Talent.TalentDamages()
                 {
-                    m_pierce = _Plugin.config("Ranger - Trap", "Blunt Damage", 15f, new ConfigDescription("Set damages", new AcceptableValueRange<float>(0f, 1000f))),
+                    m_pierce = _Plugin.config("Ranger - Trap", "Pierce Damage", 15f, new ConfigDescription("Set damages", new AcceptableValueRange<float>(0f, 1000f))),
                     m_poison = _Plugin.config("Ranger - Trap", "Poison Damage", 10f, new ConfigDescription("Set damages", new AcceptableValueRange<float>(0f, 1000f)))
                 },
                 m_length = _Plugin.config("Ranger - Trap", "Length", 60f, new ConfigDescription("Set the length until de-spawn", new AcceptableValueRange<float>(1f, 1000f))),

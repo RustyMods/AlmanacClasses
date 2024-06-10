@@ -16,16 +16,35 @@ public static class SpellBook
 {
     private static GameObject m_spellBar = null!;
     private static GameObject m_element = null!;
-    public static readonly Dictionary<int, AbilityData> m_abilities = new();
+    public static Dictionary<int, AbilityData> m_abilities = new();
     private static RectTransform m_spellBarPos = null!;
     public static void OnSpellBarPosChange(object sender, EventArgs e)
     {
         m_spellBarPos.anchoredPosition = AlmanacClassesPlugin._SpellBookPos.Value;
         LoadUI.MenuInfoPanel.transform.position = AlmanacClassesPlugin._SpellBookPos.Value + new Vector2(0f, 150f);
     }
-
     public static bool IsAbilityInBook(Talent ability) => m_abilities.Any(talent => ability == talent.Value.m_data);
-    
+    public static bool RemoveAbility(Talent ability)
+    {
+        if (!IsAbilityInBook(ability)) return false;
+        KeyValuePair<int, AbilityData> kvp = m_abilities.FirstOrDefault(kvp => kvp.Value.m_data == ability);
+        DestroyElements();
+        if (!m_abilities.Remove(kvp.Key)) return false;
+        NormalizeBook();
+        return true;
+    }
+
+    private static void NormalizeBook()
+    {
+        Dictionary<int, AbilityData> newAbilities = new Dictionary<int, AbilityData>();
+        int newKey = 0;
+        foreach (KeyValuePair<int, AbilityData> item in m_abilities)
+        {
+            newAbilities[newKey] = item.Value;
+            ++newKey;
+        }
+        m_abilities = newAbilities;
+    }
     public static void LoadElements()
     {
         if (!Hud.instance) return;

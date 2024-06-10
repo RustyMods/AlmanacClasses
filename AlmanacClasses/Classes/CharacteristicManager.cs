@@ -15,7 +15,8 @@ public static class CharacteristicManager
         [Characteristic.Dexterity] = 0,
         [Characteristic.Wisdom] = 0,
     };
-    public static Dictionary<Characteristic, int> m_tempCharacteristics = new(m_defaults);
+
+    private static Dictionary<Characteristic, int> m_tempCharacteristics = new(m_defaults);
     public static void ResetCharacteristics() => m_tempCharacteristics = new Dictionary<Characteristic, int>(m_defaults);
     public static void AddCharacteristic(Characteristic type, int value) => m_tempCharacteristics[type] += value;
     public static void UpdateCharacteristics()
@@ -66,14 +67,12 @@ public static class CharacteristicManager
     public static float GetHealthRatio() => GetCharacteristic(Characteristic.Constitution) / AlmanacClassesPlugin._HealthRatio.Value;
     public static float GetStaminaRatio() => GetCharacteristic(Characteristic.Dexterity) / AlmanacClassesPlugin._StaminaRatio.Value;
     public static float GetEitrRatio() => GetCharacteristic(Characteristic.Wisdom) / AlmanacClassesPlugin._EitrRatio.Value;
-
     public static float GetStrengthModifier()
     {
         int characteristic = GetCharacteristic(Characteristic.Strength);
         float output = characteristic / AlmanacClassesPlugin._PhysicalRatio.Value;
         return 1 + output / 100f;
     }
-
     public static float GetIntelligenceModifier()
     {
         int characteristic = GetCharacteristic(Characteristic.Intelligence);
