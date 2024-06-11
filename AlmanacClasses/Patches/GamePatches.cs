@@ -11,6 +11,7 @@ public static class GamePatches
     {
         private static void Postfix()
         {
+            CharacteristicManager.ResetCharacteristics();
             PlayerManager.m_tempPlayerData = new();
             PlayerManager.m_playerTalents.Clear();
             SpellBook.m_abilities.Clear();
