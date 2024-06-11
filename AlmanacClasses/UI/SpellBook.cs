@@ -45,11 +45,9 @@ public static class SpellBook
         }
         m_abilities = newAbilities;
     }
-    public static void LoadElements()
+    public static void LoadElements(Font? font)
     {
         if (!Hud.instance) return;
-        Font? NorseBold = LoadUI.GetFont("Norsebold");
-        
         m_spellBar = Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_UI"), Hud.instance.transform, false);
         m_spellBarPos = m_spellBar.GetComponent<RectTransform>();
         m_spellBarPos.anchoredPosition = AlmanacClassesPlugin._SpellBookPos.Value;
@@ -58,7 +56,7 @@ public static class SpellBook
         m_element.AddComponent<SpellElementChange>();
         
         Text[] texts = m_element.GetComponentsInChildren<Text>();
-        LoadUI.AddFonts(texts, NorseBold);
+        LoadUI.AddFonts(texts, font);
     }
     public static void UpdateAbilities()
     {

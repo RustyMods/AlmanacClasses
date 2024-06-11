@@ -15,25 +15,36 @@ namespace AlmanacClasses.UI;
 public static class LoadUI
 {
     private static readonly List<Selectable> TalentButtons = new();
+    private static readonly Dictionary<string, Button> ButtonMap = new();
+    private static readonly Dictionary<Button, Dictionary<string, Image>> ButtonFillLineMap = new();
+    private static readonly Dictionary<Button, float> ButtonCoreLineAmountMap = new();
+    private static readonly Dictionary<Button, Sprite> ButtonOriginalSpriteMap = new();
+    private static readonly List<Button> CheckedTalents = new();
+    public static Talent? SelectedTalent;
+
+    [Header("Selectables")]
+    private static Button CenterButton = null!;
+    [Header("Assets")]
     private static ButtonSfx sfx = null!;
     private static Button buttonComponent = null!;
-    
+    [Header("GameObjects")]
     public static GameObject SkillTree_UI = null!;
     private static GameObject ExperienceBarHUD = null!;
     private static RectTransform ExpBarRect = null!;
-    private static Image ExpHudFillBar = null!;
+    private static GameObject InfoHoverElement = null!;
+    public static GameObject SpellBarHoverName = null!;
+    public static GameObject MenuInfoPanel = null!;
 
-    private static Text ExpHudText = null!;
     // public static Color OriginalExpBarColor;
 
-    public static GameObject InfoHoverElement = null!;
-    public static GameObject SpellBarHoverName = null!;
-
+    [Header("Image Elements")]
+    private static Image ExpHudFillBar = null!;
+    public static Image ExperienceBarFill = null!;
     public static Image PanelBackground = null!;
-
+    [Header("Text Elements")]
+    private static Text ExpHudText = null!;
     public static Text PointsUsed = null!;
     public static Text RequiredPoints = null!;
-    
     public static Text PrestigeText = null!;
     public static Text LevelText = null!;
     public static Text ExperienceTitleText = null!;
@@ -43,7 +54,6 @@ public static class LoadUI
     public static Text TalentDescription = null!;
     public static Text TalentCost = null!;
     public static Text ActivePassive = null!;
-
     public static Text CharacteristicsTitleText = null!;
     public static Text ConstitutionText = null!;
     public static Text DexterityText = null!;
@@ -51,8 +61,6 @@ public static class LoadUI
     public static Text StrengthText = null!;
     public static Text WisdomText = null!;
     public static Text SpellBarHotKeyTooltip = null!;
-    public static Image ExperienceBarFill = null!;
-
     public static Text ResetButtonText = null!;
     public static Text ClassBardText = null!;
     public static Text ClassShamanText = null!;
@@ -60,19 +68,8 @@ public static class LoadUI
     public static Text ClassWarriorText = null!;
     public static Text ClassRogueText = null!;
     public static Text ClassRangerText = null!;
-
-    public static GameObject MenuInfoPanel = null!;
-
-    private static Button CenterButton = null!;
-
-    public static Talent? SelectedTalent;
-    
-    public static bool m_initLineFillSet;
-    private static readonly Dictionary<string, Button> ButtonMap = new();
-    private static readonly Dictionary<Button, Dictionary<string, Image>> ButtonFillLineMap = new();
-    private static readonly Dictionary<Button, float> ButtonCoreLineAmountMap = new();
-    private static readonly Dictionary<Button, Sprite> ButtonOriginalSpriteMap = new();
-    private static readonly List<Button> CheckedTalents = new();
+    [Header("Fill Lines")]
+    private static bool m_initLineFillSet;
     #region All Fill Lines Images
     #region Line Up
     private static Image LineCoreUp = null!;
@@ -190,11 +187,13 @@ public static class LoadUI
     public static void OnLogout() => m_initLineFillSet = false;
     private static bool IsEXPBarVisible() => ExperienceBarHUD && ExperienceBarHUD.activeInHierarchy;
     public static bool IsTalentButton(Selectable button) => TalentButtons.Contains(button);
+    public static void SetHUDVisibility(bool enable) => ExperienceBarHUD.SetActive(enable);
     public static void InitHudExperienceBar(Hud instance)
     {
+        AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Initializing HUD");
         ExperienceBarHUD = Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("Experience_Bar"), instance.transform, false);
         ExperienceBarHUD.AddComponent<ExperienceBarMove>();
-        ExperienceBarHUD.SetActive(AlmanacClassesPlugin._HudVisible.Value is AlmanacClassesPlugin.Toggle.On);
+        SetHUDVisibility(false);
         ExpBarRect = ExperienceBarHUD.GetComponent<RectTransform>();
         ExpBarRect.SetAsLastSibling();
         ExpBarRect.anchoredPosition = AlmanacClassesPlugin._ExperienceBarPos.Value;
@@ -202,22 +201,16 @@ public static class LoadUI
         ExpBarRect.localScale = new Vector3(scale, scale, scale);
         ExpHudFillBar = ExperienceBarHUD.transform.Find("FillBar").GetComponent<Image>();
         ExpHudText = ExperienceBarHUD.transform.Find("$text_experience").GetComponent<Text>();
-
         ExpHudFillBar.fillAmount = 0f;
         ExpHudText.text = "";
         // OriginalExpBarColor = ExpHudFillBar.color;
 
         InfoHoverElement = AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("ElementHover_UI");
-        
-        Text[] hoverTexts = InfoHoverElement.GetComponentsInChildren<Text>();
-
-        Text[] hudTexts = ExperienceBarHUD.GetComponentsInChildren<Text>();
         Font? NorseBold = GetFont("Norsebold");
-        AddFonts(hudTexts, NorseBold);
-        AddFonts(hoverTexts, NorseBold);
-        SpellBook.LoadElements();
-        
-        MenuInfoPanel = Object.Instantiate(LoadUI.InfoHoverElement, Hud.instance.transform, false);
+        AddFonts(ExperienceBarHUD.GetComponentsInChildren<Text>(), NorseBold);
+        AddFonts(InfoHoverElement.GetComponentsInChildren<Text>(), NorseBold);
+        SpellBook.LoadElements(NorseBold);
+        MenuInfoPanel = Object.Instantiate(InfoHoverElement, instance.transform, false);
         MenuInfoPanel.transform.SetAsFirstSibling();
         MenuInfoPanel.transform.position = AlmanacClassesPlugin._SpellBookPos.Value + AlmanacClassesPlugin._MenuTooltipPosition.Value;
         MenuInfoPanel.SetActive(false);
@@ -322,7 +315,7 @@ public static class LoadUI
     public static void OnChangeExperienceBarVisibility(object sender, EventArgs e)
     {
         if (sender is not ConfigEntry<AlmanacClassesPlugin.Toggle> config) return;
-        ExperienceBarHUD.SetActive(config.Value is AlmanacClassesPlugin.Toggle.On);
+        SetHUDVisibility(config.Value is AlmanacClassesPlugin.Toggle.On);
     }
     public static void UpdateExperienceBarHud()
     {

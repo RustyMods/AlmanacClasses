@@ -204,7 +204,6 @@
         <Compile Include="Patches\MenuPatches.cs" />
         <Compile Include="Patches\ObjectDBPatches.cs" />
         <Compile Include="Patches\PlayerControllerPatches.cs" />
-        <Compile Include="Patches\PlayerPatches.cs" />
         <Compile Include="Patches\StoreGUIPatches.cs" />
         <Compile Include="Plugin.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />

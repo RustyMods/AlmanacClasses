@@ -1,11 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using AlmanacClasses.Classes.Abilities.Ranger;
 using AlmanacClasses.Classes.Abilities.Sage;
 using AlmanacClasses.Classes.Abilities.Shaman;
 using AlmanacClasses.Managers;
 using AlmanacClasses.UI;
 using BepInEx;
+using BepInEx.Configuration;
+using HarmonyLib;
 using UnityEngine;
 
 namespace AlmanacClasses.Classes.Abilities;
@@ -41,7 +44,6 @@ public static class AbilityManager
             }
         }
     }
-
     private static void CheckSpellKeys()
     {
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell1.Value))
@@ -92,7 +94,6 @@ public static class AbilityManager
             CastTalent(ability.m_data);
         }
     }
-
     private static void CastTalent(Talent ability)
     {
         if (m_castedSpells.Contains(ability.m_key))
@@ -109,7 +110,6 @@ public static class AbilityManager
         AnimationManager.DoAnimation(ability.m_animation);
         AlmanacClassesPlugin._Plugin.StartCoroutine(CoolDown(ability));
     }
-
     private static IEnumerator CoolDown(Talent ability)
     {
         m_castedSpells.Add(ability.m_key);
@@ -126,7 +126,6 @@ public static class AbilityManager
         m_castedSpells.Remove(ability.m_key);
         m_cooldownMap.Remove(ability.m_key);
     }
-
     private static bool CheckStatusEffect(Talent talent)
     {
         if (talent.m_type is not TalentType.StatusEffect) return false;
@@ -135,7 +134,6 @@ public static class AbilityManager
         Player.m_localPlayer.GetSEMan().AddStatusEffect(talent.m_statusEffectHash);
         return true;
     }
-
     private static bool CheckAbilityName(Talent talent)
     {
         if (talent.m_type is not TalentType.Ability) return false;
@@ -192,7 +190,6 @@ public static class AbilityManager
         Player.m_localPlayer.UseHealth(cost);
         return true;
     }
-
     private static bool CheckStaminaCost(Talent talent)
     {
         float cost = talent.GetStaminaCost();
@@ -205,7 +202,6 @@ public static class AbilityManager
         Player.m_localPlayer.UseStamina(cost);
         return true;
     }
-
     private static bool CheckEitrCost(Talent talent)
     {
         float cost = talent.GetEitrCost();
@@ -217,5 +213,40 @@ public static class AbilityManager
         }
         Player.m_localPlayer.UseEitr(cost);
         return true;
+    }
+    
+    [HarmonyPatch(typeof(Player), nameof(Player.UseHotbarItem))]
+    private static class Player_HotBar_Override
+    {
+        private static bool Prefix() => !AreKeysAlpha() || !Input.GetKey(AlmanacClassesPlugin._SpellAlt.Value);
+        private static bool AreKeysAlpha()
+        {
+            if (AlmanacClassesPlugin._SpellAlt.Value is KeyCode.None) return false;
+            List<ConfigEntry<KeyCode>> configs = new()
+            {
+                AlmanacClassesPlugin._Spell1,
+                AlmanacClassesPlugin._Spell2,
+                AlmanacClassesPlugin._Spell3,
+                AlmanacClassesPlugin._Spell4,
+                AlmanacClassesPlugin._Spell5,
+                AlmanacClassesPlugin._Spell6,
+                AlmanacClassesPlugin._Spell7,
+                AlmanacClassesPlugin._Spell8
+            };
+            return configs.Any(isKeyAlpha);
+        }
+        private static bool isKeyAlpha(ConfigEntry<KeyCode> config)
+        {
+            return config.Value 
+                is KeyCode.Alpha1 
+                or KeyCode.Alpha2 
+                or KeyCode.Alpha3
+                or KeyCode.Alpha4 
+                or KeyCode.Alpha4 
+                or KeyCode.Alpha5 
+                or KeyCode.Alpha6
+                or KeyCode.Alpha7 
+                or KeyCode.Alpha8;
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AlmanacClasses.LoadAssets;
 using AlmanacClasses.Managers;
 using AlmanacClasses.UI;
 using HarmonyLib;
@@ -42,7 +43,6 @@ public static class PlayerManager
     public static readonly Dictionary<string, Talent> m_playerTalents = new();
     public static void InitPlayerData()
     {
-        if (!Player.m_localPlayer) return;
         if (m_initiatedPlayerData) return;
         IDeserializer deserializer = new DeserializerBuilder().Build();
         try
@@ -66,7 +66,7 @@ public static class PlayerManager
             else
             {
                 m_tempPlayerData = deserializer.Deserialize<PlayerData>(data);
-                AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Loaded classes data");
+                AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Loaded player data");
             }
             m_initiatedPlayerData = true;
         }
@@ -102,7 +102,7 @@ public static class PlayerManager
     public static void InitPlayerTalents()
     {
         if (m_initiatedPlayerTalents) return;
-        AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Loaded saved player talents");
+        AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Loaded player talents");
         foreach (KeyValuePair<int, string> kvp in m_tempPlayerData.m_spellBook)
         {
             if (!TalentManager.m_talents.TryGetValue(kvp.Value, out Talent match)) continue;
@@ -135,7 +135,7 @@ public static class PlayerManager
     }
     private static void SaveSpellBook()
     {
-        foreach (var kvp in SpellBook.m_abilities)
+        foreach (KeyValuePair<int, AbilityData> kvp in SpellBook.m_abilities)
         {
             m_tempPlayerData.m_spellBook[kvp.Key] = kvp.Value.m_data.m_key;
         }
@@ -143,12 +143,11 @@ public static class PlayerManager
     public static void SavePlayerData()
     {
         if (!Player.m_localPlayer) return;
-
         SaveSpellBook();
-        
         ISerializer serializer = new SerializerBuilder().Build();
         string data = serializer.Serialize(m_tempPlayerData);
         Player.m_localPlayer.m_customData[m_playerDataKey] = data;
+        AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Saved player data");
     }
 
     private static int GetTotalAddedHealth()
@@ -209,6 +208,50 @@ public static class PlayerManager
             if (!__instance.IsPlayer()) return;
             if (__instance != Player.m_localPlayer) return;
             health += GetTotalAddedHealth();
+        }
+    }
+    
+    [HarmonyPatch(typeof(Player), nameof(Player.Save))]
+    private static class Player_Save_Patch
+    {
+        private static void Prefix() => SavePlayerData();
+    }
+    
+    [HarmonyPatch(typeof(Player), nameof(Player.Load))]
+    private static class Player_Load_Postfix
+    {
+        private static void Postfix() => InitPlayerData();
+    }
+    
+    [HarmonyPatch(typeof(Player), nameof(Player.OnSpawned))]
+    private static class Player_OnSpawned_Patch
+    {
+        private static void Postfix(Player __instance)
+        {
+            if (__instance != Player.m_localPlayer) return;
+            InitPlayerTalents();
+            if (m_playerTalents.ContainsKey("MonkeyWrench")) LoadTwoHanded.ModifyTwoHandedWeapons();
+            LoadUI.SetHUDVisibility(AlmanacClassesPlugin._HudVisible.Value is AlmanacClassesPlugin.Toggle.On);
+        } 
+    }
+    
+    [HarmonyPatch(typeof(Player), nameof(Player.SetMaxEitr))]
+    private static class Player_SetMaxEitr_Patch
+    {
+        private static void Prefix(Player __instance, ref float eitr)
+        {
+            if (__instance != Player.m_localPlayer) return;
+            eitr += GetTotalAddedEitr();
+        }
+    }
+
+    [HarmonyPatch(typeof(Player), nameof(Player.SetMaxStamina))]
+    private static class Player_SetMaxStamina_Patch
+    {
+        private static void Prefix(Player __instance, ref float stamina)
+        {
+            if (__instance != Player.m_localPlayer) return;
+            stamina += GetTotalAddedStamina();
         }
     }
 }

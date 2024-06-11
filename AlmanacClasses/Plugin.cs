@@ -22,7 +22,7 @@ namespace AlmanacClasses
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
-        internal const string ModVersion = "0.4.5";
+        internal const string ModVersion = "0.4.6";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
         private static readonly string ConfigFileName = ModGUID + ".cfg";
@@ -59,7 +59,6 @@ namespace AlmanacClasses
             AddAttackSpeedModifiers();
             
             Watcher.InitWatcher();
-
         }
 
         public void Update()
