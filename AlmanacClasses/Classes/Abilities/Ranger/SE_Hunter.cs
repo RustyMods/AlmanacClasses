@@ -34,7 +34,7 @@ public class SE_Hunter : StatusEffect
         m_searchTimer += dt;
         if (m_searchTimer < 1f) return;
         m_searchTimer = 0.0f;
-        
+        m_characters.Clear();
         Character.GetCharactersInRange(m_character.transform.position, 10f, m_characters);
     }
 

@@ -20,7 +20,7 @@ public static class ButtonPatches
                 {
                     if (LoadUI.SelectedTalent != null)
                     {
-                        LoadUI.TalentName.text = Localization.instance.Localize(LoadUI.SelectedTalent.GetName() + " LVL " + LoadUI.SelectedTalent.GetLevel() + $" --> <color=#FF5733>{LoadUI.SelectedTalent.GetLevel() + 1}</color>");
+                        LoadUI.TalentName.text = Localization.instance.Localize(LoadUI.SelectedTalent.GetName() + " $text_lvl " + LoadUI.SelectedTalent.GetLevel() + $" --> <color=#FF5733>{LoadUI.SelectedTalent.GetLevel() + 1}</color>");
                         LoadUI.TalentDescription.text = LoadUI.SelectedTalent.GetPrestigeTooltip();
                         LoadUI.TalentCost.text = Localization.instance.Localize($"$almanac_cost: <color=orange>{LoadUI.SelectedTalent.GetCost()}</color>");
                         LoadUI.ActivePassive.text = Localization.instance.Localize(LoadUI.SelectedTalent.GetTalentType());
@@ -41,7 +41,7 @@ public static class ButtonPatches
                         talent = alt;
                     }
                 }
-                LoadUI.TalentName.text = Localization.instance.Localize(talent.GetName() + " LVL " + talent.m_level);
+                LoadUI.TalentName.text = Localization.instance.Localize(talent.GetName() + " $text_lvl " + talent.m_level);
                 LoadUI.TalentDescription.text = Localization.instance.Localize(talent.GetTooltip());
                 LoadUI.TalentCost.text = Localization.instance.Localize($"$almanac_cost: <color=orange>{talent.GetCost()}</color>");
                 LoadUI.ActivePassive.text = Localization.instance.Localize(talent.GetTalentType());
