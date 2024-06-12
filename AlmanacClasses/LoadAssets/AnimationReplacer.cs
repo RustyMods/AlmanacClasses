@@ -10,11 +10,11 @@ namespace KG_Managers
     public static class AnimationReplaceManager
     {
         private static bool FirstInit;
-        private static RuntimeAnimatorController VanillaController;
+        private static RuntimeAnimatorController? VanillaController;
         private static readonly Dictionary<string, KeyValuePair<RuntimeAnimatorController, string>> Controllers = new();
         private static readonly Dictionary<string, AnimationClip> AllExternalAnimations = new();
         private static readonly List<List<string>> AllAnimationSets = new();
-        private static string _asmName;
+        private static string? _asmName;
         private static string AssemblyName() => _asmName ??= Assembly.GetExecutingAssembly().GetName().Name;
 
         private static AssetBundle GetAssetBundle(string filename)
@@ -25,7 +25,7 @@ namespace KG_Managers
             return AssetBundle.LoadFromStream(stream);
         }
         
-        public static void AddAnimationSet(string AssetBundle, string attack1, string attack2 = null, string attack3 = null)
+        public static void AddAnimationSet(string AssetBundle, string attack1, string? attack2 = null, string? attack3 = null)
         {
             UnityEngine.AssetBundle asset =
                 UnityEngine.AssetBundle.GetAllLoadedAssetBundles().FirstOrDefault(x => x.name == AssetBundle) ??
@@ -39,10 +39,10 @@ namespace KG_Managers
             AllAnimationSets.Add(newSet);
         }
 
-        public static void AddAnimationSet(AnimationClip attack1, AnimationClip attack2 = null,
-            AnimationClip attack3 = null)
+        public static void AddAnimationSet(AnimationClip attack1, AnimationClip? attack2 = null,
+            AnimationClip? attack3 = null)
         {
-            var newSet = new List<string> { attack1.name };
+            List<string> newSet = new List<string> { attack1.name };
             AllExternalAnimations[attack1.name] = attack1;
             if (attack2 != null) newSet.Add(attack2.name);
             if (attack3 != null) newSet.Add(attack3.name);
@@ -51,7 +51,7 @@ namespace KG_Managers
             AllAnimationSets.Add(newSet);
         }
 
-        private static void ReplacePlayerRAC(Animator anim, RuntimeAnimatorController rac)
+        private static void ReplacePlayerRAC(Animator anim, RuntimeAnimatorController? rac)
         {
             if (anim.runtimeAnimatorController == rac) return;
             anim.runtimeAnimatorController = rac;

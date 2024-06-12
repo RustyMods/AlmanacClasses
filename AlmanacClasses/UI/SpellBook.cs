@@ -23,6 +23,13 @@ public static class SpellBook
         m_spellBarPos.anchoredPosition = AlmanacClassesPlugin._SpellBookPos.Value;
         LoadUI.MenuInfoPanel.transform.position = AlmanacClassesPlugin._SpellBookPos.Value + new Vector2(0f, 150f);
     }
+
+    public static void OnLogout()
+    {
+        ClearSpellBook();
+    }
+
+    private static void ClearSpellBook() => m_abilities.Clear();
     public static bool IsAbilityInBook(Talent ability) => m_abilities.Any(talent => ability == talent.Value.m_data);
     public static bool RemoveAbility(Talent ability)
     {

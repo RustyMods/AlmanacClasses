@@ -374,11 +374,22 @@ public static class LoadUI
             talent.AddLevel();
         }
     }
+
+    private static void ClearCheckedTalents()
+    {
+        foreach (Button talent in CheckedTalents)
+        {
+            Transform checkmark = Utils.FindChild(talent.transform, "Checkmark");
+            if (!checkmark) continue;
+            checkmark.gameObject.SetActive(false);
+        }
+        CheckedTalents.Clear();
+        CheckedTalents.Add(CenterButton);
+    }
     public static void SetInitialFillLines()
     {
         if (m_initLineFillSet) return;
-        CheckedTalents.Clear();
-        CheckedTalents.Add(CenterButton);
+        ClearCheckedTalents();
         foreach (KeyValuePair<string, Talent> kvp in PlayerManager.m_playerTalents)
         {
             string buttonName = kvp.Value.m_button;
@@ -655,7 +666,6 @@ public static class LoadUI
 
         resetButton.gameObject.AddComponent<ButtonSfx>().m_sfxPrefab = sfx.m_sfxPrefab;
     }
-
     private static void OnReset()
     {
         if (Player.m_localPlayer.GetInventory().CountItems("$item_coins") < AlmanacClassesPlugin._ResetCost.Value)
@@ -672,28 +682,27 @@ public static class LoadUI
         Player.m_localPlayer.GetInventory().RemoveItem("$item_coins", AlmanacClassesPlugin._ResetCost.Value);
         ResetTalents();
     }
-    public static void ResetTalents(bool command = false)
+    private static void SetAllLines(float value)
     {
-        LoadTwoHanded.ResetTwoHandedWeapons();
-        SpellBook.DestroyElements();
-        SpellBook.m_abilities.Clear();
+        foreach (Image line in AllLines) line.fillAmount = value;
+    }
+    private static void RemoveStatusEffects()
+    {
         List<StatusEffect> effects = Player.m_localPlayer.GetSEMan().GetStatusEffects().FindAll(x => StatusEffectManager.IsClassEffect(x.name));
         foreach (StatusEffect effect in effects)
         {
             Player.m_localPlayer.GetSEMan().RemoveStatusEffect(effect);
         }
-        foreach (Button talent in CheckedTalents)
-        {
-            Transform checkmark = Utils.FindChild(talent.transform, "Checkmark");
-            if (!checkmark) continue;
-            checkmark.gameObject.SetActive(false);
-        }
-        CheckedTalents.Clear();
-        CheckedTalents.Add(CenterButton);
-        foreach (Image line in AllLines) line.fillAmount = 0f;
-        PlayerManager.m_tempPlayerData.m_boughtTalents.Clear();
-        PlayerManager.m_tempPlayerData.m_spellBook.Clear();
-        PlayerManager.m_playerTalents.Clear();
+    }
+    public static void ResetTalents(bool command = false)
+    {
+        LoadTwoHanded.ResetTwoHandedWeapons();
+        SpellBook.DestroyElements();
+        SpellBook.m_abilities.Clear();
+        RemoveStatusEffects();
+        ClearCheckedTalents();
+        SetAllLines(0f);
+        PlayerManager.ResetPlayerData();
         CharacteristicManager.ResetCharacteristics();
         TalentManager.ResetTalentLevels();
         SelectedTalent = null;
@@ -755,35 +764,35 @@ public static class LoadUI
     {
         Transform? CoreCharacteristics = Utils.FindChild(SkillTree_UI.transform, "$part_core_characteristics");
         Transform? CoreTalents = Utils.FindChild(SkillTree_UI.transform, "$part_core_talents");
-        SetButton(CoreCharacteristics, "$button_core_1", new()
+        SetButton(CoreCharacteristics, "$button_core_1", new Dictionary<string, Image>
         {
             {"$button_center", LineCoreUp}, {"$button_bard_talent_1", LineUp1Left}, {"$button_warrior_talent_1", LineUp1Right}
         }, 0.4f, "Core1");
-        SetButton(CoreCharacteristics, "$button_core_2", new(){{"$button_core_1", LineCoreUp}}, 0.53f, "Core2");
-        SetButton(CoreCharacteristics, "$button_core_3", new(){{"$button_core_2", LineUp2Right}}, 1f, "Core3");
-        SetButton(CoreCharacteristics, "$button_core_4", new(){{"$button_core_2", LineUp2Left}}, 1f, "Core4");
-        SetButton(CoreCharacteristics, "$button_core_5", new()
+        SetButton(CoreCharacteristics, "$button_core_2", new Dictionary<string, Image> {{"$button_core_1", LineCoreUp}}, 0.53f, "Core2");
+        SetButton(CoreCharacteristics, "$button_core_3", new Dictionary<string, Image> {{"$button_core_2", LineUp2Right}}, 1f, "Core3");
+        SetButton(CoreCharacteristics, "$button_core_4", new Dictionary<string, Image> {{"$button_core_2", LineUp2Left}}, 1f, "Core4");
+        SetButton(CoreCharacteristics, "$button_core_5", new Dictionary<string, Image>
         {
             {"$button_lumberjack", LineUp3Right}, {"$button_warrior_6", LineRadial8}
         }, 1f, "Core5");
-        SetButton(CoreCharacteristics, "$button_core_6", new(){{"$button_lumberjack", LineUp4Left}, {"$button_bard_5", LineRadial1}}, 1f, "Core6");
-        SetButton(CoreTalents, "$button_lumberjack", new(){{"$button_core_2", LineCoreUp},{"$button_core_6", LineUp4Left}, {"$button_core_5", LineUp3Right}}, 0.7f, "AirBender");
-        SetButton(CoreTalents, "$button_chef", new(){{"$button_lumberjack", LineCoreUp}}, 1f, "MasterChef");
-        SetButton(CoreTalents, "$button_comfort_1", new(){{"$button_core_5", LineUp3RightUp}}, 1f, "Resourceful");
-        SetButton(CoreTalents, "$button_comfort_2", new(){{"$button_core_6", LineUp4LeftUp}}, 1f, "Comfort");
+        SetButton(CoreCharacteristics, "$button_core_6", new Dictionary<string, Image> {{"$button_lumberjack", LineUp4Left}, {"$button_bard_5", LineRadial1}}, 1f, "Core6");
+        SetButton(CoreTalents, "$button_lumberjack", new Dictionary<string, Image> {{"$button_core_2", LineCoreUp},{"$button_core_6", LineUp4Left}, {"$button_core_5", LineUp3Right}}, 0.7f, "AirBender");
+        SetButton(CoreTalents, "$button_chef", new Dictionary<string, Image> {{"$button_lumberjack", LineCoreUp}}, 1f, "MasterChef");
+        SetButton(CoreTalents, "$button_comfort_1", new Dictionary<string, Image> {{"$button_core_5", LineUp3RightUp}}, 1f, "Resourceful");
+        SetButton(CoreTalents, "$button_comfort_2", new Dictionary<string, Image> {{"$button_core_6", LineUp4LeftUp}}, 1f, "Comfort");
         
-        SetButton(CoreCharacteristics, "$button_core_7", new(){{"$button_center", LineCoreDown}, {"$button_sneak", LineDown1Right}, {"$button_merchant", LineDown1Left}}, 0.4f, "Core7");
-        SetButton(CoreCharacteristics, "$button_core_8", new(){{"$button_core_7", LineCoreDown}}, 0.53f, "Core8");
-        SetButton(CoreCharacteristics, "$button_core_9", new(){{"$button_core_8", LineDown2Right}}, 1f, "Core9");
-        SetButton(CoreCharacteristics, "$button_core_10", new(){{"$button_core_8", LineDown2Left}}, 1f, "Core10");
-        SetButton(CoreCharacteristics, "$button_core_11", new(){{"$button_treasure", LineDown3Right}, {"$button_sage_6", LineRadial4}}, 1f, "Core11");
-        SetButton(CoreCharacteristics, "$button_core_12", new(){{"$button_treasure", LineDown4Left}, {"$button_ranger_5", LineRadial5}}, 1f, "Core12");
-        SetButton(CoreTalents, "$button_treasure", new(){{"$button_core_8", LineCoreDown}, {"$button_core_11", LineDown3Right}, {"$button_core_12", LineDown4Left}}, 0.7f, "Forager");
-        SetButton(CoreTalents, "$button_sneak", new(){{"$button_core_7", LineDown1Right}, {"$button_sage_1", LineSage1Left}}, 1f, "Wise");
-        SetButton(CoreTalents, "$button_merchant", new(){{"$button_core_7", LineDown1Left}, {"$button_ranger_1", LineRanger1Right}}, 1f, "DoubleLoot");
-        SetButton(CoreTalents, "$button_shield", new(){{"$button_core_11", LineDown3RightDown}}, 1f, "PackMule");
-        SetButton(CoreTalents, "$button_rain", new(){{"$button_core_12", LineDown4LeftDown}}, 1f, "RainProof");
-        SetButton(CoreTalents, "$button_sail", new(){{"$button_treasure", LineCoreDown}}, 1f, "Trader");
+        SetButton(CoreCharacteristics, "$button_core_7", new Dictionary<string, Image> {{"$button_center", LineCoreDown}, {"$button_sneak", LineDown1Right}, {"$button_merchant", LineDown1Left}}, 0.4f, "Core7");
+        SetButton(CoreCharacteristics, "$button_core_8", new Dictionary<string, Image> {{"$button_core_7", LineCoreDown}}, 0.53f, "Core8");
+        SetButton(CoreCharacteristics, "$button_core_9", new Dictionary<string, Image> {{"$button_core_8", LineDown2Right}}, 1f, "Core9");
+        SetButton(CoreCharacteristics, "$button_core_10", new Dictionary<string, Image> {{"$button_core_8", LineDown2Left}}, 1f, "Core10");
+        SetButton(CoreCharacteristics, "$button_core_11", new Dictionary<string, Image> {{"$button_treasure", LineDown3Right}, {"$button_sage_6", LineRadial4}}, 1f, "Core11");
+        SetButton(CoreCharacteristics, "$button_core_12", new Dictionary<string, Image> {{"$button_treasure", LineDown4Left}, {"$button_ranger_5", LineRadial5}}, 1f, "Core12");
+        SetButton(CoreTalents, "$button_treasure", new Dictionary<string, Image> {{"$button_core_8", LineCoreDown}, {"$button_core_11", LineDown3Right}, {"$button_core_12", LineDown4Left}}, 0.7f, "Forager");
+        SetButton(CoreTalents, "$button_sneak", new Dictionary<string, Image> {{"$button_core_7", LineDown1Right}, {"$button_sage_1", LineSage1Left}}, 1f, "Wise");
+        SetButton(CoreTalents, "$button_merchant", new Dictionary<string, Image> {{"$button_core_7", LineDown1Left}, {"$button_ranger_1", LineRanger1Right}}, 1f, "DoubleLoot");
+        SetButton(CoreTalents, "$button_shield", new Dictionary<string, Image> {{"$button_core_11", LineDown3RightDown}}, 1f, "PackMule");
+        SetButton(CoreTalents, "$button_rain", new Dictionary<string, Image> {{"$button_core_12", LineDown4LeftDown}}, 1f, "RainProof");
+        SetButton(CoreTalents, "$button_sail", new Dictionary<string, Image> {{"$button_treasure", LineCoreDown}}, 1f, "Trader");
     }
     private static void SetBardButtonEvents()
     {
@@ -972,29 +981,25 @@ public static class LoadUI
         {
             RemapButton(talent.m_button, ButtonFillLineMap[button], line, alt.m_key);
             if (talent.m_altButtonSprite != null) SetButtonIcons(button, talent.m_altButtonSprite);
-            if (PlayerManager.m_playerTalents.ContainsKey(original.m_key))
-            {
-                PlayerManager.m_playerTalents.Remove(original.m_key);
-                PlayerManager.m_tempPlayerData.m_boughtTalents[alt.m_key] = PlayerManager.m_tempPlayerData.m_boughtTalents[original.m_key];
-                PlayerManager.m_tempPlayerData.m_boughtTalents.Remove(original.m_key);
-                PlayerManager.m_playerTalents[alt.m_key] = alt;
-                if (SpellBook.RemoveAbility(original));
-                    if (alt.m_type is TalentType.Ability or TalentType.StatusEffect) AddToSpellBook(alt);
-            }
+            if (!PlayerManager.m_playerTalents.ContainsKey(original.m_key)) return;
+            PlayerManager.m_playerTalents.Remove(original.m_key);
+            PlayerManager.m_tempPlayerData.m_boughtTalents[alt.m_key] = PlayerManager.m_tempPlayerData.m_boughtTalents[original.m_key];
+            PlayerManager.m_tempPlayerData.m_boughtTalents.Remove(original.m_key);
+            PlayerManager.m_playerTalents[alt.m_key] = alt;
+            if (SpellBook.RemoveAbility(original));
+            if (alt.m_type is TalentType.Ability or TalentType.StatusEffect) AddToSpellBook(alt);
         }
         else
         {
             RemapButton(talent.m_button, ButtonFillLineMap[button], line, original.m_key);
             SetButtonIcons(button, originalSprite);
-            if (PlayerManager.m_playerTalents.ContainsKey(alt.m_key))
-            {
-                PlayerManager.m_playerTalents.Remove(alt.m_key);
-                PlayerManager.m_tempPlayerData.m_boughtTalents[original.m_key] = PlayerManager.m_tempPlayerData.m_boughtTalents[alt.m_key];
-                PlayerManager.m_tempPlayerData.m_boughtTalents.Remove(alt.m_key);
-                PlayerManager.m_playerTalents[original.m_key] = original;
-                if (SpellBook.RemoveAbility(alt));
-                    if (original.m_type is TalentType.Ability or TalentType.StatusEffect) AddToSpellBook(original);
-            }
+            if (!PlayerManager.m_playerTalents.ContainsKey(alt.m_key)) return;
+            PlayerManager.m_playerTalents.Remove(alt.m_key);
+            PlayerManager.m_tempPlayerData.m_boughtTalents[original.m_key] = PlayerManager.m_tempPlayerData.m_boughtTalents[alt.m_key];
+            PlayerManager.m_tempPlayerData.m_boughtTalents.Remove(alt.m_key);
+            PlayerManager.m_playerTalents[original.m_key] = original;
+            if (SpellBook.RemoveAbility(alt));
+            if (original.m_type is TalentType.Ability or TalentType.StatusEffect) AddToSpellBook(original);
         }
     }
 
@@ -1174,8 +1179,8 @@ public static class LoadUI
     {
         foreach (Text text in array) text.font = font;
     }
-    
-    public static Font? GetFont(string name)
+
+    private static Font? GetFont(string name)
     {
         Font[]? fonts = Resources.FindObjectsOfTypeAll<Font>();
         return fonts.FirstOrDefault(x => x.name == name);

@@ -4,8 +4,7 @@ public class SE_Characteristics : StatusEffect
 {
     public override void ModifyMaxCarryWeight(float baseLimit, ref float limit)
     {
-        int amount = CharacteristicManager.GetCharacteristic(Characteristic.Strength);
-        limit += amount;
+        limit += CharacteristicManager.GetCarryWeightRatio();
     }
 
     public override void ModifyAttack(Skills.SkillType skill, ref HitData hitData)

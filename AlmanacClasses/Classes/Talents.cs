@@ -162,33 +162,41 @@ public class Talent
     private float GetCreatureLength(int level) => m_creature == null ? 0f : GetLength(level);
     private float GetCreaturesLength(int level) => m_creatures == null ? 0f : GetLength(level);
     public float GetArmor(int level) => m_values == null ? 0f : (m_values.m_armor?.Value ?? 0f) + (level - 1) * 2f;
+    private float GetHealthRatio(int level) => GetCharacteristic(level) / _HealthRatio.Value;
+    private float GetCarryWeightRatio(int level) => GetCharacteristic(level) / _CarryWeightRatio.Value;
+    private float GetEitrRatio(int level) => GetCharacteristic(level) / _EitrRatio.Value;
+    private float GetStaminaRatio(int level) => GetCharacteristic(level) / _StaminaRatio.Value;
+    private float GetStrengthModifier(int level) => 1 + GetCharacteristic(level) / _PhysicalRatio.Value / 100f;
+    private float GetIntelligenceModifier(int level) => 1 + GetCharacteristic(level) / _ElementalRatio.Value / 100f;
+    private float GetDexterityModifier(int level) => 1 + GetCharacteristic(level) / _SpeedRatio.Value / 100f;
+    private string GetCharacteristicLocalized() => $"$almanac_{GetCharacteristicType().ToString().ToLower()}";
+    private string GetCharacteristicDescription() => $"${GetCharacteristicType().ToString().ToLower()}_desc";
     public string GetTooltip()
     {
         StringBuilder stringBuilder = new StringBuilder();
         if (m_type is TalentType.Characteristic)
         {
             if (m_characteristic == null) return stringBuilder.ToString();
-            string key = CharacteristicManager.GetCharacteristicKey(GetCharacteristicType());
-            stringBuilder.Append($"${GetCharacteristicType().ToString().ToLower()}_desc\n");
-            stringBuilder.Append($"+ <color=orange>{GetCharacteristic(GetLevel())} {key}</color>\n\n");
+            stringBuilder.Append($"{GetCharacteristicDescription()}\n");
+            stringBuilder.Append($"+ <color=orange>{GetCharacteristic(GetLevel())} {GetCharacteristicLocalized()}</color>\n\n");
             switch (m_characteristic.m_type)
             {
                 case Characteristic.Constitution:
-                    stringBuilder.Append($"$almanac_current: <color=orange>+{(int)CharacteristicManager.GetHealthRatio()}</color> $se_health\n");
+                    stringBuilder.Append($"$se_health: <color=orange>+{(int)GetHealthRatio(GetLevel())}</color>\n");
                     break;
                 case Characteristic.Strength:
-                    stringBuilder.Append($"$se_max_carryweight: <color=orange>+ {GetCharacteristic(GetLevel())}</color>\n");
-                    stringBuilder.Append($"$almanac_current: <color=orange>+{FormatPercentage(CharacteristicManager.GetStrengthModifier())}%</color> $almanac_physical\n");
+                    stringBuilder.Append($"$se_max_carryweight: <color=orange>+ {(int)GetCarryWeightRatio(GetLevel())}</color>\n");
+                    stringBuilder.Append($"$almanac_physical: <color=orange>+{FormatPercentage(GetStrengthModifier(GetLevel()))}%</color>\n");
                     break;
                 case Characteristic.Intelligence:
-                    stringBuilder.Append($"$almanac_current: <color=orange>+{FormatPercentage(CharacteristicManager.GetIntelligenceModifier())}%</color> $almanac_elemental\n");
+                    stringBuilder.Append($"$almanac_elemental: <color=orange>+{FormatPercentage(GetIntelligenceModifier(GetLevel()))}%</color>\n");
                     break;
                 case Characteristic.Dexterity:
-                    stringBuilder.Append($"$almanac_current: <color=orange>+{(int)CharacteristicManager.GetStaminaRatio()}</color> $se_stamina\n");
-                    stringBuilder.Append($"$almanac_attackspeedmod: <color=orange>+{FormatPercentage(CharacteristicManager.GetDexterityModifier())}%</color>");
+                    stringBuilder.Append($"$se_stamina: <color=orange>+{(int)GetStaminaRatio(GetLevel())}</color>\n");
+                    stringBuilder.Append($"$almanac_attackspeedmod: <color=orange>+{FormatPercentage(GetDexterityModifier(GetLevel()))}%</color>");
                     break;
                 case Characteristic.Wisdom:
-                    stringBuilder.Append($"$almanac_current: <color=orange>+{(int)CharacteristicManager.GetEitrRatio()}</color> $se_eitr");
+                    stringBuilder.Append($"$se_eitr: <color=orange>+{(int)GetEitrRatio(GetLevel())}</color>");
                     break;
             }
         }
@@ -340,8 +348,7 @@ public class Talent
         }
         return config;
     }
-    private Heightmap.Biome GetCurrentBiome() =>
-        Player.m_localPlayer == null ? Heightmap.Biome.None : Player.m_localPlayer.GetCurrentBiome();
+    private Heightmap.Biome GetCurrentBiome() => Player.m_localPlayer == null ? Heightmap.Biome.None : Player.m_localPlayer.GetCurrentBiome();
     private string GetBiomeLocalized(Heightmap.Biome biome) => $"$biome_{biome.ToString().ToLower()}";
     private int FormatPercentage(float value) => (int)(value * 100 - 100);
     public string GetPrestigeTooltip()
@@ -350,33 +357,33 @@ public class Talent
         if (m_type is TalentType.Characteristic)
         {
             if (m_characteristic == null) return stringBuilder.ToString();
-            string key = CharacteristicManager.GetCharacteristicKey(GetCharacteristicType());
-            stringBuilder.Append($"${GetCharacteristicType().ToString().ToLower()}_desc\n");
-            stringBuilder.Append($"+ <color=orange>{GetCharacteristic(GetLevel())}</color> --> <color={m_prestigeColor}>{GetCharacteristic(GetLevel() + 1)}</color> {key}\n\n");
+            stringBuilder.Append($"${GetCharacteristicDescription()}\n");
+            stringBuilder.Append($"+ <color=orange>{GetCharacteristic(GetLevel())}</color> --> <color={m_prestigeColor}>{GetCharacteristic(GetLevel() + 1)}</color> {GetCharacteristicLocalized()}\n\n");
             switch (m_characteristic.m_type)
             {
                 case Characteristic.Constitution:
                     stringBuilder.Append(
-                        $"$almanac_current: <color=orange>+{(int)CharacteristicManager.GetHealthRatio()}</color> $se_health\n");
+                        $"$se_health: <color=orange>+{(int)GetHealthRatio(GetLevel())}</color> --> <color={m_prestigeColor}>{(int)GetHealthRatio(GetLevel() + 1)}</color>\n");
                     break;
                 case Characteristic.Strength:
-                    stringBuilder.Append($"$se_max_carryweight: <color=orange>+ {GetCharacteristic(GetLevel())}</color> --> <color={m_prestigeColor}>+ {GetCharacteristic(GetLevel() + 1)}</color>\n");
                     stringBuilder.Append(
-                        $"$almanac_current: <color=orange>+{FormatPercentage(CharacteristicManager.GetStrengthModifier())}%</color> $almanac_physical\n");
+                        $"$se_max_carryweight: <color=orange>+ {(int)GetCarryWeightRatio(GetLevel())}</color> --> <color={m_prestigeColor}>+ {(int)GetCarryWeightRatio(GetLevel() + 1)}</color>\n");
+                    stringBuilder.Append(
+                        $"$almanac_physical: <color=orange>+{FormatPercentage(GetStrengthModifier(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetStrengthModifier(GetLevel()))}%</color>\n");
                     break;
                 case Characteristic.Intelligence:
                     stringBuilder.Append(
-                        $"$almanac_current: <color=orange>+{FormatPercentage(CharacteristicManager.GetIntelligenceModifier())}%</color> $almanac_elemental\n");
+                        $"$almanac_elemental: <color=orange>+{FormatPercentage(GetIntelligenceModifier(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetIntelligenceModifier(GetLevel() + 1))}%</color>\n");
                     break;
                 case Characteristic.Dexterity:
                     stringBuilder.Append(
-                        $"$almanac_current: <color=orange>+{(int)CharacteristicManager.GetStaminaRatio()}</color> $se_stamina\n");
+                        $"$se_stamina: <color=orange>+{(int)GetStaminaRatio(GetLevel())}</color> --> <color={m_prestigeColor}>{(int)GetStaminaRatio(GetLevel() + 1)}</color>\n");
                     stringBuilder.Append(
-                        $"$almanac_attackspeedmod: <color=orange>+{FormatPercentage(CharacteristicManager.GetDexterityModifier())}%</color>");
+                        $"$almanac_attackspeedmod: <color=orange>+{FormatPercentage(GetDexterityModifier(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetDexterityModifier(GetLevel() + 1))}%</color> \n");
                     break;
                 case Characteristic.Wisdom:
                     stringBuilder.Append(
-                        $"$almanac_current: <color=orange>+{(int)CharacteristicManager.GetEitrRatio()}</color> $se_eitr");
+                        $"$se_eitr: <color=orange>+{(int)GetEitrRatio(GetLevel())}</color> --> <color={m_prestigeColor}>{(int)GetEitrRatio(GetLevel() + 1)}</color>");
                     break;
             }
         }
@@ -637,7 +644,6 @@ public static class TalentManager
             }
         }
     }
-
     private static List<Talent> LoadAltCore()
     {
         Talent TreasureHunter = new Talent()
@@ -703,7 +709,6 @@ public static class TalentManager
 
         return new List<Talent>() { TreasureHunter, Berzerk, Sailor };
     }
-
     private static List<Talent> LoadAltWarrior()
     {
         Talent survivor = new Talent()
@@ -1004,7 +1009,6 @@ public static class TalentManager
             }
         };
     }
-
     private static List<Talent> LoadRanger()
     {
         return new List<Talent>
@@ -1184,7 +1188,6 @@ public static class TalentManager
             }
         };
     }
-
     private static List<Talent> LoadSage()
     {
         return new List<Talent>
@@ -1368,10 +1371,9 @@ public static class TalentManager
             }
         };
     }
-
     private static List<Talent> LoadShaman()
     {
-        return new()
+        return new List<Talent>
         {
             new()
             {
@@ -1542,7 +1544,6 @@ public static class TalentManager
             }
         };
     }
-
     private static List<Talent> LoadBard()
     {
         return new List<Talent>

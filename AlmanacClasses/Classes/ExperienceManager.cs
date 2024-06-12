@@ -4,6 +4,7 @@ using AlmanacClasses.Classes.Abilities;
 using AlmanacClasses.Classes.Abilities.Core;
 using AlmanacClasses.FileSystem;
 using AlmanacClasses.LoadAssets;
+using AlmanacClasses.Managers;
 using BepInEx;
 using HarmonyLib;
 using ServerSync;
@@ -26,7 +27,6 @@ public static class ExperienceManager
             InitServerExperienceMap();
         }
     }
-    
     private static void InitServerExperienceMap()
     {
         if (!ZNet.instance) return;
@@ -40,7 +40,6 @@ public static class ExperienceManager
             ServerExperienceMap.ValueChanged += OnServerExperienceMapChange;
         }
     }
-
     public static void ReadExperienceFiles(bool sync = false)
     {
         ISerializer serializer = new SerializerBuilder().Build();
@@ -78,7 +77,6 @@ public static class ExperienceManager
         string newData = serializer.Serialize(CreatureExperienceMap);
         ServerExperienceMap.Value = newData;
     }
-
     private static void OnServerExperienceMapChange()
     {
         if (ServerExperienceMap.Value.IsNullOrWhiteSpace()) return;
@@ -87,7 +85,6 @@ public static class ExperienceManager
         Dictionary<string, int> map = deserializer.Deserialize<Dictionary<string, int>>(ServerExperienceMap.Value);
         CreatureExperienceMap = map;
     }
-
     public static void WriteExperienceMap()
     {
         string filePath = FilePaths.ExperienceFilePath;
@@ -163,12 +160,10 @@ public static class ExperienceManager
         { "Charred_Melee_Dyrnwyn", 50},
         { "Fader", 200 }
     };
-
-    public static int GetExperienceAmount(Character instance)
+    private static int GetExperienceAmount(Character instance)
     {
         return (int)((CreatureExperienceMap.TryGetValue(instance.name.Replace("(Clone)", string.Empty), out int amount) ? amount : GetExpByBiome()) * instance.m_level * AlmanacClassesPlugin._ExperienceMultiplier.Value);
     }
-
     private static int GetExpByBiome()
     {
         switch (Player.m_localPlayer.GetCurrentBiome())
@@ -227,7 +222,18 @@ public static class ExperienceManager
     };
 
     private static readonly int EmissionColor = Shader.PropertyToID("_EmissionColor");
-    public static void CreateExperienceOrb(float amount, string name, string displayName, Color color, Color32 emission, Color shellColor, Color lightColor, Sprite icon)
+
+    public static void LoadExperienceOrbs()
+    {
+        CreateExperienceOrb(10, "ExperienceOrb_Simple", "Simple Orb", new Color(1f, 0.9f, 0f, 1f), new Color32(255, 0, 0, 255), new Color(1f, 0.5f, 0.5f, 0.6f), new Color(1f, 0.7f, 0.5f, 1f), SpriteManager.HourGlass_Icon);
+        CreateExperienceOrb(25, "ExperienceOrb_Magic", "Magic Orb", new Color(0.3f, 1f, 0f, 1f), new Color32(255, 255, 0, 255), new Color(0f, 0.5f, 0.5f, 0.6f), new Color(0.5f, 1f, 0f, 1f), SpriteManager.HourGlass_Icon);
+        CreateExperienceOrb(50, "ExperienceOrb_Epic", "Epic Orb", new Color(0f, 0.2f, 0.8f, 1f), new Color32(150, 0, 250, 255), new Color(0.8f, 0f, 0.5f, 0.6f), new Color(1f, 0.7f, 0.5f, 1f), SpriteManager.HourGlass_Icon);
+        CreateExperienceOrb(100, "ExperienceOrb_Legendary", "Legendary Orb", new Color(1f, 0.9f, 1f, 1f), new Color32(150, 150, 255, 255), new Color(0.6f, 1f, 1f, 0.6f), new Color(0.5f, 0.7f, 1f, 1f), SpriteManager.HourGlass_Icon);
+        // CreateExperienceOrb(150, "ExperienceOrb_Plains", "Goblin Orb", new Color(1f, 0.9f, 0.4f, 1f), new Color32(255, 255, 0, 255), new Color(0.5f, 1f, 0.5f, 0.6f), new Color(0.5f, 0.7f, 0.5f, 1f));
+        // CreateExperienceOrb(300, "ExperienceOrb_Mistlands", "Runic Orb", new Color(0f, 0.9f, 1f, 1f), new Color32(100, 150, 200, 255), new Color(0f, 0.5f, 1f, 0.6f), new Color(0f, 0.7f, 0.5f, 1f));
+    }
+
+    private static void CreateExperienceOrb(float amount, string name, string displayName, Color color, Color32 emission, Color shellColor, Color lightColor, Sprite icon)
     {
         GameObject UpgradeItem = ZNetScene.instance.GetPrefab("StaminaUpgrade_Greydwarf");
         GameObject item = Object.Instantiate(UpgradeItem, AlmanacClassesPlugin._Root.transform, false);

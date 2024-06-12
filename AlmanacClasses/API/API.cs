@@ -51,21 +51,15 @@ public static class API
     public static int GetLevel() => PlayerManager.GetPlayerLevel(PlayerManager.GetExperience());
     public static int GetCharacteristic(string type)
     {
-        switch (type)
+        return type switch
         {
-            case "Constitution":
-                return CharacteristicManager.GetCharacteristic(Characteristic.Constitution);
-            case "Dexterity":
-                return CharacteristicManager.GetCharacteristic(Characteristic.Dexterity);
-            case "Intelligence":
-                return CharacteristicManager.GetCharacteristic(Characteristic.Intelligence);
-            case "Wisdom":
-                return CharacteristicManager.GetCharacteristic(Characteristic.Wisdom);
-            case "Strength":
-                return CharacteristicManager.GetCharacteristic(Characteristic.Strength);
-            default:
-                return 0;
-        }
+            "Constitution" => CharacteristicManager.GetCharacteristic(Characteristic.Constitution),
+            "Dexterity" => CharacteristicManager.GetCharacteristic(Characteristic.Dexterity),
+            "Intelligence" => CharacteristicManager.GetCharacteristic(Characteristic.Intelligence),
+            "Wisdom" => CharacteristicManager.GetCharacteristic(Characteristic.Wisdom),
+            "Strength" => CharacteristicManager.GetCharacteristic(Characteristic.Strength),
+            _ => 0
+        };
     }
     
     // Another way to add experience is to call Player.m_localPlayer.Message(..., "Added 10 experience")
@@ -75,16 +69,12 @@ public static class API
         private static void Postfix(MessageHud.MessageType type, string msg)
         {
             if (type is not MessageHud.MessageType.TopLeft) return;
-            if (msg.StartsWith("Added") && msg.EndsWith("experience"))
-            {
-                string[] input = msg.Split(' ');
-                if (int.TryParse(input[1], out int experience))
-                {
-                    AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Received experience from external source");
-                    PlayerManager.m_tempPlayerData.m_experience += experience;
-                    AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug($"Added {experience} class experience");
-                }
-            }
+            if (!msg.StartsWith("Added") || !msg.EndsWith("experience")) return;
+            string[] input = msg.Split(' ');
+            if (!int.TryParse(input[1], out int experience)) return;
+            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Received experience from external source");
+            PlayerManager.m_tempPlayerData.m_experience += experience;
+            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug($"Added {experience} class experience");
         }
     }
 }

@@ -157,7 +157,7 @@ namespace AlmanacClasses
         public static ConfigEntry<float> _PhysicalRatio = null!;
         public static ConfigEntry<float> _ElementalRatio = null!;
         public static ConfigEntry<float> _SpeedRatio = null!;
-
+        public static ConfigEntry<float> _CarryWeightRatio = null!;
         public static ConfigEntry<int> _StatsCost = null!;
 
         #region Key Codes
@@ -186,7 +186,8 @@ namespace AlmanacClasses
             _PhysicalRatio = config("4 - Characteristics", "6. Physical Ratio", 10f, new ConfigDescription("Set the ratio of strength to physical damage", new AcceptableValueRange<float>(1f, 10f)));
             _ElementalRatio = config("4 - Characteristics", "7. Elemental Ratio", 10f, new ConfigDescription("Set the ratio of intelligence to elemental damage", new AcceptableValueRange<float>(1f, 10f)));
             _SpeedRatio = config("4 - Characteristics", "7. Attack Speed Ratio", 3f, new ConfigDescription("Set the ratio of dexterity to increase attack speed", new AcceptableValueRange<float>(1f, 10f)));
-            _StatsCost = config("4 - Characteristics", "8. Purchase Cost", 3, new ConfigDescription("Set the cost to unlock talent", new AcceptableValueRange<int>(1, 10)));
+            _CarryWeightRatio = config("4 - Characteristics", "8. Carry Weight Ratio", 1f, new ConfigDescription("Set the ratio of strength to increased carry weight", new AcceptableValueRange<float>(1, 10f)));
+            _StatsCost = config("4 - Characteristics", "9. Purchase Cost", 3, new ConfigDescription("Set the cost to unlock characteristic talents", new AcceptableValueRange<int>(1, 10)));
         }
         private void InitSettingsConfigs()
         {

@@ -36,12 +36,23 @@ public static class PlayerManager
     {
         m_initiatedPlayerData = false;
         m_initiatedPlayerTalents = false;
+        ClearPlayerData();
+        ClearPlayerTalents();
     }
     private static readonly string m_oldKey = "AlmanacClassesPlayerData";
     private static readonly string m_playerDataKey = "AlmanacClassesPlayerData_New";
     public static PlayerData m_tempPlayerData = new();
     public static readonly Dictionary<string, Talent> m_playerTalents = new();
-    public static void InitPlayerData()
+
+    public static void ResetPlayerData()
+    {
+        m_tempPlayerData.m_boughtTalents.Clear();
+        m_tempPlayerData.m_spellBook.Clear();
+        m_playerTalents.Clear();
+    }
+    private static void ClearPlayerTalents() => m_playerTalents.Clear();
+    private static void ClearPlayerData() => m_tempPlayerData = new();
+    private static void InitPlayerData()
     {
         if (m_initiatedPlayerData) return;
         IDeserializer deserializer = new DeserializerBuilder().Build();
@@ -86,7 +97,7 @@ public static class PlayerManager
         AddPassiveStatusEffects(Player.m_localPlayer);
     }
 
-    public static void AddPassiveStatusEffects(Player instance)
+    private static void AddPassiveStatusEffects(Player instance)
     {
         foreach (KeyValuePair<string, Talent> talent in m_playerTalents)
         {
@@ -99,17 +110,27 @@ public static class PlayerManager
         instance.GetSEMan().AddStatusEffect("SE_Characteristic".GetStableHashCode());
     }
 
-    public static void InitPlayerTalents()
+    private static void InitPlayerTalents()
     {
         if (m_initiatedPlayerTalents) return;
         AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Loaded player talents");
+        LoadSpellBook();
+        LoadPlayerTalents();
+        m_initiatedPlayerTalents = true;
+    }
+
+    private static void LoadSpellBook()
+    {
         foreach (KeyValuePair<int, string> kvp in m_tempPlayerData.m_spellBook)
         {
             if (!TalentManager.m_talents.TryGetValue(kvp.Value, out Talent match)) continue;
             if (match == null) continue;
             SpellBook.m_abilities[kvp.Key] = new AbilityData() { m_data = match };
         }
+    }
 
+    private static void LoadPlayerTalents()
+    {
         foreach (KeyValuePair<string, int> kvp in m_tempPlayerData.m_boughtTalents)
         {
             if (!TalentManager.m_talents.TryGetValue(kvp.Key, out Talent match)) continue;
@@ -121,7 +142,6 @@ public static class PlayerManager
             CharacteristicManager.AddCharacteristic(match.GetCharacteristicType(), match.GetCharacteristic(match.GetLevel()));
         }
         CheckAltTalents();
-        m_initiatedPlayerTalents = true;
     }
 
     private static void CheckAltTalents()
@@ -140,7 +160,8 @@ public static class PlayerManager
             m_tempPlayerData.m_spellBook[kvp.Key] = kvp.Value.m_data.m_key;
         }
     }
-    public static void SavePlayerData()
+
+    private static void SavePlayerData()
     {
         if (!Player.m_localPlayer) return;
         SaveSpellBook();
@@ -164,10 +185,9 @@ public static class PlayerManager
         return output;
     }
 
-    public static int GetTotalAddedStamina()
+    private static int GetTotalAddedStamina()
     {
-        int output = (int)(CharacteristicManager.GetCharacteristic(Characteristic.Dexterity) /
-                      AlmanacClassesPlugin._StaminaRatio.Value);
+        int output = (int)(CharacteristicManager.GetCharacteristic(Characteristic.Dexterity) / AlmanacClassesPlugin._StaminaRatio.Value);
 
         foreach (var status in Player.m_localPlayer.GetSEMan().GetStatusEffects())
         {
@@ -179,12 +199,12 @@ public static class PlayerManager
         return output;
     }
 
-    public static int GetTotalAddedEitr()
+    private static int GetTotalAddedEitr()
     {
-        int output = (int)(CharacteristicManager.GetCharacteristic(Characteristic.Wisdom) /
-                      AlmanacClassesPlugin._EitrRatio.Value);
+        if (!Player.m_localPlayer) return 0;
+        int output = (int)(CharacteristicManager.GetCharacteristic(Characteristic.Wisdom) / AlmanacClassesPlugin._EitrRatio.Value);
 
-        foreach (var status in Player.m_localPlayer.GetSEMan().GetStatusEffects())
+        foreach (StatusEffect? status in Player.m_localPlayer.GetSEMan().GetStatusEffects())
         {
             if (!StatusEffectManager.IsClassEffect(status.name)) continue;
             if (!TalentManager.m_talentsByStatusEffect.TryGetValue(status.m_nameHash, out Talent talent)) continue;
