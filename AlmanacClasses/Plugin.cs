@@ -22,7 +22,7 @@ namespace AlmanacClasses
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
-        internal const string ModVersion = "0.4.8";
+        internal const string ModVersion = "0.4.9";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
         private static readonly string ConfigFileName = ModGUID + ".cfg";
@@ -60,7 +60,6 @@ namespace AlmanacClasses
             
             Watcher.InitWatcher();
         }
-
         public void Update()
         {
             float dt = Time.deltaTime;
@@ -73,6 +72,8 @@ namespace AlmanacClasses
             SpellBarMove.UpdateElement();
             
             PlayerManager.UpdatePassiveEffects(dt);
+
+            if (Input.GetKeyDown(_ShowUIKey.Value)) TalentBook.ShowUI();
         }
 
         private void AddAttackSpeedModifiers()
@@ -149,8 +150,8 @@ namespace AlmanacClasses
         public static ConfigEntry<Vector2> _MenuTooltipPosition = null!;
         public static ConfigEntry<int> _ChanceForOrb = null!;
         public static ConfigEntry<int> _MaxLevel = null!;
+        private static ConfigEntry<KeyCode> _ShowUIKey = null!;
         #endregion
-        
         public static ConfigEntry<float> _EitrRatio = null!;
         public static ConfigEntry<float> _HealthRatio = null!;
         public static ConfigEntry<float> _StaminaRatio = null!;
@@ -159,7 +160,6 @@ namespace AlmanacClasses
         public static ConfigEntry<float> _SpeedRatio = null!;
         public static ConfigEntry<float> _CarryWeightRatio = null!;
         public static ConfigEntry<int> _StatsCost = null!;
-
         #region Key Codes
         public static ConfigEntry<KeyCode> _SpellAlt = null!;
         public static ConfigEntry<KeyCode> _Spell1 = null!;
@@ -237,6 +237,7 @@ namespace AlmanacClasses
                 new ConfigDescription("Set the drop chance to drop experience orbs",
                     new AcceptableValueRange<int>(0, 100)));
             _MaxLevel = config("2 - Settings", "Max Level", 100, "Set the max level a player can attain");
+            _ShowUIKey = config("2 - Settings", "Show UI Key", KeyCode.None, "Set the key to open menu remotely");
         }
 
         private void InitKeyCodeConfigs()

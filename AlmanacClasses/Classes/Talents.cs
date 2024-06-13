@@ -57,7 +57,7 @@ public class Talent
     public EffectList GetEffectList() => UseEffects() ?  m_startEffects ?? new EffectList() : new EffectList();
     public Sprite? GetSprite() => m_sprite;
     public int GetCost() => m_cost?.Value ?? _StatsCost.Value;
-    public float GetCooldown(int level) => Mathf.Clamp((m_cooldown?.Value ?? 0f) - (level - 1) * 5f, 1f, float.MaxValue);
+    public float GetCooldown(int level) => Mathf.Clamp((m_cooldown?.Value ?? 0f) - (level - 1) * 5f, GetLength(level), float.MaxValue);
     public float GetLength(int level) => (m_length?.Value ?? 0f) + (level - 1) * 5f;
     public float GetEitrCost() => m_eitrCost?.Value ?? 0f;
     public float GetStaminaCost() => m_staminaCost?.Value ?? 0f;

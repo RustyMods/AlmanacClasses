@@ -29,7 +29,8 @@ public static class InventoryGUIPatches
         {
             if (!__instance) return;
             int level = PlayerManager.GetPlayerLevel(PlayerManager.m_tempPlayerData.m_experience);
-            __instance.m_playerName.text = Game.instance.GetPlayerProfile().GetName() + " LVL " + level;
+            __instance.m_playerName.text =
+                $"{Game.instance.GetPlayerProfile().GetName()} {Localization.instance.Localize("$text_lvl")} {level}";
         }
     }
 }

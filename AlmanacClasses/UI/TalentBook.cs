@@ -83,6 +83,7 @@ public class TalentBook : MonoBehaviour, Interactable, Hoverable
         LoadUI.SkillTree_UI.SetActive(false);
         Player.m_localPlayer.m_zanim.SetInt("crafting", 0);
         SpellElementChange.DestroyElement();
+        LoadUI.DeselectTalent();
     }
 
     public static void UpdateTalentBookUI()

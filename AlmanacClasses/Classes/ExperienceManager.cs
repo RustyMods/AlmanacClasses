@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using AlmanacClasses.Classes.Abilities;
 using AlmanacClasses.Classes.Abilities.Core;
 using AlmanacClasses.FileSystem;
 using AlmanacClasses.LoadAssets;
@@ -11,6 +10,7 @@ using ServerSync;
 using UnityEngine;
 using YamlDotNet.Serialization;
 using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 
 namespace AlmanacClasses.Classes;
 
@@ -208,7 +208,35 @@ public static class ExperienceManager
     {
         if (!instance || instance.name.IsNullOrWhiteSpace()) return;
         int amount = GetExperienceAmount(instance);
-        PlayerManager.m_tempPlayerData.m_experience += amount;
+        foreach (Player player in Player.GetAllPlayers())
+        {
+            if (!player.m_nview.IsValid()) continue;
+            if (player.m_nview.IsOwner())
+            {
+                PlayerManager.m_tempPlayerData.m_experience += amount;
+            }
+            else
+            {
+                player.m_nview.InvokeRPC(nameof(RPC_AddExperience), amount);
+            }
+        }
+    }
+
+    public static void RPC_AddExperience(long sender, int experience)
+    {
+        PlayerManager.m_tempPlayerData.m_experience += experience;
+        DamageText.instance.ShowText(DamageText.TextType.Heal, Player.m_localPlayer.transform.position, experience, true);
+    }
+
+    [HarmonyPatch(typeof(Player), nameof(Player.Awake))]
+    private static class Player_Awake_Patch
+    {
+        private static void Postfix(Player __instance)
+        {
+            if (!__instance) return;
+            if (!__instance.m_nview || __instance.m_nview.GetZDO() == null) return;
+            __instance.m_nview.Register<int>(nameof(RPC_AddExperience), RPC_AddExperience);
+        }
     }
 
     private static readonly Dictionary<PlayerStatType, int> ExperienceMap = new()
@@ -347,7 +375,7 @@ public static class ExperienceManager
             if (AlmanacClassesPlugin._DisplayExperience.Value is AlmanacClassesPlugin.Toggle.Off) return;
             if (!__instance.m_nview) return;
             if (!__instance.m_nview.IsValid()) return;
-            if (__instance.m_nview.GetZDO().GetBool(Classes.Abilities.SpawnSystem.FriendlyKey)) return;
+            if (__instance.m_nview.GetZDO().GetBool(Abilities.SpawnSystem.FriendlyKey)) return;
             int exp = GetExperienceAmount(__instance);
             __result += $" [<color=orange>{exp}</color>]";
         }

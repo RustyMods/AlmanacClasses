@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using AlmanacClasses.Classes;
@@ -18,6 +17,7 @@ public static class SpellBook
     private static GameObject m_element = null!;
     public static Dictionary<int, AbilityData> m_abilities = new();
     private static RectTransform m_spellBarPos = null!;
+    private static Text[]? m_texts;
     public static void OnSpellBarPosChange(object sender, EventArgs e)
     {
         m_spellBarPos.anchoredPosition = AlmanacClassesPlugin._SpellBookPos.Value;
@@ -62,8 +62,20 @@ public static class SpellBook
         m_element = AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_element");
         m_element.AddComponent<SpellElementChange>();
         
-        Text[] texts = m_element.GetComponentsInChildren<Text>();
-        LoadUI.AddFonts(texts, font);
+        m_texts = m_element.GetComponentsInChildren<Text>();
+        LoadUI.AddFonts(m_texts, font);
+        UpdateFontSize();
+    }
+
+    private static void UpdateFontSize()
+    {
+        if (m_texts == null) return;
+        foreach (Text component in m_texts)
+        {
+            component.fontSize = 14;
+            component.resizeTextMinSize = 10;
+            component.resizeTextForBestFit = true;
+        };
     }
     public static void UpdateAbilities()
     {
@@ -86,7 +98,7 @@ public static class SpellBook
             Image? fill = Utils.FindChild(element.transform, "$image_fill").GetComponent<Image>();
             Text timer = Utils.FindChild(element.transform, "$text_timer").GetComponent<Text>();
 
-            if (AbilityManager.m_cooldownMap.TryGetValue(kvp.Value.m_data.m_key, out float cooldown))
+            if (AbilityManager.m_cooldownMap.TryGetValue(kvp.Value.m_data.m_key, out float ratio))
             {
                 if (kvp.Value.m_data.m_statusEffectHash != 0)
                 {
@@ -99,8 +111,8 @@ public static class SpellBook
                     }
                 }
                 
-                fill.fillAmount = cooldown;
-                timer.text = ((int)((kvp.Value.m_data.m_cooldown?.Value ?? 10f) * cooldown)).ToString(CultureInfo.CurrentCulture);
+                fill.fillAmount = ratio;
+                timer.text = GetCooldownColored((int)(kvp.Value.m_data.GetCooldown(kvp.Value.m_data.GetLevel()) * ratio));
             }
             else
             {
@@ -108,46 +120,41 @@ public static class SpellBook
                 fill.fillAmount = 0f;
                 timer.text = Localization.instance.Localize("$info_ready");
             }
-
-            string keyCode = "";
-            switch (kvp.Key)
-            {
-                case 0:
-                    keyCode = AlmanacClassesPlugin._Spell1.Value.ToString();
-                    break;
-                case 1:
-                    keyCode = AlmanacClassesPlugin._Spell2.Value.ToString();
-                    break;
-                case 2:
-                    keyCode = AlmanacClassesPlugin._Spell3.Value.ToString();
-                    break;
-                case 3:
-                    keyCode = AlmanacClassesPlugin._Spell4.Value.ToString();
-                    break;
-                case 4:
-                    keyCode = AlmanacClassesPlugin._Spell5.Value.ToString();
-                    break;
-                case 5:
-                    keyCode = AlmanacClassesPlugin._Spell6.Value.ToString();
-                    break;
-                case 6:
-                    keyCode = AlmanacClassesPlugin._Spell7.Value.ToString();
-                    break;
-                case 7:
-                    keyCode = AlmanacClassesPlugin._Spell8.Value.ToString();
-                    break;
-            }
-
-            Utils.FindChild(element.transform, "$text_hotkey").GetComponent<Text>().text = keyCode;
+            Utils.FindChild(element.transform, "$text_hotkey").GetComponent<Text>().text = GetKeyCode(kvp.Key);
         }
     }
 
+    private static string GetKeyCode(int index)
+    {
+        return AddAltKey(RemoveAlpha(index switch
+        {
+            0 => AlmanacClassesPlugin._Spell1.Value.ToString(),
+            1 => AlmanacClassesPlugin._Spell2.Value.ToString(),
+            2 => AlmanacClassesPlugin._Spell3.Value.ToString(),
+            3 => AlmanacClassesPlugin._Spell4.Value.ToString(),
+            4 => AlmanacClassesPlugin._Spell5.Value.ToString(),
+            5 => AlmanacClassesPlugin._Spell6.Value.ToString(),
+            6 => AlmanacClassesPlugin._Spell7.Value.ToString(),
+            7 => AlmanacClassesPlugin._Spell8.Value.ToString(),
+            _ => ""
+        }));
+    }
+
+    private static string AddAltKey(string input) => AlmanacClassesPlugin._SpellAlt.Value is KeyCode.None ? input : $"{AlmanacClassesPlugin._SpellAlt.Value} + {input}";
+    private static string RemoveAlpha(string input) => input.Replace("Alpha", string.Empty);
+    private static string GetCooldownColored(int time)
+    {
+        return time switch
+        {
+            > 60 => $"<color=#FF5349>{time}</color>",
+            > 30 => $"<color=#FFAA33>{time}</color>",
+            > 10 => $"<color=#FFAA33>{time}</color>",
+            _ => time.ToString()
+        };
+    }
     public static void DestroyElements()
     {
-        foreach (AbilityData? ability in m_abilities.Values.Where(ability => ability.m_go))
-        {
-            Object.Destroy(ability.m_go);
-        }
+        foreach (AbilityData? ability in m_abilities.Values.Where(ability => ability.m_go)) Object.Destroy(ability.m_go);
     }
     
     [HarmonyPatch(typeof(TextsDialog), nameof(TextsDialog.UpdateTextsList))]
@@ -159,9 +166,8 @@ public static class SpellBook
             StringBuilder stringBuilder = new StringBuilder();
             foreach (AbilityData talent in m_abilities.Values)
             {
-                Talent data = talent.m_data;
-                stringBuilder.Append($"<color=orange>{data.GetName()}</color>\n");
-                stringBuilder.Append(data.GetTooltip());
+                stringBuilder.Append($"<color=orange>{talent.m_data.GetName()}</color>\n");
+                stringBuilder.Append(talent.m_data.GetTooltip());
                 stringBuilder.Append("\n");
             }
             TextsDialog.TextInfo text = new TextsDialog.TextInfo("$title_spell_book", Localization.instance.Localize(stringBuilder.ToString()));

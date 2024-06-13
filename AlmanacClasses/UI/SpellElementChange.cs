@@ -54,7 +54,7 @@ public class SpellElementChange : MonoBehaviour, IPointerEnterHandler
         }
         catch
         {
-            // AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to interact with spell bar element");
+            // ignored
         }
     }
 

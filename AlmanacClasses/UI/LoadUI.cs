@@ -20,6 +20,7 @@ public static class LoadUI
     private static readonly Dictionary<Button, float> ButtonCoreLineAmountMap = new();
     private static readonly Dictionary<Button, Sprite> ButtonOriginalSpriteMap = new();
     private static readonly List<Button> CheckedTalents = new();
+    private static readonly Dictionary<Button, Image> IconBackgrounds = new();
     public static Talent? SelectedTalent;
 
     [Header("Selectables")]
@@ -320,12 +321,11 @@ public static class LoadUI
     public static void UpdateExperienceBarHud()
     {
         if (!IsEXPBarVisible()) return;
-        int experience = PlayerManager.m_tempPlayerData.m_experience;
+        int experience = PlayerManager.GetExperience();
         int level = PlayerManager.GetPlayerLevel(experience);
         int nxtLvlExp = PlayerManager.GetRequiredExperience(level + 1);
-        float percentage = (float)experience / nxtLvlExp;
         ExpHudText.text = $"{experience} / {nxtLvlExp}";
-        ExpHudFillBar.fillAmount = percentage;
+        ExpHudFillBar.fillAmount = (float)experience / nxtLvlExp;
     }
     private static void SetPrestigeButton()
     {
@@ -731,6 +731,7 @@ public static class LoadUI
             RegisterSpriteMap(button);
             AddSFX(button);
         }
+        CacheIconBackgrounds();
     }
 
     private static void AddSFX(Button button) => button.gameObject.AddComponent<ButtonSfx>().m_sfxPrefab = sfx.m_sfxPrefab;
@@ -1021,22 +1022,37 @@ public static class LoadUI
         SetButtonColor(button, new Color(1f, 0.5f, 0f, 1f));
     }
 
+    public static void DeselectTalent()
+    {
+        SelectedTalent = null;
+        SetAllButtonColors(Color.white);
+    }
+
+    private static void CacheIconBackgrounds()
+    {
+        foreach (KeyValuePair<string, Button> kvp in ButtonMap)
+        {
+            Transform background = kvp.Value.gameObject.transform.Find("background");
+            if (!background)
+            {
+                background = kvp.Value.gameObject.transform.Find("Background");
+                if (!background) continue;
+            }
+
+            if (!background.TryGetComponent(out Image component)) continue;
+            IconBackgrounds[kvp.Value] = component;
+        }
+    }
+
     private static void SetButtonColor(Button button, Color color)
     {
-        Transform background = button.gameObject.transform.Find("background");
-        if (!background)
-        {
-            background = button.gameObject.transform.Find("Background");
-            if (!background) return;
-        }
-
-        if (!background.TryGetComponent(out Image component)) return;
+        if (!IconBackgrounds.TryGetValue(button, out Image component)) return;
         component.color = color;
     }
 
     private static void SetAllButtonColors(Color color)
     {
-        foreach (KeyValuePair<string, Button> kvp in ButtonMap) SetButtonColor(kvp.Value, color);
+        foreach (Image component in IconBackgrounds.Values) component.color = color;
     }
 
     private static void ButtonEvent(Button button, Transform checkmark, string name, Dictionary<string, Image> lines, float amount, string key)

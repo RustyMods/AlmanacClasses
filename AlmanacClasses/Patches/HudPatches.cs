@@ -21,8 +21,7 @@ public static class HudPatches
     {
         private static void Postfix(Hud __instance)
         {
-            if (!__instance) return;
-            if (!Player.m_localPlayer) return;
+            if (!__instance || ! Player.m_localPlayer) return;
             if (Player.m_localPlayer.IsTeleporting() || Player.m_localPlayer.IsDead() || Player.m_localPlayer.IsSleeping()) return;
             LoadUI.UpdateExperienceBarHud();
             SpellBook.UpdateAbilities();

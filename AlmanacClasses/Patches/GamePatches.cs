@@ -14,11 +14,8 @@ public static class GamePatches
             CharacteristicManager.OnLogout();
             SpellBook.OnLogout();
             PlayerManager.OnLogout();
-            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Game logout: Clearing temporary player talent data");
-        }
-        private static void Prefix()
-        {
             LoadUI.OnLogout();
+            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Game logout: Clearing temporary player talent data");
         }
     }
 }
