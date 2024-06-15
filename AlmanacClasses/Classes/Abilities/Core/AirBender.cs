@@ -18,7 +18,8 @@ public static class AirBender
             CheckDoubleJump(__instance);
         }
     }
-    public static void CheckDoubleJump(Player instance)
+
+    private static void CheckDoubleJump(Player instance)
     {
         if (!instance) return;
         if (!PlayerManager.m_playerTalents.TryGetValue("AirBender", out Talent talent)) return;
@@ -28,16 +29,15 @@ public static class AirBender
             return;
         }
         
-        if (JumpCount >= ((talent.m_healthCost?.Value ?? 1) * talent.m_level)) return;
         if (!ZInput.GetButtonDown("Jump")) return;
         bool flag = false;
 
-        if (!instance.HaveEitr(talent.m_eitrCost?.Value ?? 0f))
+        if (!instance.HaveEitr(talent.GetEitrCost()))
         {
             Hud.instance.EitrBarEmptyFlash();
             return;
         }
-        instance.UseEitr(talent.m_eitrCost?.Value ?? 0f);
+        instance.UseEitr(talent.GetEitrCost());
         
         if (!instance.HaveStamina(instance.m_jumpStaminaUsage))
         {

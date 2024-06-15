@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using HarmonyLib;
+using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace AlmanacClasses.Classes.Abilities.Rogue;
 
@@ -14,13 +16,26 @@ public class SE_RogueBackstab : StatusEffect
         m_talent = talent;
         base.Setup(character);
     }
+}
 
-    public override void ModifyAttack(Skills.SkillType skill, ref HitData hitData)
+public static class RogueBackstab
+{
+    [HarmonyPatch(typeof(Character), nameof(Character.ApplyDamage))]
+    private static class RogueBackstab_ApplyDamage
     {
-        float chance = m_talent.GetChance(m_talent.GetLevel());
-        int random = Random.Range(0, 101);
-        if (chance < random) return;
-        float bonus = hitData.m_backstabBonus;
-        hitData.ApplyModifier(bonus);
+        private static void Prefix(Character __instance, HitData hit)
+        {
+            if (!Player.m_localPlayer) return;
+            if (!PlayerManager.m_playerTalents.TryGetValue("RogueBackstab", out Talent talent)) return;
+            if (!Player.m_localPlayer.GetSEMan().HaveStatusEffect(talent.m_statusEffectHash)) return;
+            if (!hit.GetAttacker()) return;
+            if (!__instance.m_baseAI || !__instance.m_baseAI.IsAlerted()) return;
+            if (hit.m_backstabBonus <= 1.0) return;
+            if (!__instance.m_baseAI.CanSeeTarget(hit.GetAttacker())) return;
+            int random = Random.Range(0, 101);
+            if (talent.GetChance(talent.GetLevel()) < random) return;
+            hit.ApplyModifier(hit.m_backstabBonus);
+            __instance.m_backstabHitEffects.Create(hit.m_point, Quaternion.identity, __instance.transform);
+        }
     }
 }

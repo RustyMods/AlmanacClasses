@@ -80,6 +80,7 @@ public class TalentBook : MonoBehaviour, Interactable, Hoverable
 
     public static void HideUI()
     {
+        if (!LoadUI.SkillTree_UI) return;
         LoadUI.SkillTree_UI.SetActive(false);
         Player.m_localPlayer.m_zanim.SetInt("crafting", 0);
         SpellElementChange.DestroyElement();

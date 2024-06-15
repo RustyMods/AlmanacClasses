@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using AlmanacClasses.Classes;
 using AlmanacClasses.Classes.Abilities.Ranger;
 using AlmanacClasses.UI;
@@ -68,7 +69,7 @@ public static class CommandsManager
             return true;
         }),optionsFetcher:()=>new(){"help","experience"});
     
-        Terminal.ConsoleCommand AdminCommands = new("talents_test", "Almanac Class System Admin only commands",
+        Terminal.ConsoleCommand TestCommands = new("talents_test", "Almanac Class System Admin only commands",
             (Terminal.ConsoleEventFailable)(args =>
             {
                 if (args.Length < 2) return false;
@@ -79,7 +80,7 @@ public static class CommandsManager
                         {
                             "spawn [prefab] [level]: Spawns a friendly creature, no cost must be enabled",
                             "experience [amount]: Increases experience, no cost must be enabled",
-                            "emote [name]: runs custom emote, if command emote list, it prints available emotes"
+                            "emote [name]: runs custom emote, if command emote list, it prints available emotes",
                         };
                         foreach (string text in info)
                         {
@@ -132,5 +133,27 @@ public static class CommandsManager
             {
                 "help", "spawn", "emote", "experience"
             }, isSecret: true, onlyAdmin: true);
+
+        Terminal.ConsoleCommand GiveExperience = new Terminal.ConsoleCommand("almanac_give_experience",
+            "Give player experience, Admin only, No Cost must be enabled", (Terminal.ConsoleEventFailable)(
+                args =>
+                {
+                    if (!Player.m_localPlayer.NoCostCheat())
+                    {
+                        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "No cost must be enabled");
+                        return false;
+                    }
+                    if (args.Length < 3) return false;
+                    Player? player = Player.GetAllPlayers().FirstOrDefault(play => play.GetHoverName() == args[1]);
+                    if (player == null)
+                    {
+                        AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo("Failed to find player matching name: " + args[1]);
+                        return false;
+                    }
+                    if (!int.TryParse(args[2], out int amount)) return false;
+                    ExperienceManager.Command_GiveExperience(player, amount);
+                    AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo("Gave " + player.GetHoverName() + " " + amount + " experience");
+                    return true;
+                }), onlyAdmin:true, isSecret: true, optionsFetcher: () => Player.GetAllPlayers().Select(player => player.GetHoverName()).ToList());
     }
 }

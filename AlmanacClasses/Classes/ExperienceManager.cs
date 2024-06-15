@@ -222,6 +222,12 @@ public static class ExperienceManager
         }
     }
 
+    public static void Command_GiveExperience(Player player, int amount)
+    {
+        if (!player.m_nview.IsValid()) return;
+        player.m_nview.InvokeRPC(nameof(RPC_AddExperience), amount);
+    }
+
     public static void RPC_AddExperience(long sender, int experience)
     {
         PlayerManager.m_tempPlayerData.m_experience += experience;

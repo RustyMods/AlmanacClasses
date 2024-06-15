@@ -105,7 +105,6 @@ public static class PlayerManager
             if (talent.Value.m_type is not TalentType.Passive) continue;
             if (talent.Value.m_statusEffectHash == 0) continue;
             if (!talent.Value.m_passiveActive) continue;
-            // if (talent.Key == "Survivor") continue;
             instance.GetSEMan().AddStatusEffect(talent.Value.m_statusEffectHash);
         }
 

@@ -150,32 +150,28 @@ public class Talent
                 return null;
         }
     }
-    // public GameObject? GetCreature()
-    // {
-    //     ZNetScene scene = ZNetScene.instance;
-    //     if (!scene) return null;
-    //     return scene.GetPrefab(m_creature?.Value ?? "Ghost") ?? scene.GetPrefab("Ghost");
-    // }
     public GameObject? GetCreaturesByLevel(int level)
     {
         if (m_creaturesByLevel == null) return null;
         ZNetScene scene = ZNetScene.instance;
         if (!scene) return null;
+        bool defeatedBonemass = ZoneSystem.instance.CheckKey("defeated_bonemass");
+        bool defeatedKing = ZoneSystem.instance.CheckKey("defeated_goblinking");
+        bool defeatedQueen = ZoneSystem.instance.CheckKey("defeated_queen");
         return level switch
         {
-            1 => scene.GetPrefab(m_creaturesByLevel.m_oneToThree?.Value ?? "Ghost"),
-            2 => scene.GetPrefab(m_creaturesByLevel.m_oneToThree?.Value ?? "Ghost"),
-            3 => scene.GetPrefab(m_creaturesByLevel.m_oneToThree?.Value ?? "Ghost"),
-            4 => scene.GetPrefab(m_creaturesByLevel.m_fourToSix?.Value ?? "Wraith"),
-            5 => scene.GetPrefab(m_creaturesByLevel.m_fourToSix?.Value ?? "Wraith"),
-            6 => scene.GetPrefab(m_creaturesByLevel.m_fourToSix?.Value ?? "Wraith"),
-            7 => scene.GetPrefab(m_creaturesByLevel.m_sevenToNine?.Value ?? "BlobTar"),
-            8 => scene.GetPrefab(m_creaturesByLevel.m_sevenToNine?.Value ?? "BlobTar"),
-            9 => scene.GetPrefab(m_creaturesByLevel.m_sevenToNine?.Value ?? "BlobTar"),
-            >= 10 => scene.GetPrefab(m_creaturesByLevel.m_ten?.Value ?? "FallenValkyrie"),
-            _ => scene.GetPrefab("Ghost")
+            4 => defeatedBonemass ? scene.GetPrefab(m_creaturesByLevel.m_fourToSix?.Value ?? "Wraith") : scene.GetPrefab(m_creaturesByLevel.m_oneToThree?.Value ?? "Ghost"),
+            5 => defeatedBonemass ? scene.GetPrefab(m_creaturesByLevel.m_fourToSix?.Value ?? "Wraith") : scene.GetPrefab(m_creaturesByLevel.m_oneToThree?.Value ?? "Ghost"),
+            6 => defeatedBonemass ? scene.GetPrefab(m_creaturesByLevel.m_fourToSix?.Value ?? "Wraith") : scene.GetPrefab(m_creaturesByLevel.m_oneToThree?.Value ?? "Ghost"),
+            7 => defeatedKing ? scene.GetPrefab(m_creaturesByLevel.m_sevenToNine?.Value ?? "BlobTar") : defeatedBonemass ? scene.GetPrefab(m_creaturesByLevel.m_fourToSix?.Value ?? "Wraith") : scene.GetPrefab(m_creaturesByLevel.m_oneToThree?.Value ?? "Ghost"),
+            8 => defeatedKing ? scene.GetPrefab(m_creaturesByLevel.m_sevenToNine?.Value ?? "BlobTar") : defeatedBonemass ? scene.GetPrefab(m_creaturesByLevel.m_fourToSix?.Value ?? "Wraith") : scene.GetPrefab(m_creaturesByLevel.m_oneToThree?.Value ?? "Ghost"),
+            9 => defeatedKing ? scene.GetPrefab(m_creaturesByLevel.m_sevenToNine?.Value ?? "BlobTar") : defeatedBonemass ? scene.GetPrefab(m_creaturesByLevel.m_fourToSix?.Value ?? "Wraith") : scene.GetPrefab(m_creaturesByLevel.m_oneToThree?.Value ?? "Ghost"),
+            >= 10 => defeatedQueen ? scene.GetPrefab(m_creaturesByLevel.m_ten?.Value ?? "FallenValkyrie") : defeatedKing ? scene.GetPrefab(m_creaturesByLevel.m_sevenToNine?.Value ?? "BlobTar") : defeatedBonemass ? scene.GetPrefab(m_creaturesByLevel.m_fourToSix?.Value ?? "Wraith") : scene.GetPrefab(m_creaturesByLevel.m_oneToThree?.Value ?? "Ghost"),
+            _ => scene.GetPrefab(m_creaturesByLevel.m_oneToThree?.Value ?? "Ghost")
         };
     }
+
+    private string GetCreatureName(GameObject? prefab) => prefab != null ? prefab.TryGetComponent(out Humanoid component) ? component.m_name : "Unknown" : "Invalid";
 
     public TalentCharacteristics? m_characteristic;
     public Characteristic GetCharacteristicType() => m_characteristic?.m_type ?? Characteristic.None;
@@ -337,11 +333,30 @@ public class Talent
 
             if (m_creaturesByLevel != null)
             {
-                stringBuilder.Append(
-                    $"$almanac_creature: <color=yellow>x{GetCreatureByLevelLevel(GetLevel())}</color> <color=orange>{GetCreaturesByLevel(GetLevel())?.name ?? ""}</color> $text_level {GetCreatureByLevelLevel(GetLevel())}\n");
+                if (ZNetScene.instance)
+                {
+                    stringBuilder.AppendFormat(
+                        "$almanac_creature: <color=yellow>x{0}</color> <color=orange>{1}</color> $text_level {0}\n",
+                        GetCreatureByLevelLevel(GetLevel()), 
+                        GetCreatureName(GetCreaturesByLevel(GetLevel())));
+                    stringBuilder.AppendFormat(
+                        "$text_lvl 1-3: <color=orange>{0}</color>\n", 
+                        GetCreatureName(GetCreaturesByLevel(3)));
+                    stringBuilder.AppendFormat(
+                        "$text_lvl 4-6: <color=orange>{0}</color> $info_required: $info_defeated {1}\n",
+                        GetCreatureName(ZNetScene.instance.GetPrefab(m_creaturesByLevel.m_fourToSix?.Value ?? "")), GetCreatureName(ZNetScene.instance.GetPrefab("Bonemass")));
+                    stringBuilder.AppendFormat(
+                        "$text_lvl 6-9: <color=orange>{0}</color> $info_required: $info_defeated {1}\n",
+                        GetCreatureName(ZNetScene.instance.GetPrefab(m_creaturesByLevel.m_sevenToNine?.Value ?? "")), 
+                        GetCreatureName(ZNetScene.instance.GetPrefab("GoblinKing")));
+                    stringBuilder.AppendFormat(
+                        "$text_lvl 10+: <color=orange>{0}</color> $info_required: $info_defeated {1}",
+                        GetCreatureName(ZNetScene.instance.GetPrefab(m_creaturesByLevel.m_ten?.Value ?? "")),
+                        GetCreatureName(ZNetScene.instance.GetPrefab("SeekerQueen")));
+                }
             }
             if (m_creatures != null)
-                stringBuilder.Append($"{GetBiomeLocalized(GetCurrentBiome())} $almanac_creature: <color=orange>{GetCreaturesConfig()?.Value ?? ""}</color> $text_lvl {GetLevel()} \n ({GetCreaturesLength(GetLevel())}$text_sec)\n");
+                stringBuilder.Append($"{GetBiomeLocalized(GetCurrentBiome())} $almanac_creature: <color=orange>{GetCreatureName(GetCreatures(GetCurrentBiome()))}</color> $text_lvl {GetLevel()} \n ({GetCreaturesLength(GetLevel())}$text_sec)\n");
             if (m_key == "Trader")
                 stringBuilder.Append($"$almanac_allows_to_tp <color=orange>{GetLevel()}</color>\n");
             if (m_key == "AirBender")

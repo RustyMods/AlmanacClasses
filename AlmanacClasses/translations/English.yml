@@ -68,6 +68,8 @@ info_move_xp_bar: "Move experience bar"
 info_open_book: "Open Book"
 info_hover: "Hover talents for info"
 info_ready: "Ready"
+info_required: "Required"
+info_defeated: "Killed"
 
 info_reset_talents: "Reset Talents"
 info_spellbook_key: "Alt Spell Book Key"

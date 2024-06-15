@@ -105,13 +105,14 @@ public static class StatusEffectManager
         SE_RogueBleed RogueBleed = ScriptableObject.CreateInstance<SE_RogueBleed>();
         RogueBleed.name = "SE_RogueBleed";
         SE_RogueBackstab RogueBackstab = ScriptableObject.CreateInstance<SE_RogueBackstab>();
-        RogueBackstab.name = "SE_Backstab";
+        RogueBackstab.name = "SE_RogueBackstab";
         SE_RogueReflect RogueReflect = ScriptableObject.CreateInstance<SE_RogueReflect>();
         RogueReflect.name = "SE_RogueReflect";
         SE_RogueSpeed RogueSpeed = ScriptableObject.CreateInstance<SE_RogueSpeed>();
         RogueSpeed.name = "SE_RogueSpeed";
         SE_RogueStamina RogueStamina = ScriptableObject.CreateInstance<SE_RogueStamina>();
         RogueStamina.name = "SE_RogueStamina";
+
 
         return new() { Bleed, RogueBleed, RogueBackstab, RogueBackstab, RogueReflect, RogueSpeed, RogueStamina};
     }
