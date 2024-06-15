@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AlmanacClasses.Classes.Abilities.Warrior;
 using AlmanacClasses.LoadAssets;
 using AlmanacClasses.Managers;
 using AlmanacClasses.UI;
@@ -103,7 +104,8 @@ public static class PlayerManager
         {
             if (talent.Value.m_type is not TalentType.Passive) continue;
             if (talent.Value.m_statusEffectHash == 0) continue;
-            if (talent.Key == "Survivor") continue;
+            if (!talent.Value.m_passiveActive) continue;
+            // if (talent.Key == "Survivor") continue;
             instance.GetSEMan().AddStatusEffect(talent.Value.m_statusEffectHash);
         }
 
@@ -250,7 +252,7 @@ public static class PlayerManager
         {
             if (__instance != Player.m_localPlayer) return;
             InitPlayerTalents();
-            if (m_playerTalents.ContainsKey("MonkeyWrench")) LoadTwoHanded.ModifyTwoHandedWeapons();
+            if (m_playerTalents.ContainsKey("MonkeyWrench")) MonkeyWrench.ModifyTwoHandedWeapons();
             LoadUI.SetHUDVisibility(AlmanacClassesPlugin._HudVisible.Value is AlmanacClassesPlugin.Toggle.On);
         } 
     }

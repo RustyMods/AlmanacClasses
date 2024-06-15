@@ -1288,16 +1288,17 @@ class RegisterClientRPCPatch
 {
     private static void Postfix(ZNet __instance, ZNetPeer peer)
     {
+        if (BuildPiece._plugin == null) return;
         if (!__instance.IsServer())
         {
-            peer.m_rpc.Register<ZPackage>(BuildPiece._plugin?.Info.Metadata.Name + " PMAdminStatusSync", RPC_InitialAdminSync);
+            peer.m_rpc.Register<ZPackage>(BuildPiece._plugin.Info.Metadata.Name + " PMAdminStatusSync", RPC_InitialAdminSync);
         }
         else
         {
-            ZPackage packge = new();
-            packge.Write(__instance.ListContainsId(__instance.m_adminList, peer.m_rpc.GetSocket().GetHostName()));
+            ZPackage package = new();
+            package.Write(__instance.ListContainsId(__instance.m_adminList, peer.m_rpc.GetSocket().GetHostName()));
 
-            peer.m_rpc.Invoke(BuildPiece._plugin?.Info.Metadata.Name + " PMAdminStatusSync", packge);
+            peer.m_rpc.Invoke(BuildPiece._plugin.Info.Metadata.Name + " PMAdminStatusSync", package);
         }
     }
 

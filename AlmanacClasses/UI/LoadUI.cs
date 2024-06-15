@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AlmanacClasses.Classes;
 using AlmanacClasses.Classes.Abilities;
+using AlmanacClasses.Classes.Abilities.Warrior;
 using AlmanacClasses.LoadAssets;
 using AlmanacClasses.Managers;
 using BepInEx.Configuration;
@@ -696,7 +697,7 @@ public static class LoadUI
     }
     public static void ResetTalents(bool command = false)
     {
-        LoadTwoHanded.ResetTwoHandedWeapons();
+        MonkeyWrench.ResetTwoHandedWeapons();
         SpellBook.DestroyElements();
         SpellBook.m_abilities.Clear();
         RemoveStatusEffects();
@@ -1154,7 +1155,7 @@ public static class LoadUI
     private static void CheckMonkeyWrench(Talent ability)
     {
         if (ability.m_key != "MonkeyWrench") return;
-        LoadTwoHanded.ModifyTwoHandedWeapons();
+        MonkeyWrench.ModifyTwoHandedWeapons();
         Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_two_handed");
     }
 

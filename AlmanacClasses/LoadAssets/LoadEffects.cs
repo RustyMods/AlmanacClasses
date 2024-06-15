@@ -436,6 +436,7 @@ public static class LoadedAssets
     public static EffectList AddBardFX(Color color, string name, bool AddMagicRunes = false)
     {
         EffectList output = new();
+        if (!ZNetScene.instance) return output;
         List<EffectList.EffectData> effects = new();
         
         if (!VFX_BardNotes) return output;

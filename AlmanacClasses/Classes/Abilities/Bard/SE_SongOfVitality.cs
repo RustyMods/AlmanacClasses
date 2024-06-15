@@ -8,12 +8,11 @@ public class SE_SongOfVitality : StatusEffect
 {
     private readonly string m_key = "SongOfVitality";
     private Talent m_talent = null!;
+    private readonly List<Player> m_players = new();
     public float m_modifier;
-    
     private float m_searchTimer;
     private float m_boostTimer;
-
-    private readonly List<Player> m_players = new();
+    private GameObject[]? m_customEffects;
 
     public override void Setup(Character character)
     {
@@ -23,7 +22,7 @@ public class SE_SongOfVitality : StatusEffect
         m_talent = talent;
         base.Setup(character);
         Transform transform = m_character.transform;
-        LoadedAssets.SFX_Dverger_Shot.Create(transform.position, transform.rotation, transform);
+        m_customEffects = LoadedAssets.SFX_Dverger_Shot.Create(transform.position, transform.rotation, transform);
     }
 
     public override void UpdateStatusEffect(float dt)
@@ -32,6 +31,21 @@ public class SE_SongOfVitality : StatusEffect
         FindPlayers(dt);
         BoostPlayers(dt);
     }
+    
+    public override void Stop()
+    {
+        base.Stop();
+        if (m_customEffects == null || ZNetScene.instance == null) return;
+        foreach (GameObject instance in m_customEffects)
+        {
+            if (instance == null) continue;
+            if (!instance.TryGetComponent(out ZNetView component)) continue;
+            if (!component.IsValid()) continue;
+            component.ClaimOwnership();
+            component.Destroy();
+        }
+    }
+
 
     private void FindPlayers(float dt)
     {
@@ -50,6 +64,7 @@ public class SE_SongOfVitality : StatusEffect
 
         foreach (Player player in m_players)
         {
+            if (player == null || player.IsDead()) continue;
             if (player.GetSEMan().HaveStatusEffect(name.GetStableHashCode())) continue;
             StatusEffect effect = player.GetSEMan().AddStatusEffect(name.GetStableHashCode());
             if (effect is SE_SongOfVitality song)

@@ -1,4 +1,5 @@
 ﻿using AlmanacClasses.Classes;
+using AlmanacClasses.Classes.Abilities.Warrior;
 using AlmanacClasses.LoadAssets;
 using AlmanacClasses.Managers;
 using HarmonyLib;
@@ -15,7 +16,7 @@ public static class ObjectDBPatches
             SpriteManager.LoadSpriteResources();
             LoadedAssets.InitVFX();
             RavenTutorialManager.InitCustomTutorials();
-            LoadTwoHanded.InitTwoHandedWeapons();
+            MonkeyWrench.InitTwoHandedWeapons();
             StatusEffectManager.InitStatusEffects(__instance);
             ExperienceManager.LoadExperienceOrbs();
             TalentManager.InitializeTalents();

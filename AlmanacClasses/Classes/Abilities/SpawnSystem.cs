@@ -12,7 +12,7 @@ public static class SpawnSystem
     private static readonly List<Humanoid> SpawnedCreatures = new();
     public static readonly int FriendlyKey = "FriendlyKey".GetStableHashCode();
 
-    public static IEnumerator DelayedMultipleSpawn(GameObject creature, string name, int level, float delay)
+    public static IEnumerator DelayedMultipleSpawn(GameObject creature, string name, int level, float delay, int max)
     {
         yield return new WaitForSeconds(0.5f);
         foreach (Humanoid? humanoid in SpawnedCreatures)
@@ -21,11 +21,10 @@ public static class SpawnSystem
         }
         SpawnedCreatures.Clear();
         Vector3 location = Player.m_localPlayer.GetLookDir() * 5f + Player.m_localPlayer.transform.position;
-        int max = 3;
         int count = 0;
         while (count < max)
         {
-            var random = Random.insideUnitSphere * 5f;
+            var random = Random.insideUnitSphere * 10f;
             Vector3 pos = location + new Vector3(random.x, 10f, random.z);
             ZoneSystem.instance.GetSolidHeight(pos, out float height, 1000);
             if (height >= 0.0 && Mathf.Abs(height - pos.y) <= 2f && Vector3.Distance(location, Player.m_localPlayer.transform.position) >= 2f)
@@ -43,7 +42,7 @@ public static class SpawnSystem
             ++count;
         }
 
-        yield return new WaitForSeconds(delay * level);
+        yield return new WaitForSeconds(delay);
         foreach (Humanoid? humanoid in SpawnedCreatures)
         {
             humanoid.SetHealth(0);

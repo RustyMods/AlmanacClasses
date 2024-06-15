@@ -8,10 +8,11 @@ public class SE_SongOfHealing : StatusEffect
 {
     private readonly string m_key = "SongOfHealing";
     private Talent m_talent = null!;
-    private float m_healTimer;
-
     private readonly List<Player> m_players = new();
+    private float m_healTimer;
     private float m_searchTimer;
+    private GameObject[]? m_customEffects;
+
     public override void Setup(Character character)
     {
         if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
@@ -21,7 +22,7 @@ public class SE_SongOfHealing : StatusEffect
         base.Setup(character);
         Player.GetPlayersInRange(m_character.transform.position, 10f, m_players);
         Transform transform = m_character.transform;
-        LoadedAssets.SFX_Dverger_Shot.Create(transform.position, transform.rotation, transform);
+        m_customEffects = LoadedAssets.SFX_Dverger_Shot.Create(transform.position, transform.rotation, transform);
     }
 
     public override void UpdateStatusEffect(float dt)
@@ -30,6 +31,21 @@ public class SE_SongOfHealing : StatusEffect
         HealPlayers(dt);
         FindPlayers(dt);
     }
+    
+    public override void Stop()
+    {
+        base.Stop();
+        if (m_customEffects == null || ZNetScene.instance == null) return;
+        foreach (GameObject instance in m_customEffects)
+        {
+            if (instance == null) continue;
+            if (!instance.TryGetComponent(out ZNetView component)) continue;
+            if (!component.IsValid()) continue;
+            component.ClaimOwnership();
+            component.Destroy();
+        }
+    }
+
     
     private void FindPlayers(float dt)
     {
@@ -49,6 +65,7 @@ public class SE_SongOfHealing : StatusEffect
         
         foreach (Player? player in m_players)
         {
+            if (player == null || player.IsDead()) continue;
             player.Heal(m_talent.GetHealAmount(m_talent.GetLevel()));
             if (!m_talent.UseEffects()) continue;
             Transform transform = player.transform;

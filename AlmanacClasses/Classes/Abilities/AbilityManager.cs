@@ -96,19 +96,21 @@ public static class AbilityManager
     }
     private static void CastTalent(Talent ability)
     {
-        if (m_castedSpells.Contains(ability.m_key))
-        {
-            if (!m_cooldownMap.TryGetValue(ability.m_key, out float cooldown)) return;
-            Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"{ability.m_key} $msg_casted, $msg_wait {(int)(cooldown * (ability.m_cooldown?.Value ?? 10f))} $msg_seconds");
-            return;
-        }
+        if (!CheckCooldown(ability)) return;
         if (!CheckCost(ability)) return;
-
-        bool se = CheckStatusEffect(ability);
-        bool action = CheckAbilityName(ability);
-        if (!se && !action) return;
-        AnimationManager.DoAnimation(ability.m_animation);
+        if (!CheckStatusEffect(ability) && !CheckAbilityName(ability)) return;
+        UseCost(ability.GetHealthCost(), ability.GetStaminaCost(), ability.GetEitrCost());
+        AnimationManager.DoAnimation(ability.GetAnimation());
         AlmanacClassesPlugin._Plugin.StartCoroutine(CoolDown(ability));
+    }
+
+    private static bool CheckCooldown(Talent ability)
+    {
+        if (!m_castedSpells.Contains(ability.m_key)) return true;
+        if (!m_cooldownMap.TryGetValue(ability.m_key, out float cooldown)) return true;
+        Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"{ability.m_key} $msg_casted, $msg_wait {(int)(cooldown * (ability.m_cooldown?.Value ?? 10f))} $msg_seconds");
+        return false;
+
     }
     private static IEnumerator CoolDown(Talent ability)
     {
@@ -161,7 +163,7 @@ public static class AbilityManager
                 RangerSpawn.TriggerHunterSpawn(rangerCreature, talent);
                 break;
             case "TriggerShamanSpawn":
-                GameObject? creature = talent.GetCreature();
+                GameObject? creature = ZNetScene.instance.GetPrefab("Ghost");
                 if (creature == null) break;
                 ShamanSpawn.TriggerShamanSpawn(creature, talent);
                 break;
@@ -178,41 +180,39 @@ public static class AbilityManager
         return true;
     }
     private static bool CheckCost(Talent talent) => CheckEitrCost(talent) && CheckStaminaCost(talent) && CheckHealthCost(talent);
+
+    private static void UseCost(float healthCost, float staminaCost, float eitrCost)
+    {
+        if (healthCost > 0f) Player.m_localPlayer.UseHealth(healthCost);
+        if (staminaCost > 0f) Player.m_localPlayer.UseStamina(staminaCost);
+        if (eitrCost > 0f) Player.m_localPlayer.UseEitr(eitrCost);
+    }
     private static bool CheckHealthCost(Talent talent)
     {
         float cost = talent.GetHealthCost();
-        if (!Player.m_localPlayer.HaveHealth(cost))
-        {
-            Hud.instance.FlashHealthBar();
-            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_hp_required");
-            return false;
-        }
-        Player.m_localPlayer.UseHealth(cost);
-        return true;
+        if (cost == 0f) return true;
+        if (Player.m_localPlayer.HaveHealth(cost)) return true;
+        Hud.instance.FlashHealthBar();
+        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_hp_required");
+        return false;
     }
     private static bool CheckStaminaCost(Talent talent)
     {
         float cost = talent.GetStaminaCost();
-        if (!Player.m_localPlayer.HaveStamina(cost))
-        {
-            Hud.instance.StaminaBarEmptyFlash();
-            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_stamina_required");
-            return false;
-        }
-        Player.m_localPlayer.UseStamina(cost);
-        return true;
+        if (cost == 0f) return true;
+        if (Player.m_localPlayer.HaveStamina(cost)) return true;
+        Hud.instance.StaminaBarEmptyFlash();
+        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_stamina_required");
+        return false;
     }
     private static bool CheckEitrCost(Talent talent)
     {
         float cost = talent.GetEitrCost();
-        if (!Player.m_localPlayer.HaveEitr(cost))
-        {
-            Hud.instance.EitrBarEmptyFlash();
-            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$hud_eitrrequired");
-            return false;
-        }
-        Player.m_localPlayer.UseEitr(cost);
-        return true;
+        if (cost == 0f) return true;
+        if (Player.m_localPlayer.HaveEitr(cost)) return true;
+        Hud.instance.EitrBarEmptyFlash();
+        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$hud_eitrrequired");
+        return false;
     }
     
     [HarmonyPatch(typeof(Player), nameof(Player.UseHotbarItem))]

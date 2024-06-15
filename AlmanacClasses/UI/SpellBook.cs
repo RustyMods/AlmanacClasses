@@ -184,6 +184,7 @@ public static class SpellBook
             {
                 if (kvp.Value.m_type is not TalentType.Passive) continue;
                 Talent data = kvp.Value;
+                if (!data.m_passiveActive) continue;
                 stringBuilder.Append($"<color=orange>{data.GetName()}</color>\n");
                 stringBuilder.Append(data.GetTooltip());
                 stringBuilder.Append("\n");

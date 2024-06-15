@@ -30,10 +30,11 @@ public static class BattleFury
         float chance = talent.GetChance(talent.GetLevel());
         float random = Random.Range(0, 101);
         if (random > chance) return;
-        Player.m_localPlayer.AddStamina(random);
+        var amount = talent.GetStamina(talent.GetLevel());
+        Player.m_localPlayer.AddStamina(amount);
         
         Transform transform = Player.m_localPlayer.transform;
-        DamageText.instance.ShowText(DamageText.TextType.Heal, Player.m_localPlayer.GetTopPoint(), random,  true);
+        DamageText.instance.ShowText(DamageText.TextType.Heal, Player.m_localPlayer.GetTopPoint(), amount,  true);
         talent.GetEffectList().Create(transform.position, transform.rotation, transform);
     }
 }

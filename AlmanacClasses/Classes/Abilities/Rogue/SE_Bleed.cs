@@ -64,8 +64,8 @@ public static class BleedTrigger
             TriggerBleeding(__instance);
         }
     }
-    
-    public static void TriggerBleeding(Character __instance)
+
+    private static void TriggerBleeding(Character __instance)
     {
         if (__instance.GetSEMan().HaveStatusEffect("SE_Bleed".GetStableHashCode()))
         {

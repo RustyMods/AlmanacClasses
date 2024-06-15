@@ -363,21 +363,28 @@ public static class ExperienceManager
         }
     }
     
-    [HarmonyWrapSafe]
-    [HarmonyPatch(typeof(Character), nameof(Character.GetHoverName))]
-    private static class Character_GetHoverName_Patch
+    [HarmonyPatch(typeof(EnemyHud), nameof(EnemyHud.UpdateHuds))]
+    private static class AddExperience_HUD
     {
-        private static void Postfix(Character __instance, ref string __result)
+        private static void Postfix(EnemyHud __instance)
         {
-            if (!__instance || __result.IsNullOrWhiteSpace()) return;
-            if (__instance.IsBoss() || __instance.IsPlayer()) return;
-            if (__instance.name.IsNullOrWhiteSpace()) return;
             if (AlmanacClassesPlugin._DisplayExperience.Value is AlmanacClassesPlugin.Toggle.Off) return;
-            if (!__instance.m_nview) return;
-            if (!__instance.m_nview.IsValid()) return;
-            if (__instance.m_nview.GetZDO().GetBool(Abilities.SpawnSystem.FriendlyKey)) return;
-            int exp = GetExperienceAmount(__instance);
-            __result += $" [<color=orange>{exp}</color>]";
+            foreach (var kvp in __instance.m_huds)
+            {
+                if (kvp.Key == null) continue;
+                if (kvp.Value.m_gui == null) continue;
+                if (kvp.Key.IsBoss() || kvp.Key.IsPlayer()) continue;
+                if (IsFriendlyCreature(kvp.Key)) continue;
+                int exp = GetExperienceAmount(kvp.Key);
+                kvp.Value.m_name.text += $" [<color=orange>{exp}</color>]";
+            }
         }
+    }
+
+    private static bool IsFriendlyCreature(Character character)
+    {
+        if (!character.m_nview) return false;
+        if (!character.m_nview.IsValid()) return false;
+        return character.m_nview.GetZDO() != null && character.m_nview.GetZDO().GetBool(Abilities.SpawnSystem.FriendlyKey);
     }
 }

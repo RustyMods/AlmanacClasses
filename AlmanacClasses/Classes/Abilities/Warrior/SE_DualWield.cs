@@ -1,4 +1,6 @@
-﻿using HarmonyLib;
+﻿using AlmanacClasses.LoadAssets;
+using AlmanacClasses.Managers;
+using HarmonyLib;
 
 namespace AlmanacClasses.Classes.Abilities.Warrior;
 
@@ -11,6 +13,9 @@ public class SE_DualWield : StatusEffect
         if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
         m_startEffects = talent.GetEffectList();
         m_talent = talent;
+        m_name = talent.GetName();
+        m_tooltip = talent.GetTooltip();
+        // m_icon = SpriteManager.WarriorIcon;
         base.Setup(character);
     }
 
@@ -48,7 +53,6 @@ public static class DualWield
 
         bool hasKnife = right.m_shared.m_skillType is Skills.SkillType.Knives || left.m_shared.m_skillType is Skills.SkillType.Knives;
         bool hasAxes = right.m_shared.m_skillType is Skills.SkillType.Axes || left.m_shared.m_skillType is Skills.SkillType.Axes;
-        // instance.m_attackAnimation = normalAttack.EndsWith("_secondary") ? "dual_knives_secondary" : "dual_knives";
         instance.m_attackAnimation = normalAttack.EndsWith("_secondary") ? hasAxes ? "dualaxes_secondary" : "dual_knives_secondary" : hasKnife ? "dual_knives" : "dualaxes";
         instance.m_attackChainLevels = normalAttack.EndsWith("_secondary") ? 1 : 4;
     }
@@ -59,10 +63,27 @@ public static class DualWield
         private static bool Prefix(Humanoid __instance, ItemDrop.ItemData item, bool triggerEquipEffects, ref bool __result)
         {
             if (!__instance.IsPlayer()) return true;
-            if (__instance.GetRightItem() == null) return true;
-            if (item.m_shared.m_name == "$item_spear_chitin") return true;
-            if (item.m_shared.m_itemType != ItemDrop.ItemData.ItemType.OneHandedWeapon) return true;
+            if (__instance != Player.m_localPlayer) return true;
             if (!PlayerManager.m_playerTalents.TryGetValue("DualWield", out Talent talent)) return true;
+            if (__instance.GetRightItem() == null) return true;
+            if (__instance.GetRightItem().m_shared.m_itemType is not ItemDrop.ItemData.ItemType.OneHandedWeapon) return true;
+            if (item.m_shared.m_name == "$item_spear_chitin") return true;
+            if (MonkeyWrench.IsDualItem(item.m_shared.m_name)) return true;
+            if (item.m_shared.m_itemType != ItemDrop.ItemData.ItemType.OneHandedWeapon) return true;
+
+            if (item.m_shared.m_dlc.Length > 0 && !DLCMan.instance.IsDLCInstalled(item.m_shared.m_dlc))
+            {
+                __instance.Message(MessageHud.MessageType.Center, "$msg_dlcrequired");
+                return false;
+            }
+
+            if (Game.m_worldLevel > 0 && item.m_worldLevel < Game.m_worldLevel &&
+                item.m_shared.m_itemType == ItemDrop.ItemData.ItemType.Utility)
+            {
+                __instance.Message(MessageHud.MessageType.Center, "$msg_ng_item_too_low");
+                return false;
+            }
+            
             if (__instance.GetLeftItem() != null)
             {
                 __instance.UnequipItem(__instance.GetLeftItem(), false);
@@ -76,30 +97,8 @@ public static class DualWield
             rightItem = __instance.GetRightItem();
             leftItem = item;
 
-            rightItem.m_shared.m_attack.m_attackStamina += leftItem.m_shared.m_attack.m_attackStamina;
-            rightItem.m_shared.m_attack.m_attackEitr += leftItem.m_shared.m_attack.m_attackEitr;
-            rightItem.m_shared.m_attack.m_attackHealth += leftItem.m_shared.m_attack.m_attackHealth;
-            rightItem.m_shared.m_attack.m_attackHealthPercentage += leftItem.m_shared.m_attack.m_attackHealthPercentage;
-
-            rightItem.m_shared.m_secondaryAttack.m_attackStamina += leftItem.m_shared.m_secondaryAttack.m_attackStamina;
-            rightItem.m_shared.m_secondaryAttack.m_attackEitr += leftItem.m_shared.m_secondaryAttack.m_attackEitr;
-            rightItem.m_shared.m_secondaryAttack.m_attackHealth += leftItem.m_shared.m_secondaryAttack.m_attackHealth;
-            rightItem.m_shared.m_secondaryAttack.m_attackHealthPercentage += leftItem.m_shared.m_secondaryAttack.m_attackHealthPercentage;
-                
-            rightItem.m_shared.m_damages.m_blunt += leftItem.m_shared.m_damages.m_blunt / 2;
-            rightItem.m_shared.m_damages.m_slash += leftItem.m_shared.m_damages.m_slash / 2;
-            rightItem.m_shared.m_damages.m_pierce += leftItem.m_shared.m_damages.m_pierce / 2;
-            rightItem.m_shared.m_damages.m_chop += leftItem.m_shared.m_damages.m_chop;
-            rightItem.m_shared.m_damages.m_pickaxe += leftItem.m_shared.m_damages.m_pickaxe;
-            rightItem.m_shared.m_damages.m_fire += leftItem.m_shared.m_damages.m_fire / 2;
-            rightItem.m_shared.m_damages.m_frost += leftItem.m_shared.m_damages.m_frost / 2;
-            rightItem.m_shared.m_damages.m_lightning += leftItem.m_shared.m_damages.m_lightning / 2;
-            rightItem.m_shared.m_damages.m_poison += leftItem.m_shared.m_damages.m_poison / 2;
-            rightItem.m_shared.m_damages.m_spirit += leftItem.m_shared.m_damages.m_spirit / 2;
-
-            if (!leftItem.m_shared.m_equipStatusEffect)
-                leftItem.m_shared.m_equipStatusEffect = ObjectDB.instance.GetStatusEffect(talent.m_statusEffectHash);
-
+            ImproveRightItem();
+            talent.m_passiveActive = true;
             isDualWielding = true;
             __result = true;
 
@@ -113,39 +112,72 @@ public static class DualWield
     [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.UnequipItem))]
     private static class Humanoid_UnequipItem_Patch
     {
-        private static void Postfix(ItemDrop.ItemData item)
+        private static void Postfix(Humanoid __instance, ItemDrop.ItemData item)
         {
-            if (isDualWielding && item == leftItem)
+            if (__instance != Player.m_localPlayer) return;
+            if (!isDualWielding) return;
+            ResetRightItem();
+            if (item == rightItem && leftItem != null)
             {
-                if (rightItem == null) return;
-                rightItem.m_shared.m_attack.m_attackStamina -= leftItem.m_shared.m_attack.m_attackStamina;
-                rightItem.m_shared.m_attack.m_attackEitr -= leftItem.m_shared.m_attack.m_attackEitr;
-                rightItem.m_shared.m_attack.m_attackHealth -= leftItem.m_shared.m_attack.m_attackHealth;
-                rightItem.m_shared.m_attack.m_attackHealthPercentage -= leftItem.m_shared.m_attack.m_attackHealthPercentage;
-                
-                rightItem.m_shared.m_secondaryAttack.m_attackStamina -= leftItem.m_shared.m_secondaryAttack.m_attackStamina;
-                rightItem.m_shared.m_secondaryAttack.m_attackEitr -= leftItem.m_shared.m_secondaryAttack.m_attackEitr;
-                rightItem.m_shared.m_secondaryAttack.m_attackHealth -= leftItem.m_shared.m_secondaryAttack.m_attackHealth;
-                rightItem.m_shared.m_secondaryAttack.m_attackHealthPercentage -= leftItem.m_shared.m_secondaryAttack.m_attackHealthPercentage;
-                
-                rightItem.m_shared.m_damages.m_blunt -= leftItem.m_shared.m_damages.m_blunt / 2;
-                rightItem.m_shared.m_damages.m_pierce -= leftItem.m_shared.m_damages.m_pierce / 2;
-                rightItem.m_shared.m_damages.m_slash -= leftItem.m_shared.m_damages.m_slash / 2;
-                rightItem.m_shared.m_damages.m_chop -= leftItem.m_shared.m_damages.m_chop;
-                rightItem.m_shared.m_damages.m_pickaxe -= leftItem.m_shared.m_damages.m_pickaxe;
-                rightItem.m_shared.m_damages.m_fire -= leftItem.m_shared.m_damages.m_fire / 2;
-                rightItem.m_shared.m_damages.m_frost -= leftItem.m_shared.m_damages.m_frost / 2;
-                rightItem.m_shared.m_damages.m_lightning -= leftItem.m_shared.m_damages.m_lightning / 2;
-                rightItem.m_shared.m_damages.m_poison -= leftItem.m_shared.m_damages.m_poison / 2;
-                rightItem.m_shared.m_damages.m_spirit -= leftItem.m_shared.m_damages.m_spirit / 2;
-
-                if (leftItem.m_shared.m_equipStatusEffect && leftItem.m_shared.m_equipStatusEffect.name == "SE_DualWield")
-                {
-                    leftItem.m_shared.m_equipStatusEffect = null;
-                }
-
-                isDualWielding = false;
+                __instance.m_rightItem = leftItem;
+                __instance.m_leftItem = null;
+                __instance.SetupVisEquipment(__instance.m_visEquipment, false);
             }
+            rightItem = null;
+            leftItem = null;
+            isDualWielding = false;
+            if (!PlayerManager.m_playerTalents.TryGetValue("DualWield", out Talent talent)) return;
+            if (__instance.GetSEMan().RemoveStatusEffect(talent.m_statusEffectHash)) talent.m_passiveActive = false;
         }
+    }
+
+    private static void ResetRightItem()
+    {
+        if (rightItem == null || leftItem == null) return;
+        rightItem.m_shared.m_attack.m_attackStamina -= leftItem.m_shared.m_attack.m_attackStamina;
+        rightItem.m_shared.m_attack.m_attackEitr -= leftItem.m_shared.m_attack.m_attackEitr;
+        rightItem.m_shared.m_attack.m_attackHealth -= leftItem.m_shared.m_attack.m_attackHealth;
+        rightItem.m_shared.m_attack.m_attackHealthPercentage -= leftItem.m_shared.m_attack.m_attackHealthPercentage;
+            
+        rightItem.m_shared.m_secondaryAttack.m_attackStamina -= leftItem.m_shared.m_secondaryAttack.m_attackStamina;
+        rightItem.m_shared.m_secondaryAttack.m_attackEitr -= leftItem.m_shared.m_secondaryAttack.m_attackEitr;
+        rightItem.m_shared.m_secondaryAttack.m_attackHealth -= leftItem.m_shared.m_secondaryAttack.m_attackHealth;
+        rightItem.m_shared.m_secondaryAttack.m_attackHealthPercentage -= leftItem.m_shared.m_secondaryAttack.m_attackHealthPercentage;
+            
+        rightItem.m_shared.m_damages.m_blunt -= leftItem.m_shared.m_damages.m_blunt / 2;
+        rightItem.m_shared.m_damages.m_pierce -= leftItem.m_shared.m_damages.m_pierce / 2;
+        rightItem.m_shared.m_damages.m_slash -= leftItem.m_shared.m_damages.m_slash / 2;
+        rightItem.m_shared.m_damages.m_chop -= leftItem.m_shared.m_damages.m_chop;
+        rightItem.m_shared.m_damages.m_pickaxe -= leftItem.m_shared.m_damages.m_pickaxe;
+        rightItem.m_shared.m_damages.m_fire -= leftItem.m_shared.m_damages.m_fire / 2;
+        rightItem.m_shared.m_damages.m_frost -= leftItem.m_shared.m_damages.m_frost / 2;
+        rightItem.m_shared.m_damages.m_lightning -= leftItem.m_shared.m_damages.m_lightning / 2;
+        rightItem.m_shared.m_damages.m_poison -= leftItem.m_shared.m_damages.m_poison / 2;
+        rightItem.m_shared.m_damages.m_spirit -= leftItem.m_shared.m_damages.m_spirit / 2;
+    }
+
+    private static void ImproveRightItem()
+    {
+        if (rightItem == null || leftItem == null) return;
+        rightItem.m_shared.m_attack.m_attackStamina += leftItem.m_shared.m_attack.m_attackStamina;
+        rightItem.m_shared.m_attack.m_attackEitr += leftItem.m_shared.m_attack.m_attackEitr;
+        rightItem.m_shared.m_attack.m_attackHealth += leftItem.m_shared.m_attack.m_attackHealth;
+        rightItem.m_shared.m_attack.m_attackHealthPercentage += leftItem.m_shared.m_attack.m_attackHealthPercentage;
+
+        rightItem.m_shared.m_secondaryAttack.m_attackStamina += leftItem.m_shared.m_secondaryAttack.m_attackStamina;
+        rightItem.m_shared.m_secondaryAttack.m_attackEitr += leftItem.m_shared.m_secondaryAttack.m_attackEitr;
+        rightItem.m_shared.m_secondaryAttack.m_attackHealth += leftItem.m_shared.m_secondaryAttack.m_attackHealth;
+        rightItem.m_shared.m_secondaryAttack.m_attackHealthPercentage += leftItem.m_shared.m_secondaryAttack.m_attackHealthPercentage;
+            
+        rightItem.m_shared.m_damages.m_blunt += leftItem.m_shared.m_damages.m_blunt / 2;
+        rightItem.m_shared.m_damages.m_slash += leftItem.m_shared.m_damages.m_slash / 2;
+        rightItem.m_shared.m_damages.m_pierce += leftItem.m_shared.m_damages.m_pierce / 2;
+        rightItem.m_shared.m_damages.m_chop += leftItem.m_shared.m_damages.m_chop;
+        rightItem.m_shared.m_damages.m_pickaxe += leftItem.m_shared.m_damages.m_pickaxe;
+        rightItem.m_shared.m_damages.m_fire += leftItem.m_shared.m_damages.m_fire / 2;
+        rightItem.m_shared.m_damages.m_frost += leftItem.m_shared.m_damages.m_frost / 2;
+        rightItem.m_shared.m_damages.m_lightning += leftItem.m_shared.m_damages.m_lightning / 2;
+        rightItem.m_shared.m_damages.m_poison += leftItem.m_shared.m_damages.m_poison / 2;
+        rightItem.m_shared.m_damages.m_spirit += leftItem.m_shared.m_damages.m_spirit / 2;
     }
 }

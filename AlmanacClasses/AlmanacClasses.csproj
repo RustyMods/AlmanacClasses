@@ -187,7 +187,6 @@
         <Compile Include="LoadAssets\AnimationReplacer.cs" />
         <Compile Include="LoadAssets\LoadEffects.cs" />
         <Compile Include="LoadAssets\LoadPieces.cs" />
-        <Compile Include="LoadAssets\LoadTwoHanded.cs" />
         <Compile Include="Managers\AnimationManager.cs" />
         <Compile Include="Managers\CommandsManager.cs" />
         <Compile Include="Managers\LocalizationManager.cs" />

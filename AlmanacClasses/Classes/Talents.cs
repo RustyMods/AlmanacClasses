@@ -35,11 +35,14 @@ public class Talent
     public TalentDamages? m_damages;
     public TalentValues? m_values;
     public TalentCreatures? m_creatures;
-    public ConfigEntry<string>? m_creature;
+    public CreaturesByLevel? m_creaturesByLevel;
     public ResistancePercentages? m_resistances;
     public float m_line = 1f;
     public Sprite? m_altButtonSprite;
     public ConfigEntry<string>? m_forageItems;
+    public ConfigEntry<Toggle>? m_useAnimation;
+    public bool m_passiveActive = true;
+    public string GetAnimation() => m_useAnimation?.Value is Toggle.On ? m_animation : "";
     public List<string> GetCustomForageItems()
     {
         List<string> output = new();
@@ -91,7 +94,7 @@ public class Talent
     public float GetAttack(int level) => m_values == null ? 0f : (m_values.m_modifyAttack?.Value ?? 0f) * level - (level - 1);
     public float GetBleed(int level) => m_values == null ? 0f : (m_values.m_bleed?.Value ?? 0f) * level;
     public float GetSpeedModifier(int level) => m_values == null ? 0f : (m_values.m_speed?.Value ?? 0f) * level - (level - 1);
-    public float GetChance(int level) => m_values == null ? 0f : (m_values.m_chance?.Value ?? 0f) * level;
+    public float GetChance(int level) => m_values == null ? 0f : Mathf.Clamp((m_values.m_chance?.Value ?? 0f) * level, 0f, 100f);
     public float GetReflect(int level) => m_values == null ? 0f : (m_values.m_reflect?.Value ?? 0f) * level;
     public float GetAddedComfort(int level) => m_values == null ? 0f : (m_values.m_comfort?.Value ?? 0f) * level;
     public float GetDamageReduction(int level) => m_values == null ? 1f : Mathf.Clamp01(1 - ((m_values.m_damageReduction?.Value ?? 1f) - 0.1f * (level - 1)));
@@ -147,11 +150,31 @@ public class Talent
                 return null;
         }
     }
-    public GameObject? GetCreature()
+    // public GameObject? GetCreature()
+    // {
+    //     ZNetScene scene = ZNetScene.instance;
+    //     if (!scene) return null;
+    //     return scene.GetPrefab(m_creature?.Value ?? "Ghost") ?? scene.GetPrefab("Ghost");
+    // }
+    public GameObject? GetCreaturesByLevel(int level)
     {
+        if (m_creaturesByLevel == null) return null;
         ZNetScene scene = ZNetScene.instance;
         if (!scene) return null;
-        return scene.GetPrefab(m_creature?.Value ?? "Ghost") ?? scene.GetPrefab("Ghost");
+        return level switch
+        {
+            1 => scene.GetPrefab(m_creaturesByLevel.m_oneToThree?.Value ?? "Ghost"),
+            2 => scene.GetPrefab(m_creaturesByLevel.m_oneToThree?.Value ?? "Ghost"),
+            3 => scene.GetPrefab(m_creaturesByLevel.m_oneToThree?.Value ?? "Ghost"),
+            4 => scene.GetPrefab(m_creaturesByLevel.m_fourToSix?.Value ?? "Wraith"),
+            5 => scene.GetPrefab(m_creaturesByLevel.m_fourToSix?.Value ?? "Wraith"),
+            6 => scene.GetPrefab(m_creaturesByLevel.m_fourToSix?.Value ?? "Wraith"),
+            7 => scene.GetPrefab(m_creaturesByLevel.m_sevenToNine?.Value ?? "BlobTar"),
+            8 => scene.GetPrefab(m_creaturesByLevel.m_sevenToNine?.Value ?? "BlobTar"),
+            9 => scene.GetPrefab(m_creaturesByLevel.m_sevenToNine?.Value ?? "BlobTar"),
+            >= 10 => scene.GetPrefab(m_creaturesByLevel.m_ten?.Value ?? "FallenValkyrie"),
+            _ => scene.GetPrefab("Ghost")
+        };
     }
 
     public TalentCharacteristics? m_characteristic;
@@ -159,8 +182,20 @@ public class Talent
     public int GetCharacteristic(int level) => (m_characteristic?.m_amount ?? 0) + (level - 1) * 5;
     public string GetName() => m_type is TalentType.Characteristic ? GetTalentType() : $"$talent_{m_key.ToLower()}";
     private string GetDescription() => $"$talent_{m_key.ToLower()}_desc";
-    private float GetCreatureLength(int level) => m_creature == null ? 0f : GetLength(level);
     private float GetCreaturesLength(int level) => m_creatures == null ? 0f : GetLength(level);
+    public float GetCreaturesByLevelLength(int level) => m_creaturesByLevel == null ? 0f : GetLength(level);
+    public int GetCreatureByLevelLevel(int level) => level switch
+    {
+        2 => 2,
+        3 => 3,
+        4 => 1,
+        5 => 2,
+        6 => 3,
+        7 => 1,
+        8 => 2,
+        9 => 3,
+        _ => 1,
+    };
     public float GetArmor(int level) => m_values == null ? 0f : (m_values.m_armor?.Value ?? 0f) + (level - 1) * 2f;
     private float GetHealthRatio(int level) => GetCharacteristic(level) / _HealthRatio.Value;
     private float GetCarryWeightRatio(int level) => GetCharacteristic(level) / _CarryWeightRatio.Value;
@@ -299,8 +334,12 @@ public class Talent
                 if (m_resistances.m_spirit is {Value: > 0}) 
                     stringBuilder.Append($"$inventory_spirit $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Spirit))}%</color>\n");
             }
-            if (m_creature != null) 
-                stringBuilder.Append($"$almanac_creature: <color=orange>{m_creature.Value}</color> $text_lvl {GetLevel()} \n ({GetCreatureLength(GetLevel())}$text_sec)\n");
+
+            if (m_creaturesByLevel != null)
+            {
+                stringBuilder.Append(
+                    $"$almanac_creature: <color=yellow>x{GetCreatureByLevelLevel(GetLevel())}</color> <color=orange>{GetCreaturesByLevel(GetLevel())?.name ?? ""}</color> $text_level {GetCreatureByLevelLevel(GetLevel())}\n");
+            }
             if (m_creatures != null)
                 stringBuilder.Append($"{GetBiomeLocalized(GetCurrentBiome())} $almanac_creature: <color=orange>{GetCreaturesConfig()?.Value ?? ""}</color> $text_lvl {GetLevel()} \n ({GetCreaturesLength(GetLevel())}$text_sec)\n");
             if (m_key == "Trader")
@@ -498,8 +537,11 @@ public class Talent
                     stringBuilder.Append($"$inventory_spirit $almanac_reduction: <color=orange>{FormatPercentage(GetResistance(GetLevel(), HitData.DamageType.Spirit))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetResistance(GetLevel() + 1, HitData.DamageType.Spirit))}%</color>\n");
             }
 
-            if (m_creature != null) 
-                stringBuilder.Append($"$almanac_creature: <color=orange>{m_creature.Value}</color> $text_lvl {GetLevel()} --> <color={m_prestigeColor}>{GetLevel() + 1}</color> \n ({GetCreatureLength(GetLevel())}$text_sec --> <color={m_prestigeColor}>{GetCreatureLength(GetLevel() + 1)}$text_sec</color>)\n");
+            if (m_creaturesByLevel != null)
+            {
+                stringBuilder.Append(
+                    $"$almanac_creature: <color=yellow>x{GetCreatureByLevelLevel(GetLevel())}</color> --> <color={m_prestigeColor}>x{GetCreatureByLevelLevel(GetLevel() + 1)}</color> <color=orange>{GetCreaturesByLevel(GetLevel())?.name ?? ""}</color> --> <color={m_prestigeColor}>{GetCreaturesByLevel(GetLevel() + 1)?.name ?? ""}</color> $text_level {GetCreatureByLevelLevel(GetLevel())} --> <color={m_prestigeColor}>{GetCreatureByLevelLevel(GetLevel() + 1)}</color>\n");
+            }
             if (m_creatures != null)
                 stringBuilder.Append($"{GetBiomeLocalized(GetCurrentBiome())} $almanac_creature: <color=orange>{GetCreaturesConfig()?.Value ?? ""}</color> $text_lvl {GetLevel()} --> <color={m_prestigeColor}>{GetLevel() + 1}</color> \n ({GetCreaturesLength(GetLevel())}$text_sec --> <color={m_prestigeColor}>{GetCreaturesLength(GetLevel() + 1)}$text_sec</color>)\n");
             if (m_key == "Trader")
@@ -547,6 +589,14 @@ public class Talent
         public ConfigEntry<string>? m_ashlands;
         public ConfigEntry<string>? m_deepnorth;
         public ConfigEntry<string>? m_ocean;
+    }
+
+    public class CreaturesByLevel
+    {
+        public ConfigEntry<string>? m_oneToThree;
+        public ConfigEntry<string>? m_fourToSix;
+        public ConfigEntry<string>? m_sevenToNine;
+        public ConfigEntry<string>? m_ten;
     }
     public class ResistancePercentages
     {
@@ -696,6 +746,7 @@ public static class TalentManager
             m_cap = _Plugin.config("Core - Sailor", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 10))),
             m_startEffects = LoadedAssets.GP_Moder.m_startEffects,
             m_animation = "gpower",
+            m_useAnimation = _Plugin.config("Core - Sailor", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
             m_length = _Plugin.config("Core - Sailor", "Length", 50f, new ConfigDescription("Set the duration of effect", new AcceptableValueRange<float>(1f, 1000f))),
             m_cooldown = _Plugin.config("Core - Sailor", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(1f, 1000f))),
             m_sprite = SpriteManager.Sail_Icon,
@@ -728,6 +779,7 @@ public static class TalentManager
             m_alt = _Plugin.config("Warrior - Survivor", "Enable", Toggle.Off, "If on, replaces dual wield talent"),
             m_startEffects = LoadedAssets.VFX_SongOfSpirit,
             m_cap = _Plugin.config("Warrior - Survivor", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+            m_passiveActive = false
         };
         survivor.m_alt.SettingChanged += (sender, args) =>
         {
@@ -745,7 +797,8 @@ public static class TalentManager
             m_cap = _Plugin.config("Warrior - Battle Fury", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
             m_values = new Talent.TalentValues()
             {
-                m_chance = _Plugin.config("Warrior - Battle Fury", "Chance", 10f, new ConfigDescription("Set chance to trigger ability", new AcceptableValueRange<float>(0f, 100f)))
+                m_chance = _Plugin.config("Warrior - Battle Fury", "Chance", 10f, new ConfigDescription("Set chance to trigger ability", new AcceptableValueRange<float>(0f, 100f))),
+                m_stamina = _Plugin.config("Warrior - Battle Fury", "Stamina Gain", 10f, new ConfigDescription("Set amount gained per kill", new AcceptableValueRange<float>(1f, 50f)))
             }
         };
         battleFury.m_alt.SettingChanged += (sender, args) =>
@@ -1102,6 +1155,7 @@ public static class TalentManager
                 m_length = _Plugin.config("Ranger - Summon", "Length", 75f, new ConfigDescription("Set the amount of time until de-spawn", new AcceptableValueRange<float>(1f, 1000f))),
                 m_sprite = SpriteManager.CreatureMask_Icon,
                 m_animation = "Summon",
+                m_useAnimation = _Plugin.config("Ranger - Summon", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Ranger - Summon", "Health Cost", 10f, new ConfigDescription("Set health cost to summon", new AcceptableValueRange<float>(0f, 100f))),
                 m_staminaCost = _Plugin.config("Ranger - Summon", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Ranger - Summon", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1159,6 +1213,7 @@ public static class TalentManager
                 m_sprite = SpriteManager.QuickShot_Icon,
                 m_startEffects = LoadedAssets.SoothEffects,
                 m_animation = "roar",
+                m_useAnimation = _Plugin.config("Ranger - Quick Shot", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Ranger - Quick Shot", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Ranger - Quick Shot", "Stamina Cost", 25f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Ranger - Quick Shot", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1181,6 +1236,7 @@ public static class TalentManager
                 m_length = _Plugin.config("Ranger - Trap", "Length", 75f, new ConfigDescription("Set the length until de-spawn", new AcceptableValueRange<float>(1f, 1000f))),
                 m_sprite = SpriteManager.RangerTrap_Icon,
                 m_animation = "SetTrap",
+                m_useAnimation = _Plugin.config("Ranger - Trap", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Ranger - Trap", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Ranger - Trap", "Stamina Cost", 20f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Ranger - Trap", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1284,6 +1340,7 @@ public static class TalentManager
                 },
                 m_sprite = SpriteManager.LightningStrike_Icon,
                 m_animation = "LightningStrike",
+                m_useAnimation = _Plugin.config("Sage - Lightning", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Sage - Lightning", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Sage - Lightning", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Sage - Lightning", "Eitr Cost", 20f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1304,6 +1361,7 @@ public static class TalentManager
                 },
                 m_sprite = SpriteManager.MeteorStrike_Icon,
                 m_animation = "MeteorStrike",
+                m_useAnimation = _Plugin.config("Sage - Meteor", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Sage - Meteor", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Sage - Meteor", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Sage - Meteor", "Eitr Cost", 25f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1323,6 +1381,7 @@ public static class TalentManager
                 },
                 m_sprite = SpriteManager.BoulderStrike_Icon,
                 m_animation = "StoneThrow",
+                m_useAnimation = _Plugin.config("Sage - Stone", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Sage - Stone", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Sage - Stone", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Sage - Stone", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1344,6 +1403,7 @@ public static class TalentManager
                 },
                 m_sprite = SpriteManager.GoblinBeam_Icon,
                 m_animation = "roar",
+                m_useAnimation = _Plugin.config("Sage - Beam", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Sage - Beam", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Sage - Beam", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Sage - Beam", "Eitr Cost", 25f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1364,6 +1424,7 @@ public static class TalentManager
                 },
                 m_sprite = SpriteManager.Blink_Icon,
                 m_animation = "roar",
+                m_useAnimation = _Plugin.config("Sage - Ice Breath", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Sage - Ice Breath", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Sage - Ice Breath", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Sage - Ice Breath", "Eitr Cost", 30f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1455,6 +1516,7 @@ public static class TalentManager
                 },
                 m_sprite = SpriteManager.ShamanHeal_Icon,
                 m_animation = "Heal",
+                m_useAnimation = _Plugin.config("Shaman - Heal", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Shaman - Heal", "Health Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Shaman - Heal", "Stamina Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Shaman - Heal", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1476,6 +1538,7 @@ public static class TalentManager
                 m_sprite = SpriteManager.ShamanProtection_Icon,
                 m_startEffects = LoadedAssets.FX_DvergerPower,
                 m_animation = "LightningStrike",
+                m_useAnimation = _Plugin.config("Shaman - Shield", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Shaman - Shield", "Health Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Shaman - Shield", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Shaman - Shield", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1499,6 +1562,7 @@ public static class TalentManager
                 m_sprite = SpriteManager.ShamanRegeneration,
                 m_startEffects = LoadedAssets.UnSummonEffects,
                 m_animation = "cheer",
+                m_useAnimation = _Plugin.config("Shaman - Regeneration", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Shaman - Regeneration", "Health Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Shaman - Regeneration", "Stamina Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Shaman - Regeneration", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1513,10 +1577,18 @@ public static class TalentManager
                 m_type = TalentType.Ability,
                 m_cooldown = _Plugin.config("Shaman - Summon", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Shaman - Summon", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
-                m_creature = _Plugin.config("Shaman - Summon", "Creature Name", "Ghost", "Set the creature to summon"),
-                m_length = _Plugin.config("Shaman - Summon", "Length", 75f, new ConfigDescription("Set the length of time until de-spawn", new AcceptableValueRange<float>(1f, 1000f))),
+                // m_creature = _Plugin.config("Shaman - Summon", "Creature Name", "Ghost", "Set the creature to summon"),
+                m_creaturesByLevel = new Talent.CreaturesByLevel()
+                {
+                    m_oneToThree = _Plugin.config("Shaman - Summon", "One To Three", "Ghost", "Set creature spawn for talent level one to three"),
+                    m_fourToSix = _Plugin.config("Shaman - Summon", "Three To Six", "Wraith", "Set creature spawn for talent level four to Six"),
+                    m_sevenToNine = _Plugin.config("Shaman - Summon", "Four To Nine", "BlobTar", "Set creature spawn for talent level six to nine"),
+                    m_ten = _Plugin.config("Shaman - Summon", "Ten Above", "FallenValkyrie", "Set creature spawn for talent level ten and beyond")
+                },
+                m_length = _Plugin.config("Shaman - Summon", "Length", 25f, new ConfigDescription("Set the length of time until de-spawn", new AcceptableValueRange<float>(1f, 1000f))),
                 m_sprite = SpriteManager.ShamanGhosts_Icon,
                 m_animation = "Summon",
+                m_useAnimation = _Plugin.config("Shaman - Summon", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Shaman - Summon", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Shaman - Summon", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Shaman - Summon", "Eitr Cost", 25f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1537,6 +1609,7 @@ public static class TalentManager
                 },
                 m_sprite = SpriteManager.ShamanRoots_Icon,
                 m_animation = "roar",
+                m_useAnimation = _Plugin.config("Shaman - Roots", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Shaman - Roots", "Health Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Shaman - Roots", "Stamina Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Shaman - Roots", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1630,6 +1703,7 @@ public static class TalentManager
                 m_sprite = SpriteManager.SongOfDamage_Icon,
                 m_startEffects = LoadedAssets.AddBardFX(Color.red, "FX_Bard_Music_Red", true),
                 m_animation = "LutePlay",
+                m_useAnimation = _Plugin.config("Bard - Song of Damage", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Bard - Song of Damage", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Damage", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Bard - Song of Damage", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1652,6 +1726,7 @@ public static class TalentManager
                 m_sprite = SpriteManager.SongOfHealing_Icon,
                 m_startEffects = LoadedAssets.AddBardFX(Color.yellow, "FX_Bard_Music_Yellow"),
                 m_animation = "LutePlay",
+                m_useAnimation = _Plugin.config("Bard - Song of Healing", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Bard - Song of Healing", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Healing", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Bard - Song of Healing", "Eitr Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1674,6 +1749,7 @@ public static class TalentManager
                 m_sprite = SpriteManager.SongOfVitality_Icon,
                 m_startEffects = LoadedAssets.AddBardFX(Color.blue, "FX_Bard_Music_Blue"),
                 m_animation = "LutePlay",
+                m_useAnimation = _Plugin.config("Bard - Song of Vitality", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Bard - Song of Vitality", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Vitality", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Bard - Song of Vitality", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1696,6 +1772,7 @@ public static class TalentManager
                 m_sprite = SpriteManager.SongOfSpeed_Icon,
                 m_startEffects = LoadedAssets.AddBardFX(Color.green, "FX_Bard_Music_Green"),
                 m_animation = "LutePlay",
+                m_useAnimation = _Plugin.config("Bard - Song of Speed", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Bard - Song of Speed", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Speed", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Bard - Song of Speed", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1719,6 +1796,7 @@ public static class TalentManager
                 m_sprite = SpriteManager.SongOfSpirit_Icon,
                 m_startEffects = LoadedAssets.VFX_SongOfSpirit,
                 m_animation = "LutePlay",
+                m_useAnimation = _Plugin.config("Bard - Song of Attrition", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Bard - Song of Attrition", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Attrition", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Bard - Song of Attrition", "Eitr Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1815,6 +1893,7 @@ public static class TalentManager
                 m_sprite = SpriteManager.QuickStep_Icon,
                 m_startEffects = LoadedAssets.FX_DvergerPower,
                 m_animation = "flex",
+                m_useAnimation = _Plugin.config("Rogue - Quick Step", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Rogue - Quick Step", "Health Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Rogue - Quick Step", "Stamina Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Rogue - Quick Step", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1840,6 +1919,7 @@ public static class TalentManager
                 m_sprite = SpriteManager.Relentless_Icon,
                 m_startEffects = LoadedAssets.FX_DvergerPower,
                 m_animation = "flex",
+                m_useAnimation = _Plugin.config("Rogue - Swift", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Rogue - Swift", "Health Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Rogue - Swift", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Rogue - Swift", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1862,6 +1942,7 @@ public static class TalentManager
                 m_sprite = SpriteManager.Reflect_Icon,
                 m_startEffects = LoadedAssets.FX_DvergerPower,
                 m_animation = "flex",
+                m_useAnimation = _Plugin.config("Rogue Retaliation", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Rogue - Retaliation", "Health Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Rogue - Retaliation", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Rogue - Retaliation", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1884,6 +1965,7 @@ public static class TalentManager
                 m_sprite = SpriteManager.Backstab_Icon,
                 m_startEffects = LoadedAssets.FX_DvergerPower,
                 m_animation = "flex",
+                m_useAnimation = _Plugin.config("Rogue - Backstab", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Rogue - Backstab", "Health Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Rogue - Backstab", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Rogue - Backstab", "Eitr Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1905,7 +1987,8 @@ public static class TalentManager
                 m_length = _Plugin.config("Rogue - Bleed", "Length", 15f, new ConfigDescription("Set the length of effect", new AcceptableValueRange<float>(1f, 1000f))),
                 m_sprite = SpriteManager.Bleeding_Icon,
                 m_startEffects = LoadedAssets.FX_RogueBleed,
-                m_animation = "gpower",
+                m_animation = "flex",
+                m_useAnimation = _Plugin.config("Rogue - Bleed", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Rogue - Bleed", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Rogue - Bleed", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Rogue - Bleed", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -2001,6 +2084,7 @@ public static class TalentManager
                 m_sprite = SpriteManager.HardHitter_Icon,
                 m_startEffects = LoadedAssets.FX_DvergerPower,
                 m_animation = "flex",
+                m_useAnimation = _Plugin.config("Warrior - Power", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Warrior - Power", "Health Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Warrior - Power", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Warrior - Power", "Eitr Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -2024,6 +2108,7 @@ public static class TalentManager
                 m_sprite = SpriteManager.BulkUp_Icon,
                 m_startEffects = LoadedAssets.FX_DvergerPower,
                 m_animation = "flex",
+                m_useAnimation = _Plugin.config("Warrior - Vitality", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Warrior - Vitality", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Warrior - Vitality", "Stamina Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Warrior - Vitality", "Eitr Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -2034,6 +2119,7 @@ public static class TalentManager
             {
                 m_key = "MonkeyWrench",
                 m_button = "$button_warrior_talent_4",
+                m_statusEffectHash = "SE_MonkeyWrench".GetStableHashCode(),
                 m_type = TalentType.Passive,
                 m_cost = _Plugin.config("Warrior - Monkey Wrench", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
@@ -2042,6 +2128,7 @@ public static class TalentManager
                     m_attackSpeedReduction = _Plugin.config("Warrior - Monkey Wrench", "Attack Speed Reduction", 0.5f, new ConfigDescription("Set the attack speed reduction modifier", new AcceptableValueRange<float>(0f, 1f)))
                 },
                 m_cap = _Plugin.config("Warrior - Monkey Wrench", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_passiveActive = false,
             },
             new()
             {
@@ -2061,6 +2148,7 @@ public static class TalentManager
                 m_sprite = SpriteManager.Resistant_Icon,
                 m_startEffects = LoadedAssets.FX_DvergerPower,
                 m_animation = "flex",
+                m_useAnimation = _Plugin.config("Warrior - Fortification", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Warrior - Fortification", "Health Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Warrior - Fortification", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_eitrCost = _Plugin.config("Warrior - Fortification", "Eitr Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -2071,13 +2159,15 @@ public static class TalentManager
             {
                 m_key = "DualWield",
                 m_button = "$button_warrior_talent_5",
+                m_statusEffectHash = "SE_DualWield".GetStableHashCode(),
                 m_type = TalentType.Passive,
                 m_cost = _Plugin.config("Warrior - Dual Wield", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values = new Talent.TalentValues()
                 {
                     m_damageReduction = _Plugin.config("Warrior - Dual Wield", "Damage Decrease", 0.5f, new ConfigDescription("Set the damage reduction", new AcceptableValueRange<float>(0f, 1f)))
                 },
-                m_cap = _Plugin.config("Warrior - Dual Wield", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
+                m_cap = _Plugin.config("Warrior - Dual Wield", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
+                m_passiveActive = false
             }
         };
     }

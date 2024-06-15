@@ -29,6 +29,7 @@ public class SE_ShamanShield : StatusEffect
     {
         foreach (Player player in m_players)
         {
+            if (player == null || player.IsDead()) continue;
             if (player.GetSEMan().HaveStatusEffect(name.GetStableHashCode())) continue;
             StatusEffect effect = player.GetSEMan().AddStatusEffect(name.GetStableHashCode());
             if (effect is SE_ShamanShield shield) shield.m_absorbDamage = m_talent.GetAbsorb(m_talent.GetLevel());
@@ -37,6 +38,7 @@ public class SE_ShamanShield : StatusEffect
     
     private void FindPlayers()
     {
+        m_players.Clear();
         Player.GetPlayersInRange(m_character.transform.position, 10f, m_players);
     }
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using AlmanacClasses.Classes;
 using AlmanacClasses.Classes.Abilities;
+using AlmanacClasses.Classes.Abilities.Warrior;
 using AlmanacClasses.FileSystem;
 using AlmanacClasses.LoadAssets;
 using AlmanacClasses.Managers;
@@ -22,7 +23,7 @@ namespace AlmanacClasses
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
-        internal const string ModVersion = "0.4.9";
+        internal const string ModVersion = "0.4.10";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
         private static readonly string ConfigFileName = ModGUID + ".cfg";
@@ -89,7 +90,7 @@ namespace AlmanacClasses
                 if (character is not Player player || !player.InAttack() || player.m_currentAttack is null) return speed;
                 if (!PlayerManager.m_playerTalents.TryGetValue("MonkeyWrench", out Talent talent)) return speed;
                 if (player.GetCurrentWeapon() == null) return speed;
-                if (!LoadTwoHanded.IsMonkeyWrenchItem(player.GetCurrentWeapon().m_shared.m_name)) return speed;
+                if (!MonkeyWrench.IsMonkeyWrenchItem(player.GetCurrentWeapon().m_shared.m_name)) return speed;
                 return speed * talent.GetAttackSpeedReduction(talent.GetLevel());
             });
         }

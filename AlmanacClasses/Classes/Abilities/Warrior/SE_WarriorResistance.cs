@@ -15,7 +15,6 @@ public class SE_WarriorResistance : StatusEffect
 
     public override void OnDamaged(HitData hit, Character attacker)
     {
-        // hit.ApplyResistance(m_talent.GetDamageModifiers(), out HitData.DamageModifier _);
         hit.m_damage.m_blunt *= m_talent.GetResistance(m_talent.GetLevel(), HitData.DamageType.Blunt);
         hit.m_damage.m_pierce *= m_talent.GetResistance(m_talent.GetLevel(), HitData.DamageType.Pierce);
         hit.m_damage.m_slash *= m_talent.GetResistance(m_talent.GetLevel(), HitData.DamageType.Slash);
