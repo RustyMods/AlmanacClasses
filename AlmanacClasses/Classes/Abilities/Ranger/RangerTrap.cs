@@ -24,7 +24,6 @@ public static class RangerTrap
         if (trap.TryGetComponent(out Trap component))
         {
             component.m_aoe.m_damage = damages;
-            component.m_aoe.m_damage.Modify(Mathf.Clamp(Player.m_localPlayer.GetSkillFactor(Skills.SkillType.Bows),0.1f, 1f));
             component.m_triggeredByPlayers = false;
             component.m_aoe.m_hitFriendly = false;
             component.m_aoe.m_owner = Player.m_localPlayer;

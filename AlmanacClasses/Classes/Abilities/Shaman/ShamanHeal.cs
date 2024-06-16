@@ -16,6 +16,7 @@ public static class ShamanHeal
         }
         else
         {
+            if (character is not Player) return false;
             character.Heal(amount);
             Transform transform = character.transform;
             LoadedAssets.FX_Heal.Create(transform.position, transform.rotation, transform);

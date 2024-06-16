@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace AlmanacClasses.Classes.Abilities.Sage;
 
-public class MeteorStrike
+public static class MeteorStrike
 {
     private static readonly LayerMask m_layerMask = LayerMask.GetMask("Default", "static_solid", "Default_small", "piece_nonsolid", "terrain", "vehicle", "piece", "viewblock");
 
@@ -33,7 +33,6 @@ public class MeteorStrike
                 projectile.m_hitNoise = 100f;
                 projectile.m_owner = Player.m_localPlayer;
                 projectile.m_skill = Skills.SkillType.ElementalMagic;
-                projectile.m_raiseSkillAmount = 1f;
                 projectile.transform.localRotation = Quaternion.LookRotation(Player.m_localPlayer.GetLookDir());
 
                 bool flag = !Physics.Raycast(Player.m_localPlayer.GetEyePoint(), Player.m_localPlayer.GetLookDir(), out RaycastHit hit, 1000f, m_layerMask) || !hit.collider;
@@ -48,10 +47,7 @@ public class MeteorStrike
                     m_dodgeable = true,
                     m_blockable = true,
                     m_skill = Skills.SkillType.ElementalMagic,
-                    m_skillRaiseAmount = 1f,
-                    m_skillLevel = Player.m_localPlayer.GetSkillLevel(Skills.SkillType.ElementalMagic)
                 };
-                hitData.m_damage.Modify(Mathf.Clamp(Player.m_localPlayer.GetSkillFactor(Skills.SkillType.ElementalMagic), 0.1f, 1f));
                 hitData.SetAttacker(Player.m_localPlayer);
 
                 Vector3 velocity = (target - pos).normalized * 25f;

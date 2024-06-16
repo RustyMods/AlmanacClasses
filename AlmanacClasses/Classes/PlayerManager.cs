@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using AlmanacClasses.Classes.Abilities.Warrior;
-using AlmanacClasses.LoadAssets;
 using AlmanacClasses.Managers;
 using AlmanacClasses.UI;
 using HarmonyLib;

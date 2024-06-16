@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace AlmanacClasses.Classes.Abilities.Shaman;
 
-public class RootBeam
+public static class RootBeam
 {
     private static readonly LayerMask m_layerMask = LayerMask.GetMask("Default", "static_solid", "Default_small", "piece_nonsolid", "terrain", "vehicle", "piece", "viewblock");
 
@@ -34,11 +34,9 @@ public class RootBeam
                 projectile.m_aoe = 0.2f;
                 projectile.m_owner = Player.m_localPlayer;
                 projectile.m_skill = Skills.SkillType.ElementalMagic;
-                projectile.m_raiseSkillAmount = 1f;
                 projectile.transform.localRotation = Quaternion.LookRotation(forward);
 
-                RaycastHit hit;
-                bool flag = Physics.Raycast(target, forward, out hit, float.PositiveInfinity, m_layerMask);
+                bool flag = Physics.Raycast(target, forward, out RaycastHit hit, float.PositiveInfinity, m_layerMask);
             
                 Vector3 hitTarget = !flag || !hit.collider ? target + transform.forward * 1000f : hit.point;
 
@@ -51,7 +49,6 @@ public class RootBeam
                     m_skill = Skills.SkillType.ElementalMagic,
                     m_skillRaiseAmount = 0.2f
                 };
-                hitData.m_damage.Modify(Mathf.Clamp(Player.m_localPlayer.GetSkillFactor(Skills.SkillType.ElementalMagic), 0.1f, 1f));
                 hitData.SetAttacker(Player.m_localPlayer);
                 
                 Vector3 velocity = (hitTarget - target).normalized * 25f;

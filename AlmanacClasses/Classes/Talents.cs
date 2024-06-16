@@ -411,7 +411,7 @@ public class Talent
         if (m_type is TalentType.Characteristic)
         {
             if (m_characteristic == null) return stringBuilder.ToString();
-            stringBuilder.Append($"${GetCharacteristicDescription()}\n");
+            stringBuilder.Append($"{GetCharacteristicDescription()}\n");
             stringBuilder.Append($"+ <color=orange>{GetCharacteristic(GetLevel())}</color> --> <color={m_prestigeColor}>{GetCharacteristic(GetLevel() + 1)}</color> {GetCharacteristicLocalized()}\n\n");
             switch (m_characteristic.m_type)
             {

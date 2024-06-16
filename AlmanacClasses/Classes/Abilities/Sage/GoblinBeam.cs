@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace AlmanacClasses.Classes.Abilities.Sage;
 
-public class GoblinBeam
+public static class GoblinBeam
 {
     private static readonly LayerMask m_layerMask = LayerMask.GetMask("Default", "static_solid", "Default_small", "piece_nonsolid", "terrain", "vehicle", "piece", "viewblock");
     
@@ -35,7 +35,6 @@ public class GoblinBeam
                 projectile.m_aoe = 0.2f;
                 projectile.m_owner = Player.m_localPlayer;
                 projectile.m_skill = Skills.SkillType.ElementalMagic;
-                projectile.m_raiseSkillAmount = 1f;
                 projectile.transform.localRotation = Quaternion.LookRotation(forward);
 
                 bool flag = Physics.Raycast(target, forward, out RaycastHit hit, float.PositiveInfinity, m_layerMask);
@@ -49,10 +48,7 @@ public class GoblinBeam
                     m_dodgeable = true,
                     m_blockable = true,
                     m_skill = Skills.SkillType.ElementalMagic,
-                    m_skillRaiseAmount = 0.2f,
-                    m_skillLevel = Player.m_localPlayer.GetSkillLevel(Skills.SkillType.ElementalMagic)
                 };
-                hitData.m_damage.Modify(Mathf.Clamp(Player.m_localPlayer.GetSkillFactor(Skills.SkillType.ElementalMagic), 0.1f, 1f));
                 hitData.SetAttacker(Player.m_localPlayer);
                 Vector3 velocity = (hitTarget - target).normalized * 25f;
                 projectile.Setup(Player.m_localPlayer, velocity, -1f, hitData, null, null);

@@ -32,8 +32,6 @@ public static class IceBreath
                     m_blockable = true,
                     m_dodgeable = true,
                     m_skill = Skills.SkillType.ElementalMagic,
-                    m_skillRaiseAmount = 1f,
-                    m_skillLevel = Player.m_localPlayer.GetSkillLevel(Skills.SkillType.ElementalMagic),
                     m_damage = damages,
                     m_pushForce = 100f,
                     m_ranged = true,

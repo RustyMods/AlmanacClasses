@@ -58,16 +58,11 @@ public static class CallOfLightning
         component.m_owner = Player.m_localPlayer;
         component.m_skill = Skills.SkillType.ElementalMagic;
         component.m_canRaiseSkill = true;
-        
         component.m_useTriggers = true;
         component.m_triggerEnterOnly = true;
-        
         component.m_damage = damages;
-        component.m_damage.Modify(Mathf.Clamp(Player.m_localPlayer.GetSkillFactor(Skills.SkillType.ElementalMagic), 0.1f, 1f));
-        
         component.m_blockable = true;
         component.m_dodgeable = true;
-        
         component.m_hitProps = false;
         component.m_hitOwner = false;
         component.m_hitParent = false;
