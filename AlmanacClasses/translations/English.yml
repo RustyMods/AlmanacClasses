@@ -216,3 +216,11 @@ almanac_class_altar_info:
   You can manage your spells by going to your settings menu (<color=orange>ESC</color>)
   \n
   Dragging one spell to another swaps places"
+  
+raven_greeting: "Be weary of the powers of this altar!"
+raven_tooltip_1: "The yellow bar around your spells indicate the remaining time of the status effects!"
+raven_tooltip_2: "Be sure to prestige your talents!"
+raven_tooltip_3: "Some of these talents have alternatives, check your configurations!"
+raven_random_1: "The night is dark and vicious, may these talents aid you in your journeys"
+raven_random_2: "Choose your talents wisely!"
+raven_random_3: "Hither, hither my friend. I have tales to tell"
