@@ -9,7 +9,7 @@ public static class ShamanSpawn
     {
         if (!fallBack) return;
         if (!fallBack.GetComponent<Humanoid>()) return;
-        var prefab = talent.GetCreaturesByLevel(talent.GetLevel()) ?? fallBack;
+        GameObject prefab = talent.GetCreaturesByLevel(talent.GetLevel()) ?? fallBack;
         if (!prefab.GetComponent<Humanoid>()) return;
         AlmanacClassesPlugin._Plugin.StartCoroutine(SpawnSystem.DelayedMultipleSpawn(
             prefab, "Friendly " + prefab.name.Replace("_", string.Empty), 

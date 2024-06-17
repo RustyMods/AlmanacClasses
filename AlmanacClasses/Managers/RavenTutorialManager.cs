@@ -11,7 +11,7 @@ public static class RavenTutorialManager
         GameObject altar = ZNetScene.instance.GetPrefab("AlmanacClassAltar");
         AddCustomTutorials(
             altar, 
-            "Class Altar", 
+            "$piece_class_altar", 
             "$almanac_class_altar_info"
             );
     }

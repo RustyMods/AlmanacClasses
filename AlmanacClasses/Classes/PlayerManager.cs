@@ -188,7 +188,7 @@ public static class PlayerManager
     {
         int output = (int)(CharacteristicManager.GetCharacteristic(Characteristic.Dexterity) / AlmanacClassesPlugin._StaminaRatio.Value);
 
-        foreach (var status in Player.m_localPlayer.GetSEMan().GetStatusEffects())
+        foreach (StatusEffect? status in Player.m_localPlayer.GetSEMan().GetStatusEffects())
         {
             if (!StatusEffectManager.IsClassEffect(status.name)) continue;
             if (!TalentManager.m_talentsByStatusEffect.TryGetValue(status.m_nameHash, out Talent talent)) continue;

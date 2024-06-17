@@ -126,29 +126,19 @@ public class Talent
         if (m_creatures == null) return null;
         ZNetScene scene = ZNetScene.instance;
         if (!scene) return null;
-        switch (biome)
+        return biome switch
         {
-            case Heightmap.Biome.Meadows:
-                return scene.GetPrefab(m_creatures.m_meadows?.Value ?? "Neck") ?? scene.GetPrefab("Neck");
-            case Heightmap.Biome.BlackForest:
-                return scene.GetPrefab(m_creatures.m_blackforest?.Value ?? "Greydwarf") ?? scene.GetPrefab("Greydwarf");
-            case Heightmap.Biome.Swamp:
-                return scene.GetPrefab(m_creatures.m_swamp?.Value ?? "Draugr") ?? scene.GetPrefab("Draugr");
-            case Heightmap.Biome.Mountain:
-                return scene.GetPrefab(m_creatures.m_mountains?.Value ?? "Ulv") ?? scene.GetPrefab("Ulv");
-            case Heightmap.Biome.Plains:
-                return scene.GetPrefab(m_creatures.m_plains?.Value ?? "Deathsquito") ?? scene.GetPrefab("Deathsquito");
-            case Heightmap.Biome.Mistlands:
-                return scene.GetPrefab(m_creatures.m_mistlands?.Value ?? "Seeker") ?? scene.GetPrefab("Seeker");
-            case Heightmap.Biome.AshLands:
-                return scene.GetPrefab(m_creatures.m_ashlands?.Value ?? "Surtling") ?? scene.GetPrefab("Surtling");
-            case Heightmap.Biome.DeepNorth:
-                return scene.GetPrefab(m_creatures.m_deepnorth?.Value ?? "Lox") ?? scene.GetPrefab("Lox");
-            case Heightmap.Biome.Ocean:
-                return scene.GetPrefab(m_creatures.m_ocean?.Value ?? "Serpent") ?? scene.GetPrefab("Serpent");
-            default:
-                return null;
-        }
+            Heightmap.Biome.Meadows => scene.GetPrefab(m_creatures.m_meadows?.Value ?? "Neck") ?? scene.GetPrefab("Neck"),
+            Heightmap.Biome.BlackForest => scene.GetPrefab(m_creatures.m_blackforest?.Value ?? "Greydwarf") ?? scene.GetPrefab("Greydwarf"),
+            Heightmap.Biome.Swamp => scene.GetPrefab(m_creatures.m_swamp?.Value ?? "Draugr") ?? scene.GetPrefab("Draugr"),
+            Heightmap.Biome.Mountain => scene.GetPrefab(m_creatures.m_mountains?.Value ?? "Ulv") ?? scene.GetPrefab("Ulv"),
+            Heightmap.Biome.Plains => scene.GetPrefab(m_creatures.m_plains?.Value ?? "Deathsquito") ?? scene.GetPrefab("Deathsquito"),
+            Heightmap.Biome.Mistlands => scene.GetPrefab(m_creatures.m_mistlands?.Value ?? "Seeker") ?? scene.GetPrefab("Seeker"),
+            Heightmap.Biome.AshLands => scene.GetPrefab(m_creatures.m_ashlands?.Value ?? "Surtling") ?? scene.GetPrefab("Surtling"),
+            Heightmap.Biome.DeepNorth => scene.GetPrefab(m_creatures.m_deepnorth?.Value ?? "Lox") ?? scene.GetPrefab("Lox"),
+            Heightmap.Biome.Ocean => scene.GetPrefab(m_creatures.m_ocean?.Value ?? "Serpent") ?? scene.GetPrefab("Serpent"),
+            _ => scene.GetPrefab("Neck")
+        };
     }
     public GameObject? GetCreaturesByLevel(int level)
     {
@@ -180,18 +170,7 @@ public class Talent
     private string GetDescription() => $"$talent_{m_key.ToLower()}_desc";
     private float GetCreaturesLength(int level) => m_creatures == null ? 0f : GetLength(level);
     public float GetCreaturesByLevelLength(int level) => m_creaturesByLevel == null ? 0f : GetLength(level);
-    public int GetCreatureByLevelLevel(int level) => level switch
-    {
-        2 => 2,
-        3 => 3,
-        4 => 1,
-        5 => 2,
-        6 => 3,
-        7 => 1,
-        8 => 2,
-        9 => 3,
-        _ => 1,
-    };
+    public int GetCreatureByLevelLevel(int level) => level switch { 2 => 2, 3 => 3, 4 => 1, 5 => 2, 6 => 3, 7 => 1, 8 => 2, 9 => 3, _ => 1, };
     public float GetArmor(int level) => m_values == null ? 0f : (m_values.m_armor?.Value ?? 0f) + (level - 1) * 2f;
     private float GetHealthRatio(int level) => GetCharacteristic(level) / _HealthRatio.Value;
     private float GetCarryWeightRatio(int level) => GetCharacteristic(level) / _CarryWeightRatio.Value;
@@ -709,6 +688,8 @@ public static class TalentManager
             }
         }
     }
+    
+    #region Data
     private static List<Talent> LoadAltCore()
     {
         Talent TreasureHunter = new Talent()
@@ -821,10 +802,8 @@ public static class TalentManager
             LoadUI.ChangeButton(battleFury, battleFury.m_alt.Value is Toggle.Off);
         };
 
-        return new() { survivor, battleFury };
+        return new List<Talent> { survivor, battleFury };
     }
-
-    #region Data
     private static List<Talent> LoadCore()
     {
         return new List<Talent>
@@ -1072,7 +1051,7 @@ public static class TalentManager
                 {
                     m_forageModifier = _Plugin.config("Core - Forager", "Modifier", 1.1f, new ConfigDescription("Set the multiplier of foraged amount", new AcceptableValueRange<float>(0f, 10f)))
                 },
-                m_forageItems = _Plugin.config("Core - Forager", "Custom Forage Item Names", "Thistle:Dandelion", "Define custom forage item list, [prefabName]:[prefabName]:..."),
+                m_forageItems = _Plugin.config("Core - Forager", "Custom Forage Item Names", "Thistle:Dandelion:Turnip:Entrails:Barley:Flax", "Define custom forage item list, [prefabName]:[prefabName]:..."),
                 m_cap = _Plugin.config("Core - Forager", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)))
             }
         };
@@ -2189,7 +2168,6 @@ public static class TalentManager
     #endregion
 
     #region Methods
-
     private static int GetTalentPoints()
     {
         int level = PlayerManager.GetPlayerLevel(PlayerManager.GetExperience());

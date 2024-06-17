@@ -5,7 +5,7 @@ using System.Reflection;
 using HarmonyLib;
 using UnityEngine;
 
-namespace KG_Managers
+namespace AlmanacClasses.LoadAssets
 {
     public static class AnimationReplaceManager
     {
@@ -91,15 +91,15 @@ namespace KG_Managers
                 FirstInit = true;
                 VanillaController = MakeAOC(new(), __instance.m_animator.runtimeAnimatorController);
                 VanillaController.name = "VanillaController";
-                foreach (var animationSet in AllAnimationSets)
+                foreach (List<string>? animationSet in AllAnimationSets)
                 {
                     Dictionary<string, string> replacementMap = new();
-                    for (var i = 0; i < animationSet.Count; i++)
+                    for (int i = 0; i < animationSet.Count; i++)
                         replacementMap.Add($"Attack{i + 1}", animationSet[i]);
                     RuntimeAnimatorController controller =
                         MakeAOC(replacementMap, __instance.m_animator.runtimeAnimatorController);
                     controller.name = AssemblyName();
-                    for (var i = 0; i < animationSet.Count; i++)
+                    for (int i = 0; i < animationSet.Count; i++)
                     {
                         Controllers[animationSet[i]] =
                             new KeyValuePair<RuntimeAnimatorController, string>(controller, $"swing_longsword{i}");

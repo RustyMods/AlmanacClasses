@@ -39,6 +39,7 @@ public static class SpawnSystem
             SetSpawnZSyncAnimation(critter);
             SetSpawnBaseAI(critter);
             RemoveCharacterDrops(critter);
+            SetMonsterAI(critter);
             ++count;
         }
 
@@ -62,7 +63,7 @@ public static class SpawnSystem
         SetSpawnZSyncAnimation(critter);
         SetSpawnBaseAI(critter);
         RemoveCharacterDrops(critter);
-
+        SetMonsterAI(critter);
         yield return new WaitForSeconds(delay * level);
         DestroySpawnedCreature();
     }
@@ -120,6 +121,7 @@ public static class SpawnSystem
         baseAI.Alert();
         baseAI.SetAggravated(baseAI.IsAggravated(), BaseAI.AggravatedReason.Damage);
         baseAI.m_passiveAggresive = true;
+        
     }
     private static void SetSpawnTameable(GameObject creature, string name, bool patch = false)
     {
@@ -148,10 +150,14 @@ public static class SpawnSystem
     }
     private static void RemoveCharacterDrops(GameObject creature)
     {
-        if (creature.TryGetComponent(out CharacterDrop characterDrop))
-        {
-            characterDrop.m_drops = new();
-        }
+        if (!creature.TryGetComponent(out CharacterDrop characterDrop)) return;
+        characterDrop.m_drops = new List<CharacterDrop.Drop>();
+    }
+
+    private static void SetMonsterAI(GameObject creature)
+    {
+        if (!creature.TryGetComponent(out MonsterAI monsterAI)) return;
+        monsterAI.m_attackPlayerObjects = false;
     }
     
     [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.Awake))]
@@ -162,6 +168,29 @@ public static class SpawnSystem
             if (!__instance) return;
             if (__instance.IsPlayer()) return;
             SetFriendlySpawns(__instance);
+        }
+    }
+
+    [HarmonyPatch(typeof(MonsterAI), nameof(MonsterAI.Awake))]
+    private static class MonsterAI_Awake_Postfix
+    {
+        private static void Postfix(MonsterAI __instance)
+        {
+            if (!__instance.m_nview.IsValid()) return;
+            if (!__instance.m_nview.GetZDO().GetBool(FriendlyKey)) return;
+            __instance.m_attackPlayerObjects = false;
+        }
+    }
+
+    [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.GiveDefaultItems))]
+    private static class Humanoid_GiveDefaultItems_Postfix
+    {
+        private static void Postfix(Humanoid __instance)
+        {
+            if (!__instance.m_nview.IsValid()) return;
+            if (!__instance.m_nview.GetZDO().GetBool(FriendlyKey)) return;
+            if (__instance == SpawnedCreature || SpawnedCreatures.Contains(__instance)) return;
+            __instance.SetHealth(0);
         }
     }
 

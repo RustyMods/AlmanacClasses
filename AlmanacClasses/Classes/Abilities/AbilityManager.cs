@@ -20,29 +20,23 @@ public static class AbilityManager
     public static bool OnCooldown() => m_cooldownMap.Count > 0;
     public static void CheckInput()
     {
-        if (AlmanacClassesPlugin._SpellAlt.Value is not KeyCode.None)
+        try
         {
-            try
+            if (AlmanacClassesPlugin._SpellAlt.Value is not KeyCode.None)
             {
                 if (!Input.GetKey(AlmanacClassesPlugin._SpellAlt.Value)) return;
                 CheckSpellKeys();
             }
-            catch
-            {
-                AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to get ability");
-            }
-        }
-        else
-        {
-            try
+            else
             {
                 CheckSpellKeys();
             }
-            catch
-            {
-                AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to get ability");
-            }
         }
+        catch
+        {
+            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to get ability");
+        }
+        
     }
     private static void CheckSpellKeys()
     {

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using AlmanacClasses.LoadAssets;
 using BepInEx;
 
 namespace AlmanacClasses.Managers;
@@ -52,12 +53,12 @@ public static class AnimationManager
 
     public static void LoadCustomAnimations()
     {
-        KG_Managers.AnimationReplaceManager.AddAnimationSet("classesbundle", "LutePlay");
-        KG_Managers.AnimationReplaceManager.AddAnimationSet("classesbundle", "StoneThrow");
-        KG_Managers.AnimationReplaceManager.AddAnimationSet("classesbundle", "Heal");
-        KG_Managers.AnimationReplaceManager.AddAnimationSet("classesbundle", "LightningStrike");
-        KG_Managers.AnimationReplaceManager.AddAnimationSet("classesbundle", "MeteorStrike");
-        KG_Managers.AnimationReplaceManager.AddAnimationSet("classesbundle", "SetTrap");
-        KG_Managers.AnimationReplaceManager.AddAnimationSet("classesbundle", "Summon");
+        AnimationReplaceManager.AddAnimationSet("classesbundle", "LutePlay");
+        AnimationReplaceManager.AddAnimationSet("classesbundle", "StoneThrow");
+        AnimationReplaceManager.AddAnimationSet("classesbundle", "Heal");
+        AnimationReplaceManager.AddAnimationSet("classesbundle", "LightningStrike");
+        AnimationReplaceManager.AddAnimationSet("classesbundle", "MeteorStrike");
+        AnimationReplaceManager.AddAnimationSet("classesbundle", "SetTrap");
+        AnimationReplaceManager.AddAnimationSet("classesbundle", "Summon");
     }
 }

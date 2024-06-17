@@ -43,7 +43,6 @@ public static class Survivor
                     float quarter = __instance.GetMaxHealth() / 4f;
                     __instance.Heal(quarter);
                     __result = quarter;
-                    // if (AlmanacClassesPlugin._SurvivorFX.Value is AlmanacClassesPlugin.Toggle.Off) return;
                     __instance.GetSEMan().AddStatusEffect(talent.m_statusEffectHash);
                 }
             }

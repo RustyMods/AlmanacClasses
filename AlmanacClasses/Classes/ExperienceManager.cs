@@ -375,14 +375,13 @@ public static class ExperienceManager
         private static void Postfix(EnemyHud __instance)
         {
             if (AlmanacClassesPlugin._DisplayExperience.Value is AlmanacClassesPlugin.Toggle.Off) return;
-            foreach (var kvp in __instance.m_huds)
+            foreach (KeyValuePair<Character, EnemyHud.HudData> kvp in __instance.m_huds)
             {
                 if (kvp.Key == null) continue;
                 if (kvp.Value.m_gui == null) continue;
                 if (kvp.Key.IsBoss() || kvp.Key.IsPlayer()) continue;
                 if (IsFriendlyCreature(kvp.Key)) continue;
-                int exp = GetExperienceAmount(kvp.Key);
-                kvp.Value.m_name.text += $" [<color=orange>{exp}</color>]";
+                kvp.Value.m_name.text += $" [<color=orange>{GetExperienceAmount(kvp.Key)}</color>]";
             }
         }
     }

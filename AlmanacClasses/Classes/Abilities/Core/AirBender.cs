@@ -47,8 +47,7 @@ public static class AirBender
         float speed = instance.m_speed;
         instance.GetSEMan().ApplyStatusEffectSpeedMods(ref speed, instance.m_currentVel);
         if (speed <= 0.0) flag = true;
-        float num1 = 0.0f;
-        num1 = instance.GetSkills().GetSkillFactor(Skills.SkillType.Jump);
+        float num1 = instance.GetSkills().GetSkillFactor(Skills.SkillType.Jump);
         if (!flag) instance.RaiseSkill(Skills.SkillType.Jump);
         Vector3 velocity = instance.m_body.velocity;
         Vector3 normalized = (instance.m_lastGroundNormal + Vector3.up).normalized;

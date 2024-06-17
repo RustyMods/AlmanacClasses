@@ -292,16 +292,15 @@ public static class LoadedAssets
             }
         };
 
-        GameObject fx_healing =
-            Object.Instantiate(fx_dverger_support_start, AlmanacClassesPlugin._Root.transform, false);
+        GameObject fx_healing = Object.Instantiate(fx_dverger_support_start, AlmanacClassesPlugin._Root.transform, false);
         fx_healing.name = "fx_shaman_heal";
         
-        foreach (var renderer in fx_healing.GetComponentsInChildren<Renderer>())
+        foreach (Renderer? renderer in fx_healing.GetComponentsInChildren<Renderer>())
         {
             List<Material> newMats = new();
             foreach (var material in renderer.materials)
             {
-                var mat = new Material(material)
+                Material mat = new Material(material)
                 {
                     color = Color.green
                 };

@@ -48,6 +48,7 @@ public class SE_Hunter : StatusEffect
         {
             if (character == null || character.IsDead()) continue;
             if (character is Player) continue;
+            if (character.m_faction is Character.Faction.Players) continue;
             if (character.GetSEMan().HaveStatusEffect("SE_SlowDown".GetStableHashCode())) continue;
             character.GetSEMan().AddStatusEffect("SE_SlowDown".GetStableHashCode());
         }
