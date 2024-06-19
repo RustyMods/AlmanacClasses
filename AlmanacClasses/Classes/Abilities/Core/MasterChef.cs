@@ -6,7 +6,7 @@ namespace AlmanacClasses.Classes.Abilities.Core;
 public static class MasterChef
 {
     [HarmonyPatch(typeof(Player), nameof(Player.GetTotalFoodValue))]
-    private static class Player_GetTotalFoodValue_Postfix
+    private static class Player_GetTotalFoodValue_Prefix
     {
         private static void Prefix(Player __instance)
         {

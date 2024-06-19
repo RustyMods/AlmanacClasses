@@ -90,7 +90,7 @@ public static class RavenTutorialManager
     {
         private static bool Prefix(Raven __instance, bool forceTeleport = false)
         {
-            if (__instance.m_currentText.m_topic != "$piece_class_altar") return true;
+            if (__instance.m_currentText is not { m_topic: "$piece_class_altar" }) return true;
             if (!forceTeleport) return true;
             Chat.instance.ClearNpcText(__instance.gameObject);
             return false;

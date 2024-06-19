@@ -47,7 +47,6 @@ public static class RootBeam
                     m_dodgeable = true,
                     m_blockable = true,
                     m_skill = Skills.SkillType.ElementalMagic,
-                    m_skillRaiseAmount = 0.2f
                 };
                 hitData.SetAttacker(Player.m_localPlayer);
                 

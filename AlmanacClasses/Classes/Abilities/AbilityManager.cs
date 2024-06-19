@@ -102,7 +102,7 @@ public static class AbilityManager
     {
         if (!m_castedSpells.Contains(ability.m_key)) return true;
         if (!m_cooldownMap.TryGetValue(ability.m_key, out float cooldown)) return true;
-        Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"{ability.m_key} $msg_casted, $msg_wait {(int)(cooldown * (ability.m_cooldown?.Value ?? 10f))} $msg_seconds");
+        Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"{ability.GetName()} $msg_casted, $msg_wait {(int)(cooldown * ability.GetCooldown(ability.GetLevel()))} $msg_seconds");
         return false;
 
     }

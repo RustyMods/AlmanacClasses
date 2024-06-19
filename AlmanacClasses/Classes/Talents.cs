@@ -741,7 +741,7 @@ public static class TalentManager
             m_alt = _Plugin.config("Core - Sailor", "Enable", Toggle.Off, "If on replaces the gypsy talent"),
             m_cap = _Plugin.config("Core - Sailor", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 10))),
             m_startEffects = LoadedAssets.GP_Moder.m_startEffects,
-            m_animation = "gpower",
+            m_animation = "point",
             m_useAnimation = _Plugin.config("Core - Sailor", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
             m_length = _Plugin.config("Core - Sailor", "Length", 50f, new ConfigDescription("Set the duration of effect", new AcceptableValueRange<float>(1f, 1000f))),
             m_cooldown = _Plugin.config("Core - Sailor", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(1f, 1000f))),
@@ -1571,7 +1571,6 @@ public static class TalentManager
                 m_type = TalentType.Ability,
                 m_cooldown = _Plugin.config("Shaman - Summon", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Shaman - Summon", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
-                // m_creature = _Plugin.config("Shaman - Summon", "Creature Name", "Ghost", "Set the creature to summon"),
                 m_creaturesByLevel = new Talent.CreaturesByLevel()
                 {
                     m_oneToThree = _Plugin.config("Shaman - Summon", "One To Three", "Ghost", "Set creature spawn for talent level one to three"),

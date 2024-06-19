@@ -359,7 +359,7 @@ public static class LoadUI
             
             AddLevel(SelectedTalent);
             CharacteristicManager.UpdateCharacteristics();
-            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_prestiged " + SelectedTalent.GetName() + " $almanac_to lvl " + SelectedTalent.GetLevel());
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_prestiged " + SelectedTalent.GetName() + " $almanac_to $text_lvl " + SelectedTalent.GetLevel());
             TalentBook.ShowUI();
         });
     }
@@ -671,7 +671,7 @@ public static class LoadUI
     {
         if (Player.m_localPlayer.GetInventory().CountItems("$item_coins") < AlmanacClassesPlugin._ResetCost.Value)
         {
-            Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"Cost {AlmanacClassesPlugin._ResetCost.Value} $item_coins to reset talents");
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"$text_cost {AlmanacClassesPlugin._ResetCost.Value} $item_coins $text_to_reset");
             return;
         }
 

@@ -69,13 +69,9 @@ public static class BleedTrigger
     {
         if (__instance.GetSEMan().HaveStatusEffect("SE_Bleed".GetStableHashCode()))
         {
-            StatusEffect bleed = __instance.GetSEMan().GetStatusEffect("SE_Bleed".GetStableHashCode());
-            bleed.ResetTime();
-            SE_Bleed? seBleed = bleed as SE_Bleed;
-            if (seBleed != null)
-            {
-                ++seBleed.m_stack;
-            }
+            StatusEffect effect = __instance.GetSEMan().GetStatusEffect("SE_Bleed".GetStableHashCode());
+            effect.ResetTime();
+            if (effect is SE_Bleed bleed) ++bleed.m_stack;
         }
         else
         {

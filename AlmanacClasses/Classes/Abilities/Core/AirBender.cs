@@ -30,6 +30,9 @@ public static class AirBender
         }
         
         if (!ZInput.GetButtonDown("Jump")) return;
+
+        if (JumpCount >= talent.GetLevel()) return;
+        
         bool flag = false;
 
         if (!instance.HaveEitr(talent.GetEitrCost()))
