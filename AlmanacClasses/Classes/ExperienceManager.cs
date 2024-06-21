@@ -242,6 +242,22 @@ public static class ExperienceManager
             if (!__instance) return;
             if (!__instance.m_nview || __instance.m_nview.GetZDO() == null) return;
             __instance.m_nview.Register<int>(nameof(RPC_AddExperience), RPC_AddExperience);
+            __instance.m_nview.Register<string>(nameof(RPC_SetKey), RPC_SetKey);
+        }
+    }
+    
+    private static void RPC_SetKey(long sender, string key) => Player.m_localPlayer.AddUniqueKey(key);
+    
+    public static void SetDefeatKey(Character __instance)
+    {
+        if (!__instance.IsBoss() || __instance.m_defeatSetGlobalKey.IsNullOrWhiteSpace()) return;
+        Player.m_localPlayer.AddUniqueKey(__instance.m_defeatSetGlobalKey);
+        foreach (Player? player in Player.GetAllPlayers())
+        {
+            if (player == null || player.IsDead()) continue;
+            if (!player.m_nview.IsValid()) continue;
+            if (player.m_nview.GetZDO() == null) continue;
+            player.m_nview.InvokeRPC(nameof(RPC_SetKey), __instance.m_defeatSetGlobalKey);
         }
     }
 

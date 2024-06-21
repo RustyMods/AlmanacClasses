@@ -17,10 +17,12 @@ public class SE_SongOfDamage : StatusEffect
 
     public override void Setup(Character character)
     {
-        if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
-        m_ttl = talent.GetLength(talent.GetLevel());
-        m_startEffects = talent.GetEffectList();
-        m_talent = talent;
+        if (TalentManager.m_talents.TryGetValue(m_key, out Talent talent))
+        {
+            m_ttl = talent.GetLength(talent.GetLevel());
+            m_startEffects = talent.GetEffectList();
+            m_talent = talent;
+        }
         base.Setup(character);
         Transform transform = m_character.transform;
         m_customEffects = LoadedAssets.SFX_Dverger_Shot.Create(transform.position, transform.rotation, transform);
@@ -72,6 +74,9 @@ public class SE_SongOfDamage : StatusEffect
             if (effect is SE_SongOfDamage song)
             {
                 song.m_modifier = m_talent.GetAttack(m_talent.GetLevel());
+                song.m_ttl = m_ttl;
+                song.m_startEffects = m_startEffects;
+                song.m_talent = m_talent;
             }
         }
     }

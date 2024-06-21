@@ -43,8 +43,13 @@ public static class RavenTutorialManager
     [HarmonyPatch(typeof(Raven), nameof(Raven.Spawn))]
     private static class Raven_Spawn_Postfix
     {
+        private static bool Prefix(Raven.RavenText text)
+        {
+            return text.m_topic != "$piece_class_altar" || AlmanacClassesPlugin._EnableRaven.Value is AlmanacClassesPlugin.Toggle.On;
+        }
         private static void Postfix(Raven __instance, Raven.RavenText text, bool forceTeleport)
         {
+            if (AlmanacClassesPlugin._EnableRaven.Value is AlmanacClassesPlugin.Toggle.Off) return;
             if (!__instance) return;
             if (Utils.GetMainCamera() == null) return;
             if (text.m_topic != "$piece_class_altar") return;
@@ -90,6 +95,7 @@ public static class RavenTutorialManager
     {
         private static bool Prefix(Raven __instance, bool forceTeleport = false)
         {
+            if (AlmanacClassesPlugin._EnableRaven.Value is AlmanacClassesPlugin.Toggle.Off) return true;
             if (__instance.m_currentText is not { m_topic: "$piece_class_altar" }) return true;
             if (!forceTeleport) return true;
             Chat.instance.ClearNpcText(__instance.gameObject);
@@ -103,6 +109,8 @@ public static class RavenTutorialManager
         private static void Prefix(Raven __instance)
         {
             if (__instance.m_currentText is not { m_topic: "$piece_class_altar" }) return;
+
+            if (AlmanacClassesPlugin._EnableRaven.Value is AlmanacClassesPlugin.Toggle.Off) return;
             __instance.m_randomTexts = new List<string>()
             {
                 "$raven_greeting", 

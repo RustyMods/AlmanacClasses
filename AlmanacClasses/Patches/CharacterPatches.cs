@@ -1,6 +1,7 @@
 ﻿using AlmanacClasses.Classes;
 using AlmanacClasses.Classes.Abilities.Core;
 using AlmanacClasses.Classes.Abilities.Warrior;
+using BepInEx;
 using HarmonyLib;
 
 namespace AlmanacClasses.Patches;
@@ -19,6 +20,7 @@ public static class CharacterPatches
             if (__instance.m_nview.GetZDO().GetBool(Classes.Abilities.SpawnSystem.FriendlyKey)) return;
             ExperienceManager.AddExperience(__instance);
             ExperienceManager.DropOrb(__instance);
+            ExperienceManager.SetDefeatKey(__instance);
             Pickpocket.CheckDoubleLoot(__instance);
             BattleFury.CheckBattleFury(__instance);
         }

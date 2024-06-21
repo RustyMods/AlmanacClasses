@@ -23,7 +23,7 @@ namespace AlmanacClasses
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
-        internal const string ModVersion = "0.4.12";
+        internal const string ModVersion = "0.4.13";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
         private static readonly string ConfigFileName = ModGUID + ".cfg";
@@ -152,6 +152,7 @@ namespace AlmanacClasses
         public static ConfigEntry<int> _ChanceForOrb = null!;
         public static ConfigEntry<int> _MaxLevel = null!;
         private static ConfigEntry<KeyCode> _ShowUIKey = null!;
+        public static ConfigEntry<Toggle> _EnableRaven = null!;
         #endregion
         public static ConfigEntry<float> _EitrRatio = null!;
         public static ConfigEntry<float> _HealthRatio = null!;
@@ -189,6 +190,9 @@ namespace AlmanacClasses
             _SpeedRatio = config("4 - Characteristics", "7. Attack Speed Ratio", 3f, new ConfigDescription("Set the ratio of dexterity to increase attack speed", new AcceptableValueRange<float>(1f, 10f)));
             _CarryWeightRatio = config("4 - Characteristics", "8. Carry Weight Ratio", 1f, new ConfigDescription("Set the ratio of strength to increased carry weight", new AcceptableValueRange<float>(1, 10f)));
             _StatsCost = config("4 - Characteristics", "9. Purchase Cost", 3, new ConfigDescription("Set the cost to unlock characteristic talents", new AcceptableValueRange<int>(1, 10)));
+
+            _EnableRaven = config("2 - Settings", "Raven", Toggle.On,
+                "If on, plugin adds Munin raven to altar prefab");
         }
         private void InitSettingsConfigs()
         {

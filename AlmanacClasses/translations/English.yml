@@ -105,6 +105,7 @@ msg_select_talent: "Select a talent to prestige"
 msg_prestige_cap: "Talent already max level"
 msg_on_cooldown: "Talents are cooling down"
 msg_doubleloot: "Double loot: Spawned Extra Items"
+msg_no_targets: "No targets"
 
 button_center: "Select a talent to prestige"
 button_center_desc: "Purchase a talent, then click on it again to highlight. Press this button to upgrade it."

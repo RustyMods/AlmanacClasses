@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using AlmanacClasses.LoadAssets;
+using AlmanacClasses.Managers;
 using UnityEngine;
 
 namespace AlmanacClasses.Classes.Abilities.Bard;
@@ -7,7 +8,7 @@ namespace AlmanacClasses.Classes.Abilities.Bard;
 public class SE_SongOfSpeed : StatusEffect
 {
     private readonly string m_key = "SongOfSpeed";
-    private Talent m_talent = null!;
+    private Talent? m_talent;
     private readonly List<Player> m_players = new();
     private float m_searchTimer;
     private float m_boostTimer;
@@ -16,18 +17,28 @@ public class SE_SongOfSpeed : StatusEffect
 
     public override void Setup(Character character)
     {
-        if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
-        m_ttl = talent.GetLength(talent.GetLevel());
-        m_startEffects = talent.GetEffectList();
-        m_talent = talent;
+        if (TalentManager.m_talents.TryGetValue(m_key, out Talent talent) && m_talent == null)
+        {
+            m_ttl = talent.GetLength(talent.GetLevel());
+            m_startEffects = talent.GetEffectList();
+            m_talent = talent;
+        };
+        if (m_ttl == 0f) m_ttl = 10f;
+
         base.Setup(character);
         Transform transform = m_character.transform;
         m_customEffects = LoadedAssets.SFX_Dverger_Shot.Create(transform.position, transform.rotation, transform);
+
+        if (!PlayerManager.m_playerTalents.ContainsKey(m_key))
+        {
+            AnimationManager.DoAnimation(m_talent?.m_animation ?? "");
+        }
     }
 
     public override void UpdateStatusEffect(float dt)
     {
         base.UpdateStatusEffect(dt);
+        if (!PlayerManager.m_playerTalents.ContainsKey(m_key)) return;
         FindPlayers(dt);
         BoostPlayers(dt);
     }
@@ -70,13 +81,16 @@ public class SE_SongOfSpeed : StatusEffect
             StatusEffect effect = player.GetSEMan().AddStatusEffect(name.GetStableHashCode());
             if (effect is SE_SongOfSpeed speed)
             {
-                speed.m_modifier = m_talent.GetSpeedModifier(m_talent.GetLevel());
+                speed.m_modifier = m_talent?.GetSpeedModifier(m_talent.GetLevel()) ?? 1f;
+                speed.m_talent = m_talent;
+                speed.m_ttl = m_ttl;
+                speed.m_startEffects = m_startEffects;
             }
         }
     }
 
     public override void ModifySpeed(float baseSpeed, ref float speed, Character character, Vector3 dir)
     {
-        speed *= m_modifier == 0f ? m_talent.GetSpeedModifier(m_talent.GetLevel()) : m_modifier;
+        speed *= m_modifier == 0f ? m_talent?.GetSpeedModifier(m_talent.GetLevel()) ?? 1f : m_modifier;
     }
 }

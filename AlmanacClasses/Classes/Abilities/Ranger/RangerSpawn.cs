@@ -7,7 +7,6 @@ public static class RangerSpawn
     public static void TriggerHunterSpawn(GameObject creature, Talent talent)
     {
         if (!creature) return;
-        if (!creature.GetComponent<Humanoid>()) return;
         AlmanacClassesPlugin._Plugin.StartCoroutine(SpawnSystem.DelayedSpawn(creature, "Friendly " + creature.name.Replace("_", " "), talent.GetLevel(), talent.GetLength(talent.GetLevel())));
     }
 

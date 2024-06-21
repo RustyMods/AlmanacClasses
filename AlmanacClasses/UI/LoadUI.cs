@@ -289,16 +289,11 @@ public static class LoadUI
 
         // Static Elements
         Utils.FindChild(SkillTree_UI.transform, "$text_title").GetComponent<Text>().text = "$title_talents";
-        Utils.FindChild(SkillTree_UI.transform, "$text_constitution_title").GetComponent<Text>().text =
-            Localization.instance.Localize("$almanac_constitution");
-        Utils.FindChild(SkillTree_UI.transform, "$text_dexterity_title").GetComponent<Text>().text =
-            Localization.instance.Localize("$almanac_dexterity");
-        Utils.FindChild(SkillTree_UI.transform, "$text_intelligence_title").GetComponent<Text>().text =
-            Localization.instance.Localize("$almanac_intelligence");
-        Utils.FindChild(SkillTree_UI.transform, "$text_strength_title").GetComponent<Text>().text =
-            Localization.instance.Localize("$almanac_strength");
-        Utils.FindChild(SkillTree_UI.transform, "$text_wisdom_title").GetComponent<Text>().text =
-            Localization.instance.Localize("$almanac_wisdom");
+        Utils.FindChild(SkillTree_UI.transform, "$text_constitution_title").GetComponent<Text>().text = Localization.instance.Localize("$almanac_constitution");
+        Utils.FindChild(SkillTree_UI.transform, "$text_dexterity_title").GetComponent<Text>().text = Localization.instance.Localize("$almanac_dexterity");
+        Utils.FindChild(SkillTree_UI.transform, "$text_intelligence_title").GetComponent<Text>().text = Localization.instance.Localize("$almanac_intelligence");
+        Utils.FindChild(SkillTree_UI.transform, "$text_strength_title").GetComponent<Text>().text = Localization.instance.Localize("$almanac_strength");
+        Utils.FindChild(SkillTree_UI.transform, "$text_wisdom_title").GetComponent<Text>().text = Localization.instance.Localize("$almanac_wisdom");
 
         LoadCloseButton();
         LoadResetButton();

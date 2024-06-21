@@ -146,7 +146,7 @@ public static class AbilityManager
                 MeteorStrike.TriggerMeteor(damages);
                 break;
             case "TriggerLightningAOE":
-                if (!CallOfLightning.TriggerLightningAOE(damages)) return false;
+                if (!CallOfLightning.TriggerLightningAOE(talent)) return false;
                 break;
             case "TriggerGoblinBeam":
                 GoblinBeam.TriggerGoblinBeam(damages);

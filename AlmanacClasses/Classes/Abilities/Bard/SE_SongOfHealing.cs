@@ -7,7 +7,7 @@ namespace AlmanacClasses.Classes.Abilities.Bard;
 public class SE_SongOfHealing : StatusEffect
 {
     private readonly string m_key = "SongOfHealing";
-    private Talent m_talent = null!;
+    private Talent? m_talent;
     private readonly List<Player> m_players = new();
     private float m_healTimer;
     private float m_searchTimer;
@@ -15,10 +15,14 @@ public class SE_SongOfHealing : StatusEffect
 
     public override void Setup(Character character)
     {
-        if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
-        m_ttl = talent.GetLength(talent.GetLevel());
-        m_startEffects = talent.GetEffectList();
-        m_talent = talent;
+        if (TalentManager.m_talents.TryGetValue(m_key, out Talent talent))
+        {
+            m_ttl = talent.GetLength(talent.GetLevel());
+            m_startEffects = talent.GetEffectList();
+            m_talent = talent;
+        }
+        if (m_ttl == 0f) m_ttl = 10f;
+        
         base.Setup(character);
         Player.GetPlayersInRange(m_character.transform.position, 10f, m_players);
         Transform transform = m_character.transform;
@@ -35,6 +39,11 @@ public class SE_SongOfHealing : StatusEffect
     public override void Stop()
     {
         base.Stop();
+        RemoveCustomEffects();
+    }
+
+    private void RemoveCustomEffects()
+    {
         if (m_customEffects == null || ZNetScene.instance == null) return;
         foreach (GameObject instance in m_customEffects)
         {
@@ -45,7 +54,6 @@ public class SE_SongOfHealing : StatusEffect
             component.Destroy();
         }
     }
-
     
     private void FindPlayers(float dt)
     {
@@ -66,8 +74,8 @@ public class SE_SongOfHealing : StatusEffect
         foreach (Player? player in m_players)
         {
             if (player == null || player.IsDead()) continue;
-            player.Heal(m_talent.GetHealAmount(m_talent.GetLevel()));
-            if (!m_talent.UseEffects()) continue;
+            player.Heal(m_talent?.GetHealAmount(m_talent.GetLevel()) ?? 0f);
+            if (!m_talent?.UseEffects() ?? false) continue;
             Transform transform = player.transform;
             m_startEffects.Create(transform.position, transform.rotation, transform);
         }

@@ -126,7 +126,7 @@ public class Talent
         if (m_creatures == null) return null;
         ZNetScene scene = ZNetScene.instance;
         if (!scene) return null;
-        return biome switch
+        var creature = biome switch
         {
             Heightmap.Biome.Meadows => scene.GetPrefab(m_creatures.m_meadows?.Value ?? "Neck") ?? scene.GetPrefab("Neck"),
             Heightmap.Biome.BlackForest => scene.GetPrefab(m_creatures.m_blackforest?.Value ?? "Greydwarf") ?? scene.GetPrefab("Greydwarf"),
@@ -139,15 +139,17 @@ public class Talent
             Heightmap.Biome.Ocean => scene.GetPrefab(m_creatures.m_ocean?.Value ?? "Serpent") ?? scene.GetPrefab("Serpent"),
             _ => scene.GetPrefab("Neck")
         };
+
+        return creature.GetComponent<Humanoid>() ? creature : null;
     }
     public GameObject? GetCreaturesByLevel(int level)
     {
         if (m_creaturesByLevel == null) return null;
         ZNetScene scene = ZNetScene.instance;
         if (!scene) return null;
-        bool defeatedBonemass = ZoneSystem.instance.CheckKey("defeated_bonemass");
-        bool defeatedKing = ZoneSystem.instance.CheckKey("defeated_goblinking");
-        bool defeatedQueen = ZoneSystem.instance.CheckKey("defeated_queen");
+        bool defeatedBonemass = ZoneSystem.instance.CheckKey("defeated_bonemass", GameKeyType.Player);
+        bool defeatedKing = ZoneSystem.instance.CheckKey("defeated_goblinking", GameKeyType.Player);
+        bool defeatedQueen = ZoneSystem.instance.CheckKey("defeated_queen", GameKeyType.Player);
         return level switch
         {
             4 => defeatedBonemass ? scene.GetPrefab(m_creaturesByLevel.m_fourToSix?.Value ?? "Wraith") : scene.GetPrefab(m_creaturesByLevel.m_oneToThree?.Value ?? "Ghost"),
@@ -1325,6 +1327,7 @@ public static class TalentManager
                 m_button = "$button_sage_talent_4",
                 m_ability = "TriggerLightningAOE",
                 m_type = TalentType.Ability,
+                m_effectsEnabled = _Plugin.config("Sage - Lightning", "Start Effects", Toggle.On, "If on, electric effects will show up around player during spell"),
                 m_cooldown = _Plugin.config("Sage - Lightning", "Cooldown", 90f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f))),
                 m_cost = _Plugin.config("Sage - Lightning", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_damages = new Talent.TalentDamages()
@@ -1695,7 +1698,7 @@ public static class TalentManager
                 m_length = _Plugin.config("Bard - Song of Damage", "Length", 60f, new ConfigDescription("Set the length of effect", new AcceptableValueRange<float>(1f, 1000f))),
                 m_sprite = SpriteManager.SongOfDamage_Icon,
                 m_startEffects = LoadedAssets.AddBardFX(Color.red, "FX_Bard_Music_Red", true),
-                m_animation = "LutePlay",
+                m_animation = "dance",
                 m_useAnimation = _Plugin.config("Bard - Song of Damage", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Bard - Song of Damage", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Damage", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1718,7 +1721,7 @@ public static class TalentManager
                 m_length = _Plugin.config("Bard - Song of Healing", "Length", 60f, new ConfigDescription("Set the length of effect", new AcceptableValueRange<float>(1f, 1000f))),
                 m_sprite = SpriteManager.SongOfHealing_Icon,
                 m_startEffects = LoadedAssets.AddBardFX(Color.yellow, "FX_Bard_Music_Yellow"),
-                m_animation = "LutePlay",
+                m_animation = "dance",
                 m_useAnimation = _Plugin.config("Bard - Song of Healing", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Bard - Song of Healing", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Healing", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1741,7 +1744,7 @@ public static class TalentManager
                 m_length = _Plugin.config("Bard - Song of Vitality", "Length", 60f, new ConfigDescription("Set the length of effect", new AcceptableValueRange<float>(1f, 1000f))),
                 m_sprite = SpriteManager.SongOfVitality_Icon,
                 m_startEffects = LoadedAssets.AddBardFX(Color.blue, "FX_Bard_Music_Blue"),
-                m_animation = "LutePlay",
+                m_animation = "dance",
                 m_useAnimation = _Plugin.config("Bard - Song of Vitality", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Bard - Song of Vitality", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Vitality", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1764,7 +1767,7 @@ public static class TalentManager
                 m_length = _Plugin.config("Bard - Song of Speed", "Length", 60f, new ConfigDescription("Set the length of effect", new AcceptableValueRange<float>(1f, 1000f))),
                 m_sprite = SpriteManager.SongOfSpeed_Icon,
                 m_startEffects = LoadedAssets.AddBardFX(Color.green, "FX_Bard_Music_Green"),
-                m_animation = "LutePlay",
+                m_animation = "dance",
                 m_useAnimation = _Plugin.config("Bard - Song of Speed", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Bard - Song of Speed", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Speed", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
@@ -1788,7 +1791,7 @@ public static class TalentManager
                 m_length = _Plugin.config("Bard - Song of Attrition", "Length", 10f, new ConfigDescription("Set the length of effect", new AcceptableValueRange<float>(1f, 1000f))),
                 m_sprite = SpriteManager.SongOfSpirit_Icon,
                 m_startEffects = LoadedAssets.VFX_SongOfSpirit,
-                m_animation = "LutePlay",
+                m_animation = "dance",
                 m_useAnimation = _Plugin.config("Bard - Song of Attrition", "Use Animation", Toggle.On, "If on, casting ability triggers animation"),
                 m_healthCost = _Plugin.config("Bard - Song of Attrition", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),
                 m_staminaCost = _Plugin.config("Bard - Song of Attrition", "Stamina Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f))),

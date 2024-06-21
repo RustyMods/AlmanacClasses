@@ -1,6 +1,7 @@
 ﻿using AlmanacClasses.LoadAssets;
 using AlmanacClasses.Managers;
 using HarmonyLib;
+using UnityEngine;
 
 namespace AlmanacClasses.Classes.Abilities.Warrior;
 
@@ -30,6 +31,8 @@ public static class DualWield
     private static ItemDrop.ItemData? rightItem;
     private static ItemDrop.ItemData? leftItem;
     private static bool isDualWielding;
+    private static string m_lastLeftItem = "";
+    private static bool m_changeAttach;
     
     [HarmonyPatch(typeof(Attack), nameof(Attack.Start))]
     private static class Attach_Start_Prefix_Patch
@@ -55,6 +58,24 @@ public static class DualWield
         bool hasAxes = right.m_shared.m_skillType is Skills.SkillType.Axes || left.m_shared.m_skillType is Skills.SkillType.Axes;
         instance.m_attackAnimation = normalAttack.EndsWith("_secondary") ? hasAxes ? "dualaxes_secondary" : "dual_knives_secondary" : hasKnife ? "dual_knives" : "dualaxes";
         instance.m_attackChainLevels = normalAttack.EndsWith("_secondary") ? 1 : 4;
+    }
+
+    [HarmonyPatch(typeof(VisEquipment), nameof(VisEquipment.AttachItem))]
+    private static class AttachItem_Override
+    {
+        private static void Prefix(VisEquipment __instance, int itemHash, ref Transform joint)
+        {
+            if (!Player.m_localPlayer || !m_changeAttach) return;
+            if (!PlayerManager.m_playerTalents.ContainsKey("DualWield")) return;
+            if (joint != __instance.m_backMelee) return;
+            GameObject itemPrefab = ObjectDB.instance.GetItemPrefab(itemHash);
+            if (!itemPrefab) return;
+            if (!itemPrefab.TryGetComponent(out ItemDrop component)) return;
+            if (component.m_itemData.m_shared.m_name != m_lastLeftItem) return;
+            joint = __instance.m_backTool;
+            m_lastLeftItem = "";
+            m_changeAttach = false;
+        }
     }
     
     [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.EquipItem))]
@@ -96,6 +117,11 @@ public static class DualWield
                 
             rightItem = __instance.GetRightItem();
             leftItem = item;
+            
+            if (rightItem.m_shared.m_attachOverride is not ItemDrop.ItemData.ItemType.Tool && leftItem.m_shared.m_attachOverride is not ItemDrop.ItemData.ItemType.Tool)
+            {
+                m_changeAttach = true;
+            }
 
             ImproveRightItem();
             talent.m_passiveActive = true;
@@ -117,6 +143,7 @@ public static class DualWield
             if (__instance != Player.m_localPlayer) return;
             if (!isDualWielding) return;
             ResetRightItem();
+            m_lastLeftItem = leftItem?.m_shared.m_name ?? "";
             if (item == rightItem && leftItem != null)
             {
                 __instance.m_rightItem = leftItem;
