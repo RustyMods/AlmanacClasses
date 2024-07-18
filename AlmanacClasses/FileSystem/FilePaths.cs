@@ -8,6 +8,7 @@ public static class FilePaths
     private static readonly string FolderPath = Paths.ConfigPath + Path.DirectorySeparatorChar + "AlmanacClasses";
     public static readonly string ExperienceFolderPath = FolderPath + Path.DirectorySeparatorChar + "Experience";
     public static readonly string ExperienceFilePath = ExperienceFolderPath + Path.DirectorySeparatorChar + "AlmanacExperienceMap.yml";
+    public static readonly string TierExperienceFilePath = ExperienceFolderPath + Path.DirectorySeparatorChar + "ExperienceMap.yml";
 
     public static void CreateFolders()
     {

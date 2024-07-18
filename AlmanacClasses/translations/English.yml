@@ -72,7 +72,7 @@ info_hover: "Hover talents for info"
 info_ready: "Ready"
 info_required: "Required"
 info_defeated: "Killed"
-
+info_orbs_desc: "Adds experience"
 info_reset_talents: "Reset Talents"
 info_spellbook_key: "Alt Spell Book Key"
 
@@ -106,6 +106,7 @@ msg_prestige_cap: "Talent already max level"
 msg_on_cooldown: "Talents are cooling down"
 msg_doubleloot: "Double loot: Spawned Extra Items"
 msg_no_targets: "No targets"
+msg_lost_experience: "Class Experience Loss"
 
 button_center: "Select a talent to prestige"
 button_center_desc: "Purchase a talent, then click on it again to highlight. Press this button to upgrade it."

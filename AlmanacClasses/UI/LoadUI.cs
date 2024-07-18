@@ -321,7 +321,10 @@ public static class LoadUI
         int level = PlayerManager.GetPlayerLevel(experience);
         int nxtLvlExp = PlayerManager.GetRequiredExperience(level + 1);
         ExpHudText.text = $"{experience} / {nxtLvlExp}";
-        ExpHudFillBar.fillAmount = (float)experience / nxtLvlExp;
+        ExperienceBarFill.fillAmount = 
+            level == 1 
+                ? (float)experience / nxtLvlExp 
+                : 1f - (float)(nxtLvlExp - experience) / (nxtLvlExp - PlayerManager.GetRequiredExperience(level));
     }
     private static void SetPrestigeButton()
     {
@@ -346,7 +349,14 @@ public static class LoadUI
                 return;
             }
 
-            if (SelectedTalent.GetLevel() == SelectedTalent.GetPrestigeCap())
+            if (SelectedTalent.GetLevel() >= SelectedTalent.GetPrestigeCap())
+            {
+                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_prestige_cap");
+                return;
+            }
+
+            if (SelectedTalent.m_type is TalentType.Characteristic &&
+                SelectedTalent.GetLevel() >= AlmanacClassesPlugin._characteristicCap.Value)
             {
                 Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_prestige_cap");
                 return;

@@ -24,12 +24,31 @@ public static class StatusEffectManager
         effects.AddRange(LoadRogue());
         effects.AddRange(LoadWarrior());
         effects.AddRange(LoadShaman());
+        effects.AddRange(LoadParticulars());
         foreach (StatusEffect? effect in effects)
         {
             m_statusEffects[effect.name] = effect;
             if (__instance.m_StatusEffects.Contains(effect)) continue;
             __instance.m_StatusEffects.Add(effect);
         }
+    }
+
+    private static List<StatusEffect> LoadParticulars()
+    {
+        List<StatusEffect> output = new();
+        SE_Stats SE_LightningResist = ScriptableObject.CreateInstance<SE_Stats>();
+        SE_LightningResist.name = "SE_LightningResist";
+        SE_LightningResist.m_name = "Call Of Lightning";
+        SE_LightningResist.m_ttl = 3f;
+        SE_LightningResist.m_mods = new List<HitData.DamageModPair>()
+        {
+            new HitData.DamageModPair()
+                { m_type = HitData.DamageType.Lightning, m_modifier = HitData.DamageModifier.Ignore },
+            new HitData.DamageModPair()
+                { m_type = HitData.DamageType.Pierce, m_modifier = HitData.DamageModifier.Resistant }
+        };
+        output.Add(SE_LightningResist);
+        return output;
     }
 
     private static List<StatusEffect> LoadCore()

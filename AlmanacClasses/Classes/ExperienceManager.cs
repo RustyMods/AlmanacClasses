@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using AlmanacClasses.Classes.Abilities.Core;
 using AlmanacClasses.FileSystem;
 using AlmanacClasses.LoadAssets;
-using AlmanacClasses.Managers;
 using BepInEx;
 using HarmonyLib;
 using ServerSync;
@@ -16,153 +16,206 @@ namespace AlmanacClasses.Classes;
 
 public static class ExperienceManager
 {
-    private static readonly CustomSyncedValue<string> ServerExperienceMap = new(AlmanacClassesPlugin.ConfigSync, "ServerTalentsExperienceMap", "");
-
+    private static readonly CustomSyncedValue<string> TierServerExperienceMap = new(AlmanacClassesPlugin.ConfigSync, "TierServerExperienceMap", "");
+    private static Dictionary<string, CreatureData> m_experienceMap = new();
+    
+    [Serializable]
+    public class CreatureData
+    {
+        public int Experience = 1;
+        public int MinimumLevel = 1;
+        public int MaximumLevel = 1;
+    }
+    
     [HarmonyPatch(typeof(ZNet), nameof(ZNet.Start))]
     private static class ZNet_Start_Patch
     {
         private static void Postfix(ZNet __instance)
         {
             if (!__instance) return;
-            InitServerExperienceMap();
+            FilePaths.CreateFolders();
+            if (ZNet.instance.IsServer())
+            {
+                ISerializer serializer = new SerializerBuilder().Build();
+                TierServerExperienceMap.Value = serializer.Serialize(m_experienceMap);
+            }
+            else
+            {
+                TierServerExperienceMap.ValueChanged += OnServerExperienceChange;
+            }
         }
     }
-    private static void InitServerExperienceMap()
+    private static void OnServerExperienceChange()
     {
-        if (!ZNet.instance) return;
+        try
+        {
+            IDeserializer deserializer = new DeserializerBuilder().Build();
+            m_experienceMap = deserializer.Deserialize<Dictionary<string, CreatureData>>(TierServerExperienceMap.Value);
+            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Server experience map changed, reloading");
+        }
+        catch
+        {
+            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to parse server experience map");
+        }
+    }
+
+    public static void LoadCreatureMap()
+    {
         FilePaths.CreateFolders();
-        if (ZNet.instance.IsServer())
-        {
-            ReadExperienceFiles(true);
-        }
-        else
-        {
-            ServerExperienceMap.ValueChanged += OnServerExperienceMapChange;
-        }
-    }
-    public static void ReadExperienceFiles(bool sync = false)
-    {
         ISerializer serializer = new SerializerBuilder().Build();
-        if (!File.Exists(FilePaths.ExperienceFilePath))
+        if (File.Exists(FilePaths.TierExperienceFilePath))
         {
-            File.WriteAllText(FilePaths.ExperienceFilePath, serializer.Serialize(CreatureExperienceMap));
-        }
-        else
-        {
+            IDeserializer deserializer = new DeserializerBuilder().Build();
+            string file = File.ReadAllText(FilePaths.TierExperienceFilePath);
             try
             {
-                string data = File.ReadAllText(FilePaths.ExperienceFilePath);
-                IDeserializer deserializer = new DeserializerBuilder().Build();
-                Dictionary<string, int> custom = deserializer.Deserialize<Dictionary<string, int>>(data);
-                foreach (KeyValuePair<string, int> kvp in custom)
-                {
-                    CreatureExperienceMap[kvp.Key] = kvp.Value;
-                }
-
-                if (custom.Count < CreatureExperienceMap.Count)
-                {
-                    string appended = serializer.Serialize(CreatureExperienceMap);
-                    File.WriteAllText(FilePaths.ExperienceFilePath, appended);
-                }
+                m_experienceMap = deserializer.Deserialize<Dictionary<string, CreatureData>>(file);
             }
             catch
             {
-                if (File.Exists(FilePaths.ExperienceFilePath)) File.Delete(FilePaths.ExperienceFilePath);
-                AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to deserialize custom experience map");
+                AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to parse experience map");
+                m_experienceMap = GetDefaultCreatureMap();
             }
         }
+        else
+        {
+            m_experienceMap = GetDefaultCreatureMap();
+            string data = serializer.Serialize(m_experienceMap);
+            File.WriteAllText(FilePaths.TierExperienceFilePath, data);
+        }
 
-        if (!sync) return;
-        if (CreatureExperienceMap.Count <= 0) return;
-        string newData = serializer.Serialize(CreatureExperienceMap);
-        ServerExperienceMap.Value = newData;
+        if (ZNet.instance && ZNet.instance.IsServer())
+        {
+            TierServerExperienceMap.Value = serializer.Serialize(m_experienceMap);
+        }
     }
-    private static void OnServerExperienceMapChange()
+
+    private static Dictionary<string, CreatureData> GetDefaultCreatureMap()
     {
-        if (ServerExperienceMap.Value.IsNullOrWhiteSpace()) return;
-        AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: server updated experience map");
-        IDeserializer deserializer = new DeserializerBuilder().Build();
-        Dictionary<string, int> map = deserializer.Deserialize<Dictionary<string, int>>(ServerExperienceMap.Value);
-        CreatureExperienceMap = map;
+        Dictionary<string, CreatureData> output = new()
+        {
+            ["Greyling"] = CreateData(1, 1, 15),
+            ["Boar"] = CreateData(1, 1, 15),
+            ["Deer"] = CreateData(1, 1, 15),
+            ["Neck"] = CreateData(1, 1, 15),
+            ["Eikthyr"] = CreateData(10, 1, 15),
+            ["Greydwarf"] = CreateData(2, 5, 25),
+            ["Greydwarf_Elite"] = CreateData(5, 5, 25),
+            ["Greydawrf_Shaman"] = CreateData(5, 5, 25),
+            ["Ghost"] = CreateData(3, 5, 25),
+            ["Skeleton"] = CreateData(2, 5, 25),
+            ["Troll"] = CreateData(10, 5, 25),
+            ["Skeleton_Hildir"] = CreateData(20, 5, 35),
+            ["gd_king"] = CreateData(20, 5, 25),
+            ["TentaRoot"] = CreateData(0, 100, 100),
+            ["Surtling"] = CreateData(3, 10, 30),
+            ["Leech"] = CreateData(5, 10, 30),
+            ["Skeleton_Poison"] = CreateData(5, 10, 30),
+            ["Draugr"] = CreateData(5, 10, 30),
+            ["Draugr_ranged"] = CreateData(5, 10, 30),
+            ["Draugr_Elite"] = CreateData(10, 10, 30),
+            ["Blob"] = CreateData(5, 10, 30),
+            ["BlobElite"] = CreateData(10, 10, 30),
+            ["Wraith"] = CreateData(10, 10, 30),
+            ["Abomination"] = CreateData(15, 10, 30),
+            ["Bonemass"] = CreateData(30, 10, 30),
+            ["Serpent"] = CreateData(30, 10, 50),
+            ["Bat"] = CreateData(8, 15, 40),
+            ["Wolf"] = CreateData(10, 15, 40),
+            ["Hatchling"] = CreateData(10, 15, 40),
+            ["Ulv"] = CreateData(15, 15, 40),
+            ["Fenring"] = CreateData(18, 15, 40),
+            ["Fenring_Cultist"] = CreateData(25, 15, 40),
+            ["StoneGolem"] = CreateData(30, 15, 40),
+            ["Dragon"] = CreateData(30, 15, 40),
+            ["Fenring_Cultist_Hildr"] = CreateData(30, 15, 60),
+            ["Deathsquito"] = CreateData(20, 20, 60),
+            ["Goblin"] = CreateData(20, 20, 60),
+            ["GoblinShaman"] = CreateData(25, 20, 60),
+            ["GoblinBrute"] = CreateData(25, 20, 60),
+            ["Lox"] = CreateData(25, 20, 60),
+            ["BlobTar"] = CreateData(25, 20, 60),
+            ["GoblinKing"] = CreateData(40, 20, 60),
+            ["GoblinShaman_Hildir"] = CreateData(40, 20, 80),
+            ["GoblinBrute_Hildir"] = CreateData(40, 20, 80),
+            ["GoblinBruteBros"] = CreateData(40, 20, 80),
+            ["Hare"] = CreateData(25, 25, 80),
+            ["Tick"] = CreateData(25, 25, 80),
+            ["SeekerBrood"] = CreateData(25, 25, 80),
+            ["Seeker"] = CreateData(30, 25, 80),
+            ["SeekerBrute"] = CreateData(35, 25, 80),
+            ["Dverger"] = CreateData(35, 25, 80),
+            ["DvergerArbalest"] = CreateData(35, 25, 80),
+            ["DvergerMage"] = CreateData(35, 25, 80),
+            ["DvergerMageFire"] = CreateData(35, 25, 80),
+            ["DvergerMageIce"] = CreateData(35, 25, 80),
+            ["DvergerMageSupport"] = CreateData(35, 25, 80),
+            ["Gjall"] = CreateData(40, 25, 80),
+            ["SeekerQueen"] = CreateData(50, 25, 80),
+            ["Charred_Twitcher"] = CreateData(30, 30, 100),
+            ["Charred_Archer"] = CreateData(35, 30, 100),
+            ["Charred_Melee"] = CreateData(35, 30, 100),
+            ["Charred_Mage"] = CreateData(35, 30, 100),
+            ["Morgen"] = CreateData(40, 30, 100),
+            ["Morgen_NonSleeping"] = CreateData(40, 30, 100),
+            ["FallenValkyrie"] = CreateData(40, 30, 100),
+            ["Goblin_Gem"] = CreateData(40, 30, 100),
+            ["Charred_Melee_Dyrnwyn"] = CreateData(45, 30, 100),
+            ["Fader"] = CreateData(65, 30, 100)
+        };
+        return output;
     }
+
+    private static CreatureData CreateData(int experience, int min, int max) => new(){ Experience = experience, MinimumLevel = min, MaximumLevel = max };
     public static void WriteExperienceMap()
     {
         string filePath = FilePaths.ExperienceFilePath;
         ISerializer serializer = new SerializerBuilder().Build();
-        string data = serializer.Serialize(CreatureExperienceMap);
+        string data = serializer.Serialize(m_experienceMap);
         File.WriteAllText(filePath, data);
         AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo("Experience map written to disk:");
         AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo(FilePaths.ExperienceFilePath);
     }
-
-    private static Dictionary<string, int> CreatureExperienceMap = new()
-    {
-        { "TentaRoot", 0},
-        { "Deer", 1 },
-        { "Boar", 1 },
-        { "Neck", 1 },
-        { "Greyling", 1 },
-        { "Eikthyr", 5 },
-        { "Greydwarf", 2 },
-        { "Greydwarf_Shaman", 2 },
-        { "Greydwarf_Elite", 3 },
-        { "Ghost", 3},
-        { "Skeleton", 1 },
-        { "Troll", 6 },
-        { "gd_king", 10},
-        { "Leech", 2},
-        { "Blob", 2},
-        { "Draugr", 2},
-        { "Draugr_Ranged", 3},
-        { "Draugr_Elite", 4},
-        { "BlobElite", 4},
-        { "Wraith", 5},
-        { "Abomination", 10},
-        { "Bonemass", 15},
-        { "Wolf", 2},
-        { "Fenring", 4},
-        { "Fenring_Cultist", 5},
-        { "Ulv", 4},
-        { "Hatchling", 3},
-        { "StoneGolem", 15},
-        { "Fenring_Cultist_Hildir", 20},
-        { "Skeleton_Hildir", 20},
-        { "GoblinShaman_Hildir", 30},
-        { "GoblinBrute_Hildir", 30},
-        { "Dragon", 30 },
-        { "Goblin", 5 },
-        { "BlobTar", 10 },
-        { "Lox", 6},
-        { "Serpent", 10 },
-        { "GoblinKing", 50 },
-        { "Seeker", 10 },
-        { "SeekerBrute", 15 },
-        { "SeekerBrood", 6 },
-        { "Hare", 6 },
-        { "Tick", 6 },
-        { "Gjall", 20 },
-        { "Dverger", 20 },
-        { "DvergerArbalest", 20 },
-        { "DvergerMage", 20 },
-        { "DvergerMageFire", 20 },
-        { "DvergerMageIce", 20 },
-        { "DvergerMageSupport", 20 },
-        { "SeekerQueen", 100 },
-        { "Surtling", 3 },
-        { "FallenValkyrie", 50 },
-        { "Charred_Archer", 25 },
-        { "Charred_Melee", 25 },
-        { "Charred_Mage", 30 },
-        { "Charred_Twitcher", 30 },
-        { "Morgen", 30 },
-        { "Morgen_NonSleeping", 30 },
-        { "Goblin_Gem", 30 },
-        { "Charred_Melee_Dyrnwyn", 50},
-        { "Fader", 200 }
-    };
     private static int GetExperienceAmount(Character instance)
     {
-        return (int)((CreatureExperienceMap.TryGetValue(instance.name.Replace("(Clone)", string.Empty), out int amount) ? amount : GetExpByBiome()) * instance.m_level * AlmanacClassesPlugin._ExperienceMultiplier.Value);
+        if (m_experienceMap.TryGetValue(instance.name.Replace("(Clone)", string.Empty), out CreatureData data))
+        {
+            int playerLevel = PlayerManager.GetPlayerLevel(PlayerManager.GetExperience());
+            if (playerLevel < data.MinimumLevel || playerLevel > data.MaximumLevel) return 0;
+            return data.Experience;
+        }
+
+        return GetExpByBiome();
+        
+        // return (int)((CreatureExperienceMap.TryGetValue(instance.name.Replace("(Clone)", string.Empty), out int amount) ? amount : GetExpByBiome()) * instance.m_level * AlmanacClassesPlugin._ExperienceMultiplier.Value);
+    }
+
+    [HarmonyPatch(typeof(Player), nameof(Player.OnDeath))]
+    private static class Player_OnDeath_Patch
+    {
+        private static void Postfix(Player __instance)
+        {
+            if (!__instance) return;
+            if (__instance != Player.m_localPlayer) return;
+            LoseExperience();
+        }
+    }
+
+    private static void LoseExperience()
+    {
+        if (AlmanacClassesPlugin._loseExperience.Value is AlmanacClassesPlugin.Toggle.Off) return;
+        var current = PlayerManager.GetExperience();
+        var minimum = PlayerManager.GetRequiredExperience(PlayerManager.GetPlayerLevel(current));
+        var maximum = current - minimum;
+
+        var hundred = PlayerManager.GetRequiredExperience(PlayerManager.GetPlayerLevel(current) + 1);
+        var amount = Mathf.FloorToInt((hundred - minimum) / AlmanacClassesPlugin._experienceLossFactor.Value);
+
+        var lost = current - amount < minimum ? maximum : amount;
+
+        if (lost == 0) return;
+        PlayerManager.m_tempPlayerData.m_experience -= lost;
+        Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, $"$msg_lost_experience: {lost}");
     }
     private static int GetExpByBiome()
     {
@@ -208,6 +261,7 @@ public static class ExperienceManager
     {
         if (!instance || instance.name.IsNullOrWhiteSpace()) return;
         int amount = GetExperienceAmount(instance);
+        if (amount == 0) return;
         foreach (Player player in Player.GetAllPlayers())
         {
             if (!player.m_nview.IsValid()) continue;
@@ -275,15 +329,15 @@ public static class ExperienceManager
 
     public static void LoadExperienceOrbs()
     {
-        CreateExperienceOrb(10, "ExperienceOrb_Simple", "Simple Orb", new Color(1f, 0.9f, 0f, 1f), new Color32(255, 0, 0, 255), new Color(1f, 0.5f, 0.5f, 0.6f), new Color(1f, 0.7f, 0.5f, 1f), SpriteManager.HourGlass_Icon);
-        CreateExperienceOrb(25, "ExperienceOrb_Magic", "Magic Orb", new Color(0.3f, 1f, 0f, 1f), new Color32(255, 255, 0, 255), new Color(0f, 0.5f, 0.5f, 0.6f), new Color(0.5f, 1f, 0f, 1f), SpriteManager.HourGlass_Icon);
-        CreateExperienceOrb(50, "ExperienceOrb_Epic", "Epic Orb", new Color(0f, 0.2f, 0.8f, 1f), new Color32(150, 0, 250, 255), new Color(0.8f, 0f, 0.5f, 0.6f), new Color(1f, 0.7f, 0.5f, 1f), SpriteManager.HourGlass_Icon);
-        CreateExperienceOrb(100, "ExperienceOrb_Legendary", "Legendary Orb", new Color(1f, 0.9f, 1f, 1f), new Color32(150, 150, 255, 255), new Color(0.6f, 1f, 1f, 0.6f), new Color(0.5f, 0.7f, 1f, 1f), SpriteManager.HourGlass_Icon);
+        CreateExperienceOrb(10, "ExperienceOrb_Simple", "Simple Orb", new Color(1f, 0.9f, 0f, 1f), new Color32(255, 0, 0, 255), new Color(1f, 0.5f, 0.5f, 0.6f), new Color(1f, 0.7f, 0.5f, 1f));
+        CreateExperienceOrb(25, "ExperienceOrb_Magic", "Magic Orb", new Color(0.3f, 1f, 0f, 1f), new Color32(255, 255, 0, 255), new Color(0f, 0.5f, 0.5f, 0.6f), new Color(0.5f, 1f, 0f, 1f));
+        CreateExperienceOrb(50, "ExperienceOrb_Epic", "Epic Orb", new Color(0f, 0.2f, 0.8f, 1f), new Color32(150, 0, 250, 255), new Color(0.8f, 0f, 0.5f, 0.6f), new Color(1f, 0.7f, 0.5f, 1f));
+        CreateExperienceOrb(100, "ExperienceOrb_Legendary", "Legendary Orb", new Color(1f, 0.9f, 1f, 1f), new Color32(150, 150, 255, 255), new Color(0.6f, 1f, 1f, 0.6f), new Color(0.5f, 0.7f, 1f, 1f));
         // CreateExperienceOrb(150, "ExperienceOrb_Plains", "Goblin Orb", new Color(1f, 0.9f, 0.4f, 1f), new Color32(255, 255, 0, 255), new Color(0.5f, 1f, 0.5f, 0.6f), new Color(0.5f, 0.7f, 0.5f, 1f));
         // CreateExperienceOrb(300, "ExperienceOrb_Mistlands", "Runic Orb", new Color(0f, 0.9f, 1f, 1f), new Color32(100, 150, 200, 255), new Color(0f, 0.5f, 1f, 0.6f), new Color(0f, 0.7f, 0.5f, 1f));
     }
 
-    private static void CreateExperienceOrb(float amount, string name, string displayName, Color color, Color32 emission, Color shellColor, Color lightColor, Sprite icon)
+    private static void CreateExperienceOrb(int amount, string name, string displayName, Color color, Color32 emission, Color shellColor, Color lightColor)
     {
         GameObject UpgradeItem = ZNetScene.instance.GetPrefab("StaminaUpgrade_Greydwarf");
         GameObject item = Object.Instantiate(UpgradeItem, AlmanacClassesPlugin._Root.transform, false);
@@ -334,33 +388,32 @@ public static class ExperienceManager
             light.color = lightColor;
         }
         item.name = name;
+        if (!item.TryGetComponent(out ItemDrop component)) return;
         
-        StatusEffect exp = ScriptableObject.CreateInstance<SE_ExperienceOrb>();
+        SE_ExperienceOrb exp = ScriptableObject.CreateInstance<SE_ExperienceOrb>();
         exp.name = $"SE_{name}";
-        exp.m_ttl = amount + 1f;
+        exp.m_ttl = 10f;
         exp.m_name = displayName;
-        exp.m_tooltip = "Adds <color=orange>1</color>xp/sec";
         exp.m_startEffects = LoadedAssets.FX_Experience;
+        exp.m_icon = component.m_itemData.GetIcon();
+        exp.m_amount = AlmanacClassesPlugin._Plugin.config("5 - Experience Orbs", displayName, amount, "Set the amount of experience received");
         if (!ObjectDB.instance.m_StatusEffects.Contains(exp))
         {
             ObjectDB.instance.m_StatusEffects.Add(exp);
         }
 
-        if (!item.TryGetComponent(out ItemDrop component)) return;
         component.m_itemData.m_shared.m_consumeStatusEffect = ObjectDB.instance.GetStatusEffect($"SE_{name}".GetStableHashCode());
-        component.m_itemData.m_shared.m_consumeStatusEffect.m_ttl = amount;
         component.m_itemData.m_shared.m_name = displayName;
-        component.m_itemData.m_shared.m_description = $"Adds <color=orange>{amount}</color> class experience";
+        component.m_itemData.m_shared.m_description = "";
         component.m_itemData.m_shared.m_questItem = false;
         component.m_itemData.m_shared.m_maxStackSize = 100;
-        // component.m_itemData.m_shared.m_icons = new[] { icon };
         component.m_itemData.m_shared.m_autoStack = true;
         component.m_itemData.m_shared.m_weight = 0f;
         component.m_autoPickup = true;
 
-        ObjectDB.instance.m_items.Add(item);
+        if (!ObjectDB.instance.m_items.Contains(item)) ObjectDB.instance.m_items.Add(item);
         ObjectDB.instance.m_itemByHash[item.name.GetStableHashCode()] = item;
-        ZNetScene.instance.m_prefabs.Add(item);
+        if (!ZNetScene.instance.m_prefabs.Contains(item)) ZNetScene.instance.m_prefabs.Add(item);
         ZNetScene.instance.m_namedPrefabs[item.name.GetStableHashCode()] = item;
     }
     public static void DropOrb(Character instance)
@@ -397,7 +450,9 @@ public static class ExperienceManager
                 if (kvp.Value.m_gui == null) continue;
                 if (kvp.Key.IsBoss() || kvp.Key.IsPlayer()) continue;
                 if (IsFriendlyCreature(kvp.Key)) continue;
-                kvp.Value.m_name.text += $" [<color=orange>{GetExperienceAmount(kvp.Key)}</color>]";
+                int amount = GetExperienceAmount(kvp.Key);
+                if (amount == 0) continue;
+                kvp.Value.m_name.text += $" [<color=orange>{amount}</color>]";
             }
         }
     }

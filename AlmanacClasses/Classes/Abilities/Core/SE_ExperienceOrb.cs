@@ -1,15 +1,19 @@
-﻿namespace AlmanacClasses.Classes.Abilities.Core;
+﻿using BepInEx.Configuration;
+
+namespace AlmanacClasses.Classes.Abilities.Core;
 
 public class SE_ExperienceOrb : StatusEffect
 {
-    public float m_experienceTimer;
+    public ConfigEntry<int> m_amount = null!;
 
-    public override void UpdateStatusEffect(float dt)
+    public override void Setup(Character character)
     {
-        m_time += dt;
-        m_experienceTimer += dt;
-        if (m_experienceTimer < 1f) return;
-        m_experienceTimer = 0.0f;
-        PlayerManager.AddExperience(1);
+        base.Setup(character);
+        PlayerManager.AddExperience(m_amount.Value);
+    }
+
+    public override string GetTooltipString()
+    {
+        return $"$info_orbs_desc: <color=orange>{m_amount.Value}</color>";
     }
 }

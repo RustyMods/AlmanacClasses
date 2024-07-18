@@ -1955,7 +1955,7 @@ public static class TalentManager
                 m_cost = _Plugin.config("Rogue - Backstab", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10))),
                 m_values =  new Talent.TalentValues()
                 {
-                    m_chance = _Plugin.config("Rogue - Backstab", "Chance", 5f, new ConfigDescription("Set the chance to backstab", new AcceptableValueRange<float>(0f, 100f)))
+                    m_chance = _Plugin.config("Rogue - Backstab", "Chance", 1.5f, new ConfigDescription("Set the chance to backstab", new AcceptableValueRange<float>(0f, 100f)))
                 },
                 m_length = _Plugin.config("Rogue - Backstab", "Length", 45f, new ConfigDescription("Set the length of effect", new AcceptableValueRange<float>(1f, 1000f))),
                 m_sprite = SpriteManager.Backstab_Icon,

@@ -15,6 +15,7 @@ public class SE_RogueReflect : StatusEffect
 
     public override void OnDamaged(HitData hit, Character attacker)
     {
+        if (attacker == null) return;
         HitData reflect = hit.Clone();
         reflect.ApplyModifier(m_talent.GetReflect(m_talent.GetLevel()));
         attacker.Damage(reflect);

@@ -74,5 +74,6 @@ public static class CallOfLightning
         component.m_hitOwner = false;
         component.m_hitParent = false;
         component.m_hitFriendly = false;
+        component.m_statusEffectIfPlayer = "SE_LightningResist";
     }
 }

@@ -23,7 +23,7 @@ namespace AlmanacClasses
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
-        internal const string ModVersion = "0.4.13";
+        internal const string ModVersion = "0.4.15";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
         private static readonly string ConfigFileName = ModGUID + ".cfg";
@@ -50,8 +50,8 @@ namespace AlmanacClasses
             InitConfigs();
             FilePaths.CreateFolders();
             LoadPieces.LoadClassAltar();
-            
             AnimationManager.LoadCustomAnimations();
+            ExperienceManager.LoadCreatureMap();
             
             Assembly assembly = Assembly.GetExecutingAssembly();
             _harmony.PatchAll(assembly);
@@ -74,7 +74,10 @@ namespace AlmanacClasses
             
             PlayerManager.UpdatePassiveEffects(dt);
 
-            if (Input.GetKeyDown(_ShowUIKey.Value)) TalentBook.ShowUI();
+            if (_ShowUIEnabled.Value is Toggle.On)
+            {
+                if (Input.GetKeyDown(_ShowUIKey.Value)) TalentBook.ShowUI();
+            }
         }
 
         private void AddAttackSpeedModifiers()
@@ -151,8 +154,13 @@ namespace AlmanacClasses
         public static ConfigEntry<Vector2> _MenuTooltipPosition = null!;
         public static ConfigEntry<int> _ChanceForOrb = null!;
         public static ConfigEntry<int> _MaxLevel = null!;
+        private static ConfigEntry<Toggle> _ShowUIEnabled = null!;
         private static ConfigEntry<KeyCode> _ShowUIKey = null!;
         public static ConfigEntry<Toggle> _EnableRaven = null!;
+        public static ConfigEntry<int> _characteristicCap = null!;
+        public static ConfigEntry<float> _experienceFactor = null!;
+        public static ConfigEntry<Toggle> _loseExperience = null!;
+        public static ConfigEntry<float> _experienceLossFactor = null!;
         #endregion
         public static ConfigEntry<float> _EitrRatio = null!;
         public static ConfigEntry<float> _HealthRatio = null!;
@@ -191,6 +199,9 @@ namespace AlmanacClasses
             _CarryWeightRatio = config("4 - Characteristics", "8. Carry Weight Ratio", 1f, new ConfigDescription("Set the ratio of strength to increased carry weight", new AcceptableValueRange<float>(1, 10f)));
             _StatsCost = config("4 - Characteristics", "9. Purchase Cost", 3, new ConfigDescription("Set the cost to unlock characteristic talents", new AcceptableValueRange<int>(1, 10)));
 
+            _characteristicCap = config("4 - Characteristics", "0 - Prestige Cap", 5,
+                "Set maximum level for characteristic talents");
+            
             _EnableRaven = config("2 - Settings", "Raven", Toggle.On,
                 "If on, plugin adds Munin raven to altar prefab");
         }
@@ -242,7 +253,15 @@ namespace AlmanacClasses
                 new ConfigDescription("Set the drop chance to drop experience orbs",
                     new AcceptableValueRange<int>(0, 100)));
             _MaxLevel = config("2 - Settings", "Max Level", 100, "Set the max level a player can attain");
+            _ShowUIEnabled = config("2 - Settings", "Remote UI Enabled", Toggle.Off,
+                "If on, players can access UI remotely using UI Key");
             _ShowUIKey = config("2 - Settings", "Show UI Key", KeyCode.None, "Set the key to open menu remotely");
+            _experienceFactor = config("2 - Settings", "Experience Factor", 1f,
+                "Modify the amount of experience required per level using this multiplier");
+            _loseExperience = config("2 - Settings", "Lose Experience", Toggle.Off,
+                "If on, upon death, player loses experience");
+            _experienceLossFactor = config("2 - Settings", "Experience Loss Factor", 0.2f,
+                new ConfigDescription("Experience loss factor", new AcceptableValueRange<float>(0f, 1f)));
         }
 
         private void InitKeyCodeConfigs()

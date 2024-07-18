@@ -38,6 +38,6 @@ public static class Watcher
                 AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Server: " + fileName + " deleted, reloading experience map");
                 break;
         }
-        ExperienceManager.ReadExperienceFiles(true);
+        ExperienceManager.LoadCreatureMap();
     }
 }

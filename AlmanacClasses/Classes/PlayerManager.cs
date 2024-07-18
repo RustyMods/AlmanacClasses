@@ -213,8 +213,10 @@ public static class PlayerManager
 
         return output;
     }
-    public static int GetPlayerLevel(int experience) => Mathf.Clamp((int)Math.Pow(experience / 100f, 0.5f), 1, AlmanacClassesPlugin._MaxLevel.Value);
-    public static int GetRequiredExperience(int level) => (int)Math.Pow(level, 2) * 100;
+    public static int GetPlayerLevel(int experience) => 
+        Mathf.Clamp((int)Math.Pow(experience / (100f * AlmanacClassesPlugin._experienceFactor.Value), 0.5f), 1, AlmanacClassesPlugin._MaxLevel.Value);
+    public static int GetRequiredExperience(int level) => 
+        (int)(Math.Pow(level, 2) * (100 * AlmanacClassesPlugin._experienceFactor.Value));
     public static void AddExperience(int amount) => m_tempPlayerData.m_experience += amount;
     public static int GetExperience() => m_tempPlayerData.m_experience;
     
