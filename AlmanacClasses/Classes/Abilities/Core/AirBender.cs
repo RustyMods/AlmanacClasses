@@ -16,9 +16,35 @@ public static class AirBender
             if (!__instance) return;
             if (__instance != Player.m_localPlayer) return;
             CheckDoubleJump(__instance);
+            CheckDoubleJumpAlt(__instance);
         }
     }
 
+    private static void CheckDoubleJumpAlt(Player instance)
+    {
+        if (!instance) return;
+        if (!PlayerManager.m_playerTalents.TryGetValue("AirBenderAlt", out Talent talent)) return;
+        if (instance.IsOnGround()) return;
+        
+        if (!ZInput.GetButtonDown("Jump")) return;
+        bool flag = false;
+
+        float eitrCost = talent.GetEitrCost(true, talent.GetLevel());
+        if (!instance.HaveEitr(eitrCost))
+        {
+            Hud.instance.EitrBarEmptyFlash();
+            return;
+        }
+        instance.UseEitr(eitrCost);
+        
+        if (!instance.HaveStamina(instance.m_jumpStaminaUsage))
+        {
+            Hud.instance.StaminaBarEmptyFlash();
+            flag = true;
+        }
+        
+        Jump(instance, flag);
+    }
     private static void CheckDoubleJump(Player instance)
     {
         if (!instance) return;
@@ -35,18 +61,26 @@ public static class AirBender
         
         bool flag = false;
 
-        if (!instance.HaveEitr(talent.GetEitrCost()))
+        float eitrCost = talent.GetEitrCost(false);
+        if (!instance.HaveEitr(eitrCost))
         {
             Hud.instance.EitrBarEmptyFlash();
             return;
         }
-        instance.UseEitr(talent.GetEitrCost());
+        instance.UseEitr(eitrCost);
         
         if (!instance.HaveStamina(instance.m_jumpStaminaUsage))
         {
             Hud.instance.StaminaBarEmptyFlash();
             flag = true;
         }
+        
+        Jump(instance, flag);
+        ++JumpCount;
+    }
+
+    private static void Jump(Player instance, bool flag)
+    {
         float speed = instance.m_speed;
         instance.GetSEMan().ApplyStatusEffectSpeedMods(ref speed, instance.m_currentVel);
         if (speed <= 0.0) flag = true;
@@ -80,6 +114,5 @@ public static class AirBender
         instance.OnJump();
         instance.SetCrouch(false);
         instance.UpdateBodyFriction();
-        ++JumpCount;
     }
 }

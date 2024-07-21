@@ -204,6 +204,8 @@ talent_trader: "Gipsy"
 talent_trader_desc: "Allows to teleport non-teleportable materials based on talent level"
 talent_berzerk: "Berzerk"
 talent_berzerk_desc: "Passively adds armor"
+talent_airbenderalt: 'Airman'
+talent_airbenderalt_desc: 'Allows to jump in the air whilst user has eitr'
 
 almanac_class_altar_info: 
   "Welcome to the wonderful world of almanac class system 

@@ -4,7 +4,6 @@ using System.Linq;
 using AlmanacClasses.Classes;
 using AlmanacClasses.Classes.Abilities;
 using AlmanacClasses.Classes.Abilities.Warrior;
-using AlmanacClasses.LoadAssets;
 using AlmanacClasses.Managers;
 using BepInEx.Configuration;
 using UnityEngine;

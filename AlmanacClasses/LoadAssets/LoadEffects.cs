@@ -213,7 +213,7 @@ public static class LoadedAssets
 
         lightning_AOE = customLightning;
         GoblinBeam = instance.GetPrefab("projectile_beam");
-        Meteor = instance.GetPrefab("projectile_meteor");
+        Meteor = instance.GetPrefab("projectile_meteor_fader");
         TrollStone = instance.GetPrefab("troll_throw_projectile");
         GDKingRoots = instance.GetPrefab("gdking_root_projectile");
         GameObject customTrap = Object.Instantiate(instance.GetPrefab("piece_trap_troll"), AlmanacClassesPlugin._Root.transform, false);

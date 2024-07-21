@@ -6,7 +6,6 @@ using AlmanacClasses.Classes.Abilities.Sage;
 using AlmanacClasses.Classes.Abilities.Shaman;
 using AlmanacClasses.Managers;
 using AlmanacClasses.UI;
-using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
@@ -93,7 +92,7 @@ public static class AbilityManager
         if (!CheckCooldown(ability)) return;
         if (!CheckCost(ability)) return;
         if (!CheckStatusEffect(ability) && !CheckAbilityName(ability)) return;
-        UseCost(ability.GetHealthCost(), ability.GetStaminaCost(), ability.GetEitrCost());
+        UseCost(ability.GetHealthCost(), ability.GetStaminaCost(), ability.GetEitrCost(false));
         AnimationManager.DoAnimation(ability.GetAnimation());
         AlmanacClassesPlugin._Plugin.StartCoroutine(CoolDown(ability));
     }
@@ -201,7 +200,7 @@ public static class AbilityManager
     }
     private static bool CheckEitrCost(Talent talent)
     {
-        float cost = talent.GetEitrCost();
+        float cost = talent.GetEitrCost(false);
         if (cost == 0f) return true;
         if (Player.m_localPlayer.HaveEitr(cost)) return true;
         Hud.instance.EitrBarEmptyFlash();

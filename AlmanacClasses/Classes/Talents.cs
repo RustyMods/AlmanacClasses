@@ -32,6 +32,7 @@ public class Talent
     public ConfigEntry<float>? m_eitrCost;
     public ConfigEntry<float>? m_staminaCost;
     public ConfigEntry<float>? m_healthCost;
+    public bool m_eitrCostReduces;
     public TalentDamages? m_damages;
     public TalentValues? m_values;
     public TalentCreatures? m_creatures;
@@ -62,7 +63,7 @@ public class Talent
     public int GetCost() => m_cost?.Value ?? _StatsCost.Value;
     public float GetCooldown(int level) => Mathf.Clamp((m_cooldown?.Value ?? 0f) - (level - 1) * 5f, GetLength(level), float.MaxValue);
     public float GetLength(int level) => (m_length?.Value ?? 0f) + (level - 1) * 5f;
-    public float GetEitrCost() => m_eitrCost?.Value ?? 0f;
+    public float GetEitrCost(bool reduces, int level = 1) => reduces ? Mathf.Max((m_eitrCost?.Value ?? 0f) - level * 5f, 0) : m_eitrCost?.Value ?? 0f;
     public float GetStaminaCost() => m_staminaCost?.Value ?? 0f;
     public float GetHealthCost() => m_healthCost?.Value ?? 0f;
     public HitData.DamageTypes GetDamages(int level)
@@ -194,21 +195,28 @@ public class Talent
             switch (m_characteristic.m_type)
             {
                 case Characteristic.Constitution:
-                    stringBuilder.Append($"$se_health: <color=orange>+{(int)GetHealthRatio(GetLevel())}</color>\n");
+                    int health = (int)GetHealthRatio(GetLevel());
+                    if (health > 0) stringBuilder.AppendFormat("$se_health: <color=orange>+{0}</color>\n", health);
                     break;
                 case Characteristic.Strength:
-                    stringBuilder.Append($"$se_max_carryweight: <color=orange>+ {(int)GetCarryWeightRatio(GetLevel())}</color>\n");
-                    stringBuilder.Append($"$almanac_physical: <color=orange>+{FormatPercentage(GetStrengthModifier(GetLevel()))}%</color>\n");
+                    int carryWeight = (int)GetCarryWeightRatio(GetLevel());
+                    int physical = FormatPercentage(GetStrengthModifier(GetLevel()));
+                    if (carryWeight > 0) stringBuilder.AppendFormat("$se_max_carryweight: <color=orange>+ {0}</color>\n", carryWeight);
+                    if (physical > 0) stringBuilder.AppendFormat("$almanac_physical: <color=orange>+{0}%</color>\n", physical);
                     break;
                 case Characteristic.Intelligence:
-                    stringBuilder.Append($"$almanac_elemental: <color=orange>+{FormatPercentage(GetIntelligenceModifier(GetLevel()))}%</color>\n");
+                    int intel = FormatPercentage(GetIntelligenceModifier(GetLevel()));
+                    if (intel > 0) stringBuilder.AppendFormat("$almanac_elemental: <color=orange>+{0}%</color>\n", intel);
                     break;
                 case Characteristic.Dexterity:
-                    stringBuilder.Append($"$se_stamina: <color=orange>+{(int)GetStaminaRatio(GetLevel())}</color>\n");
-                    stringBuilder.Append($"$almanac_attackspeedmod: <color=orange>+{FormatPercentage(GetDexterityModifier(GetLevel()))}%</color>");
+                    int stamina = (int)GetStaminaRatio(GetLevel());
+                    int attackSpeed = FormatPercentage(GetDexterityModifier(GetLevel()));
+                    if (stamina > 0) stringBuilder.AppendFormat("$se_stamina: <color=orange>+{0}</color>\n", stamina);
+                    if (attackSpeed > 0) stringBuilder.AppendFormat("$almanac_attackspeedmod: <color=orange>+{0}%</color>", attackSpeed);
                     break;
                 case Characteristic.Wisdom:
-                    stringBuilder.Append($"$se_eitr: <color=orange>+{(int)GetEitrRatio(GetLevel())}</color>");
+                    int eitr = (int)GetEitrRatio(GetLevel());
+                    if (eitr > 0) stringBuilder.AppendFormat("$se_eitr: <color=orange>+{0}</color>", eitr);
                     break;
             }
         }
@@ -220,7 +228,7 @@ public class Talent
             if (m_length != null) 
                 stringBuilder.Append($"$almanac_duration: <color=orange>{GetLength(GetLevel())}</color>$text_sec\n");
             if (m_eitrCost is { Value: > 0 }) 
-                stringBuilder.Append($"$se_eitr $almanac_cost: <color=orange>{GetEitrCost()}</color>\n");
+                stringBuilder.Append($"$se_eitr $almanac_cost: <color=orange>{GetEitrCost(m_eitrCostReduces, GetLevel())}</color>\n");
             if (m_staminaCost is { Value: > 0 }) 
                 stringBuilder.Append($"$se_stamina $almanac_cost: <color=orange>{GetStaminaCost()}</color>\n");
             if (m_healthCost is { Value: > 0 }) 
@@ -393,32 +401,33 @@ public class Talent
         {
             if (m_characteristic == null) return stringBuilder.ToString();
             stringBuilder.Append($"{GetCharacteristicDescription()}\n");
-            stringBuilder.Append($"+ <color=orange>{GetCharacteristic(GetLevel())}</color> --> <color={m_prestigeColor}>{GetCharacteristic(GetLevel() + 1)}</color> {GetCharacteristicLocalized()}\n\n");
+            stringBuilder.AppendFormat("+ <color=orange>{0}</color> --> <color={1}>{2}</color> {3}\n\n", 
+                GetCharacteristic(GetLevel()), m_prestigeColor, GetCharacteristic(GetLevel() + 1), GetCharacteristicLocalized());
             switch (m_characteristic.m_type)
             {
                 case Characteristic.Constitution:
-                    stringBuilder.Append(
-                        $"$se_health: <color=orange>+{(int)GetHealthRatio(GetLevel())}</color> --> <color={m_prestigeColor}>{(int)GetHealthRatio(GetLevel() + 1)}</color>\n");
+                    stringBuilder.AppendFormat("$se_health: <color=orange>+{0}</color> --> <color={1}>{2}</color>\n", 
+                        (int)GetHealthRatio(GetLevel()), m_prestigeColor, (int)GetHealthRatio(GetLevel() + 1));
                     break;
                 case Characteristic.Strength:
-                    stringBuilder.Append(
-                        $"$se_max_carryweight: <color=orange>+ {(int)GetCarryWeightRatio(GetLevel())}</color> --> <color={m_prestigeColor}>+ {(int)GetCarryWeightRatio(GetLevel() + 1)}</color>\n");
-                    stringBuilder.Append(
-                        $"$almanac_physical: <color=orange>+{FormatPercentage(GetStrengthModifier(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetStrengthModifier(GetLevel()))}%</color>\n");
+                    stringBuilder.AppendFormat("$se_max_carryweight: <color=orange>+{0}</color> --> <color={1}>+{2}</color>\n", 
+                        (int)GetCarryWeightRatio(GetLevel()), m_prestigeColor, (int)GetCarryWeightRatio(GetLevel() + 1));
+                    stringBuilder.AppendFormat("$almanac_physical: <color=orange>+{0}%</color> --> <color={1}>{2}%</color>\n",
+                        FormatPercentage(GetStrengthModifier(GetLevel())), m_prestigeColor, FormatPercentage(GetStrengthModifier(GetLevel() + 1)));
                     break;
                 case Characteristic.Intelligence:
-                    stringBuilder.Append(
-                        $"$almanac_elemental: <color=orange>+{FormatPercentage(GetIntelligenceModifier(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetIntelligenceModifier(GetLevel() + 1))}%</color>\n");
+                    stringBuilder.AppendFormat("$almanac_elemental: <color=orange>+{0}%</color> --> <color={1}>{2}%</color>\n", 
+                        FormatPercentage(GetIntelligenceModifier(GetLevel())), m_prestigeColor, FormatPercentage(GetIntelligenceModifier(GetLevel() + 1)));
                     break;
                 case Characteristic.Dexterity:
-                    stringBuilder.Append(
-                        $"$se_stamina: <color=orange>+{(int)GetStaminaRatio(GetLevel())}</color> --> <color={m_prestigeColor}>{(int)GetStaminaRatio(GetLevel() + 1)}</color>\n");
-                    stringBuilder.Append(
-                        $"$almanac_attackspeedmod: <color=orange>+{FormatPercentage(GetDexterityModifier(GetLevel()))}%</color> --> <color={m_prestigeColor}>{FormatPercentage(GetDexterityModifier(GetLevel() + 1))}%</color> \n");
+                    stringBuilder.AppendFormat("$se_stamina: <color=orange>+{0}</color> --> <color={1}>{2}</color>\n", 
+                        (int)GetStaminaRatio(GetLevel()), m_prestigeColor, (int)GetStaminaRatio(GetLevel() + 1));
+                    stringBuilder.AppendFormat("$almanac_attackspeedmod: <color=orange>+{0}%</color> --> <color={1}>{2}%</color> \n", 
+                        FormatPercentage(GetDexterityModifier(GetLevel())), m_prestigeColor, FormatPercentage(GetDexterityModifier(GetLevel() + 1)));
                     break;
                 case Characteristic.Wisdom:
-                    stringBuilder.Append(
-                        $"$se_eitr: <color=orange>+{(int)GetEitrRatio(GetLevel())}</color> --> <color={m_prestigeColor}>{(int)GetEitrRatio(GetLevel() + 1)}</color>");
+                    stringBuilder.AppendFormat("$se_eitr: <color=orange>+{0}</color> --> <color={1}>{2}</color>", 
+                        (int)GetEitrRatio(GetLevel()), m_prestigeColor, (int)GetEitrRatio(GetLevel() + 1));
                     break;
             }
         }
@@ -429,8 +438,19 @@ public class Talent
                 stringBuilder.Append($"$almanac_cooldown: <color=orange>{GetCooldown(GetLevel())}</color>$text_sec --> <color={m_prestigeColor}>{GetCooldown(GetLevel() + 1)}</color>$text_sec\n");
             if (m_length != null)
                 stringBuilder.Append($"$almanac_duration: <color=orange>{GetLength(GetLevel())}</color>$text_sec --> <color={m_prestigeColor}>{GetLength(GetLevel() + 1)}</color>$text_sec\n");
-            if (m_eitrCost is { Value: > 0 }) 
-                stringBuilder.Append($"$se_eitr $almanac_cost: <color=orange>{GetEitrCost()}</color>\n");
+            if (m_eitrCost is { Value: > 0 })
+            {
+                if (m_eitrCostReduces)
+                {
+                    stringBuilder.AppendFormat(
+                        "$se_eitr $almanac_cost: <color=orange>{0}</color> --> <color={1}>{2}</color>\n",
+                        GetEitrCost(true, GetLevel()), m_prestigeColor, GetEitrCost(true, GetLevel() + 1));
+                }
+                else
+                {
+                    stringBuilder.Append($"$se_eitr $almanac_cost: <color=orange>{GetEitrCost(false)}</color>\n");
+                }
+            }
             if (m_staminaCost is { Value: > 0 }) 
                 stringBuilder.Append($"$se_stamina $almanac_cost: <color=orange>{GetStaminaCost()}</color>\n");
             if (m_healthCost is { Value: > 0 }) 
@@ -756,7 +776,25 @@ public static class TalentManager
             LoadUI.ChangeButton(Sailor, Sailor.m_alt.Value is Toggle.Off);
         };
 
-        return new List<Talent>() { TreasureHunter, Berzerk, Sailor };
+        Talent AirBenderAlt = new Talent()
+        {
+            m_key = "AirBenderAlt",
+            m_button = "$button_lumberjack",
+            m_type = TalentType.Passive,
+            m_cost = _Plugin.config("Core - AirBender Alt", "Purchase Cost", 3, new ConfigDescription("Set cost to unlock ability", new AcceptableValueRange<int>(1, 10))),
+            m_alt = _Plugin.config("Core - AirBender Alt", "Enable", Toggle.Off, "If on, replaces the airbender talent"),
+            m_cap = _Plugin.config("Core - AirBender Alt", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 10))),
+            m_eitrCost = _Plugin.config("Core - AirBender Alt", "Eitr Cost", 5f, new ConfigDescription("Set eitr cost", new AcceptableValueRange<float>(0f, 101f))),
+            m_line = 0.7f,
+            m_eitrCostReduces = true
+        };
+
+        AirBenderAlt.m_alt.SettingChanged += (sender, args) =>
+        {
+            LoadUI.ChangeButton(AirBenderAlt, AirBenderAlt.m_alt.Value is Toggle.Off, AirBenderAlt.m_line);
+        };
+
+        return new List<Talent>() { TreasureHunter, Berzerk, Sailor, AirBenderAlt };
     }
     private static List<Talent> LoadAltWarrior()
     {
