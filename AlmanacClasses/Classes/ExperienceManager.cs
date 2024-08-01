@@ -4,6 +4,7 @@ using System.IO;
 using AlmanacClasses.Classes.Abilities.Core;
 using AlmanacClasses.FileSystem;
 using AlmanacClasses.LoadAssets;
+using AlmanacClasses.Managers;
 using BepInEx;
 using HarmonyLib;
 using ServerSync;
@@ -182,12 +183,10 @@ public static class ExperienceManager
         {
             int playerLevel = PlayerManager.GetPlayerLevel(PlayerManager.GetExperience());
             if (playerLevel < data.MinimumLevel || playerLevel > data.MaximumLevel) return 0;
-            return data.Experience;
+            return (int)(data.Experience * instance.m_level * AlmanacClassesPlugin._ExperienceMultiplier.Value);
         }
 
-        return GetExpByBiome();
-        
-        // return (int)((CreatureExperienceMap.TryGetValue(instance.name.Replace("(Clone)", string.Empty), out int amount) ? amount : GetExpByBiome()) * instance.m_level * AlmanacClassesPlugin._ExperienceMultiplier.Value);
+        return (int)(GetExpByBiome() * instance.m_level * AlmanacClassesPlugin._ExperienceMultiplier.Value);
     }
 
     [HarmonyPatch(typeof(Player), nameof(Player.OnDeath))]
@@ -244,19 +243,6 @@ public static class ExperienceManager
         }
     }
     
-    [HarmonyPatch(typeof(PlayerProfile), nameof(PlayerProfile.IncrementStat))]
-    private static class PlayerProfile_IncrementStat_Patch
-    {
-        private static void Postfix(PlayerStatType stat, float amount) => AddExperience(stat, amount);
-    }
-
-    private static void AddExperience(PlayerStatType stat, float amount)
-    {
-        if (!ExperienceMap.TryGetValue(stat, out int value)) return;
-        int total = (int)(value * amount);
-        PlayerManager.m_tempPlayerData.m_experience += (int)(total * AlmanacClassesPlugin._ExperienceMultiplier.Value);
-    }
-    
     public static void AddExperience(Character instance)
     {
         if (!instance || instance.name.IsNullOrWhiteSpace()) return;
@@ -268,10 +254,11 @@ public static class ExperienceManager
             if (player.m_nview.IsOwner())
             {
                 PlayerManager.m_tempPlayerData.m_experience += amount;
+                DisplayText.ShowText(Color.cyan, instance.transform.position, $"+{amount} $text_xp");
             }
             else
             {
-                player.m_nview.InvokeRPC(nameof(RPC_AddExperience), amount);
+                player.m_nview.InvokeRPC(nameof(RPC_AddExperience), amount, instance.transform.position);
             }
         }
     }
@@ -282,10 +269,10 @@ public static class ExperienceManager
         player.m_nview.InvokeRPC(nameof(RPC_AddExperience), amount);
     }
 
-    public static void RPC_AddExperience(long sender, int experience)
+    public static void RPC_AddExperience(long sender, int experience, Vector3 pos)
     {
         PlayerManager.m_tempPlayerData.m_experience += experience;
-        DamageText.instance.ShowText(DamageText.TextType.Heal, Player.m_localPlayer.transform.position, experience, true);
+        DisplayText.ShowText(Color.cyan, pos, $"+{experience} $text_xp");
     }
 
     [HarmonyPatch(typeof(Player), nameof(Player.Awake))]
@@ -295,7 +282,7 @@ public static class ExperienceManager
         {
             if (!__instance) return;
             if (!__instance.m_nview || __instance.m_nview.GetZDO() == null) return;
-            __instance.m_nview.Register<int>(nameof(RPC_AddExperience), RPC_AddExperience);
+            __instance.m_nview.Register<int, Vector3>(nameof(RPC_AddExperience), RPC_AddExperience);
             __instance.m_nview.Register<string>(nameof(RPC_SetKey), RPC_SetKey);
         }
     }
@@ -314,16 +301,6 @@ public static class ExperienceManager
             player.m_nview.InvokeRPC(nameof(RPC_SetKey), __instance.m_defeatSetGlobalKey);
         }
     }
-
-    private static readonly Dictionary<PlayerStatType, int> ExperienceMap = new()
-    {
-        { PlayerStatType.TreeChops , 1},
-        { PlayerStatType.LogChops , 1},
-        { PlayerStatType.Logs , 1},
-        { PlayerStatType.MineHits , 1},
-        { PlayerStatType.CreatureTamed , 10},
-        { PlayerStatType.ItemsPickedUp , 1},
-    };
 
     private static readonly int EmissionColor = Shader.PropertyToID("_EmissionColor");
 

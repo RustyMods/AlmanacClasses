@@ -16,6 +16,7 @@ text_magic_dmg: "Magic Damage"
 text_lvl: "lvl"
 text_sec: "sec"
 text_tick: "tick"
+text_xp: 'XP'
 tooltip_increase: "Increase"
 tooltip_by: "by"
 inventory_armor: "Armor"

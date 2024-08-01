@@ -180,6 +180,7 @@
         <Compile Include="Classes\CharacteristicManager.cs" />
         <Compile Include="Classes\ExperienceManager.cs" />
         <Compile Include="Classes\PlayerManager.cs" />
+        <Compile Include="Classes\StaticExperience.cs" />
         <Compile Include="Classes\Talents.cs" />
         <Compile Include="FileSystem\FilePaths.cs" />
         <Compile Include="FileSystem\Watcher.cs" />
@@ -189,6 +190,7 @@
         <Compile Include="LoadAssets\LoadPieces.cs" />
         <Compile Include="Managers\AnimationManager.cs" />
         <Compile Include="Managers\CommandsManager.cs" />
+        <Compile Include="Managers\DisplayText.cs" />
         <Compile Include="Managers\LocalizationManager.cs" />
         <Compile Include="Managers\MaterialReplacer.cs" />
         <Compile Include="Managers\PieceManager.cs" />

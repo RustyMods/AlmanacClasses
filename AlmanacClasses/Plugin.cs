@@ -23,7 +23,7 @@ namespace AlmanacClasses
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
-        internal const string ModVersion = "0.4.15";
+        internal const string ModVersion = "0.5.0";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
         private static readonly string ConfigFileName = ModGUID + ".cfg";
@@ -37,6 +37,46 @@ namespace AlmanacClasses
         public static readonly AssetBundle _AssetBundle = GetAssetBundle("classesbundle");
         public static AlmanacClassesPlugin _Plugin = null!;
         public static GameObject _Root = null!;
+        
+        private static ConfigEntry<Toggle> _serverConfigLocked = null!;
+        public static ConfigEntry<int> _PrestigeThreshold = null!;
+        public static ConfigEntry<int> _ResetCost = null!;
+        public static ConfigEntry<Toggle> _DisplayExperience = null!;
+        public static ConfigEntry<Vector2> _ExperienceBarPos = null!;
+        public static ConfigEntry<float> _ExperienceBarScale = null!;
+        public static ConfigEntry<Toggle> _HudVisible = null!;
+        public static ConfigEntry<Vector2> _SpellBookPos = null!;
+        private static ConfigEntry<Toggle> _PanelBackground = null!;
+        public static ConfigEntry<float> _ExperienceMultiplier = null!;
+        public static ConfigEntry<int> _TalentPointPerLevel = null!;
+        public static ConfigEntry<int> _TalentPointsPerTenLevel = null!;
+        public static ConfigEntry<Vector2> _MenuTooltipPosition = null!;
+        public static ConfigEntry<int> _ChanceForOrb = null!;
+        public static ConfigEntry<int> _MaxLevel = null!;
+        private static ConfigEntry<Toggle> _ShowUIEnabled = null!;
+        private static ConfigEntry<KeyCode> _ShowUIKey = null!;
+        public static ConfigEntry<Toggle> _EnableRaven = null!;
+        public static ConfigEntry<int> _characteristicCap = null!;
+        public static ConfigEntry<float> _experienceFactor = null!;
+        public static ConfigEntry<Toggle> _loseExperience = null!;
+        public static ConfigEntry<float> _experienceLossFactor = null!;
+        public static ConfigEntry<float> _EitrRatio = null!;
+        public static ConfigEntry<float> _HealthRatio = null!;
+        public static ConfigEntry<float> _StaminaRatio = null!;
+        public static ConfigEntry<float> _PhysicalRatio = null!;
+        public static ConfigEntry<float> _ElementalRatio = null!;
+        public static ConfigEntry<float> _SpeedRatio = null!;
+        public static ConfigEntry<float> _CarryWeightRatio = null!;
+        public static ConfigEntry<int> _StatsCost = null!;
+        public static ConfigEntry<KeyCode> _SpellAlt = null!;
+        public static ConfigEntry<KeyCode> _Spell1 = null!;
+        public static ConfigEntry<KeyCode> _Spell2 = null!;
+        public static ConfigEntry<KeyCode> _Spell3 = null!;
+        public static ConfigEntry<KeyCode> _Spell4 = null!;
+        public static ConfigEntry<KeyCode> _Spell5 = null!;
+        public static ConfigEntry<KeyCode> _Spell6 = null!;
+        public static ConfigEntry<KeyCode> _Spell7 = null!;
+        public static ConfigEntry<KeyCode> _Spell8 = null!;
         public void Awake()
         {
             Localizer.Load(); 
@@ -98,7 +138,6 @@ namespace AlmanacClasses
             });
         }
 
-        #region Utils
         private void OnDestroy() => Config.Save();
         
         private static AssetBundle GetAssetBundle(string fileName)
@@ -134,53 +173,6 @@ namespace AlmanacClasses
                 AlmanacClassesLogger.LogError("Please check your config entries for spelling and format!");
             }
         }
-        #endregion
-
-        #region ConfigOptions
-
-        private static ConfigEntry<Toggle> _serverConfigLocked = null!;
-        #region Settings
-        public static ConfigEntry<int> _PrestigeThreshold = null!;
-        public static ConfigEntry<int> _ResetCost = null!;
-        public static ConfigEntry<Toggle> _DisplayExperience = null!;
-        public static ConfigEntry<Vector2> _ExperienceBarPos = null!;
-        public static ConfigEntry<float> _ExperienceBarScale = null!;
-        public static ConfigEntry<Toggle> _HudVisible = null!;
-        public static ConfigEntry<Vector2> _SpellBookPos = null!;
-        private static ConfigEntry<Toggle> _PanelBackground = null!;
-        public static ConfigEntry<float> _ExperienceMultiplier = null!;
-        public static ConfigEntry<int> _TalentPointPerLevel = null!;
-        public static ConfigEntry<int> _TalentPointsPerTenLevel = null!;
-        public static ConfigEntry<Vector2> _MenuTooltipPosition = null!;
-        public static ConfigEntry<int> _ChanceForOrb = null!;
-        public static ConfigEntry<int> _MaxLevel = null!;
-        private static ConfigEntry<Toggle> _ShowUIEnabled = null!;
-        private static ConfigEntry<KeyCode> _ShowUIKey = null!;
-        public static ConfigEntry<Toggle> _EnableRaven = null!;
-        public static ConfigEntry<int> _characteristicCap = null!;
-        public static ConfigEntry<float> _experienceFactor = null!;
-        public static ConfigEntry<Toggle> _loseExperience = null!;
-        public static ConfigEntry<float> _experienceLossFactor = null!;
-        #endregion
-        public static ConfigEntry<float> _EitrRatio = null!;
-        public static ConfigEntry<float> _HealthRatio = null!;
-        public static ConfigEntry<float> _StaminaRatio = null!;
-        public static ConfigEntry<float> _PhysicalRatio = null!;
-        public static ConfigEntry<float> _ElementalRatio = null!;
-        public static ConfigEntry<float> _SpeedRatio = null!;
-        public static ConfigEntry<float> _CarryWeightRatio = null!;
-        public static ConfigEntry<int> _StatsCost = null!;
-        #region Key Codes
-        public static ConfigEntry<KeyCode> _SpellAlt = null!;
-        public static ConfigEntry<KeyCode> _Spell1 = null!;
-        public static ConfigEntry<KeyCode> _Spell2 = null!;
-        public static ConfigEntry<KeyCode> _Spell3 = null!;
-        public static ConfigEntry<KeyCode> _Spell4 = null!;
-        public static ConfigEntry<KeyCode> _Spell5 = null!;
-        public static ConfigEntry<KeyCode> _Spell6 = null!;
-        public static ConfigEntry<KeyCode> _Spell7 = null!;
-        public static ConfigEntry<KeyCode> _Spell8 = null!;
-        #endregion
         private void InitConfigs()
         {
             _serverConfigLocked = config("1 - General", "Lock Configuration", Toggle.On,
@@ -281,8 +273,6 @@ namespace AlmanacClasses
             _Spell7 = config("3 - Spell Keys", "Spell 7", KeyCode.Alpha7, "Set the key code for spell 7", false);
             _Spell8 = config("3 - Spell Keys", "Spell 8", KeyCode.Alpha8, "Set the key code for spell 8", false);
         }
-
-        #region Config Utils
         public ConfigEntry<T> config<T>(string group, string name, T value, ConfigDescription description,
             bool synchronizedSetting = true)
         {
@@ -312,23 +302,6 @@ namespace AlmanacClasses
             [UsedImplicitly] public bool? Browsable;
             [UsedImplicitly] public string? Category;
             [UsedImplicitly] public Action<ConfigEntryBase>? CustomDrawer;
-        }
-        #endregion
-        #endregion
-    }
-
-    public static class KeyboardExtensions
-    {
-        public static bool IsKeyDown(this KeyboardShortcut shortcut)
-        {
-            return shortcut.MainKey != KeyCode.None && Input.GetKeyDown(shortcut.MainKey) &&
-                   shortcut.Modifiers.All(Input.GetKey);
-        }
-
-        public static bool IsKeyHeld(this KeyboardShortcut shortcut)
-        {
-            return shortcut.MainKey != KeyCode.None && Input.GetKey(shortcut.MainKey) &&
-                   shortcut.Modifiers.All(Input.GetKey);
         }
     }
 }

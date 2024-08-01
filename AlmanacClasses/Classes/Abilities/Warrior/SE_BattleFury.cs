@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AlmanacClasses.Managers;
+using HarmonyLib;
 using UnityEngine;
 
 namespace AlmanacClasses.Classes.Abilities.Warrior;
@@ -34,7 +35,7 @@ public static class BattleFury
         Player.m_localPlayer.AddStamina(amount);
         
         Transform transform = Player.m_localPlayer.transform;
-        DamageText.instance.ShowText(DamageText.TextType.Heal, Player.m_localPlayer.GetTopPoint(), amount,  true);
+        DisplayText.ShowText(Color.yellow, Player.m_localPlayer.GetTopPoint(), $"+{amount} $se_stamina");
         talent.GetEffectList().Create(transform.position, transform.rotation, transform);
     }
 }
