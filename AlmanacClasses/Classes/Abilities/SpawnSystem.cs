@@ -79,7 +79,7 @@ public static class SpawnSystem
             if (!multiple) SpawnedCreature = component;
             else SpawnedCreatures.Add(component);
             component.name = name.Replace(" ", string.Empty);
-            component.m_name = name;
+            // component.m_name = name;
             component.SetLevel(Mathf.Clamp(level, 0, 3));
             component.m_faction = Character.Faction.Players;
             component.m_boss = false;
@@ -128,7 +128,7 @@ public static class SpawnSystem
         if (creature.TryGetComponent(out Tameable component))
         {
             if (!patch) component.Command(Player.m_localPlayer, false);
-            component.SetText(name);
+            // component.SetText(name);
         }
         else
         {
@@ -144,7 +144,7 @@ public static class SpawnSystem
             tameable.m_levelUpFactor = 0.5f;
             tameable.m_commandable = true;
             if(!patch) tameable.Command(Player.m_localPlayer, false);
-            tameable.SetText(name);
+            // tameable.SetText(name);
         }
         
     }
@@ -200,7 +200,7 @@ public static class SpawnSystem
         if (!instance.m_nview.GetZDO().GetBool(FriendlyKey)) return;
         instance.m_nview.GetZDO().Persistent = false;
         instance.m_faction = Character.Faction.Players;
-        instance.m_name = "Friendly " + instance.name.Replace("_", " ").Replace("(Clone)","");
+        // instance.m_name = "Friendly " + instance.name.Replace("_", " ").Replace("(Clone)","");
         instance.m_boss = false;
         SetSpawnTameable(instance.gameObject, "Friendly " + instance.name.Replace("_", " ").Replace("(Clone)",""), true);
         RemoveCharacterDrops(instance.gameObject);

@@ -18,10 +18,10 @@ namespace AlmanacClasses.Classes;
 public static class ExperienceManager
 {
     private static readonly CustomSyncedValue<string> TierServerExperienceMap = new(AlmanacClassesPlugin.ConfigSync, "TierServerExperienceMap", "");
-    private static Dictionary<string, CreatureData> m_experienceMap = new();
+    private static Dictionary<string, ExperienceData> m_creatureExperienceMap = new();
     
     [Serializable]
-    public class CreatureData
+    public class ExperienceData
     {
         public int Experience = 1;
         public int MinimumLevel = 1;
@@ -35,31 +35,36 @@ public static class ExperienceManager
         {
             if (!__instance) return;
             FilePaths.CreateFolders();
-            if (ZNet.instance.IsServer())
-            {
-                ISerializer serializer = new SerializerBuilder().Build();
-                TierServerExperienceMap.Value = serializer.Serialize(m_experienceMap);
-            }
-            else
-            {
-                TierServerExperienceMap.ValueChanged += OnServerExperienceChange;
-            }
-        }
-    }
-    private static void OnServerExperienceChange()
-    {
-        try
-        {
-            IDeserializer deserializer = new DeserializerBuilder().Build();
-            m_experienceMap = deserializer.Deserialize<Dictionary<string, CreatureData>>(TierServerExperienceMap.Value);
-            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Server experience map changed, reloading");
-        }
-        catch
-        {
-            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to parse server experience map");
+            if (!__instance.IsServer()) return;
+            UpdateServerExperienceMap();
+            StaticExperience.UpdateServerStaticExperience();
         }
     }
 
+    private static void UpdateServerExperienceMap()
+    {
+        ISerializer serializer = new SerializerBuilder().Build();
+        TierServerExperienceMap.Value = serializer.Serialize(m_creatureExperienceMap);
+    }
+    public static void LoadServerExperienceMapWatcher()
+    {
+        TierServerExperienceMap.ValueChanged += () =>
+        {
+            if (!ZNet.instance || ZNet.instance.IsServer()) return;
+            if (TierServerExperienceMap.Value.IsNullOrWhiteSpace()) return;
+            try
+            {
+                IDeserializer deserializer = new DeserializerBuilder().Build();
+                m_creatureExperienceMap = deserializer.Deserialize<Dictionary<string, ExperienceData>>(TierServerExperienceMap.Value);
+                AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Server experience map changed, reloading");
+            }
+            catch
+            {
+                AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to parse server experience map");
+            }
+        };
+    }
+    
     public static void LoadCreatureMap()
     {
         FilePaths.CreateFolders();
@@ -70,30 +75,30 @@ public static class ExperienceManager
             string file = File.ReadAllText(FilePaths.TierExperienceFilePath);
             try
             {
-                m_experienceMap = deserializer.Deserialize<Dictionary<string, CreatureData>>(file);
+                m_creatureExperienceMap = deserializer.Deserialize<Dictionary<string, ExperienceData>>(file);
             }
             catch
             {
                 AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to parse experience map");
-                m_experienceMap = GetDefaultCreatureMap();
+                m_creatureExperienceMap = GetDefaultCreatureMap();
             }
         }
         else
         {
-            m_experienceMap = GetDefaultCreatureMap();
-            string data = serializer.Serialize(m_experienceMap);
+            m_creatureExperienceMap = GetDefaultCreatureMap();
+            string data = serializer.Serialize(m_creatureExperienceMap);
             File.WriteAllText(FilePaths.TierExperienceFilePath, data);
         }
 
         if (ZNet.instance && ZNet.instance.IsServer())
         {
-            TierServerExperienceMap.Value = serializer.Serialize(m_experienceMap);
+            TierServerExperienceMap.Value = serializer.Serialize(m_creatureExperienceMap);
         }
     }
 
-    private static Dictionary<string, CreatureData> GetDefaultCreatureMap()
+    private static Dictionary<string, ExperienceData> GetDefaultCreatureMap()
     {
-        Dictionary<string, CreatureData> output = new()
+        Dictionary<string, ExperienceData> output = new()
         {
             ["Greyling"] = CreateData(1, 1, 15),
             ["Boar"] = CreateData(1, 1, 15),
@@ -167,22 +172,23 @@ public static class ExperienceManager
         return output;
     }
 
-    private static CreatureData CreateData(int experience, int min, int max) => new(){ Experience = experience, MinimumLevel = min, MaximumLevel = max };
+    public static ExperienceData CreateData(int experience, int min, int max) => new(){ Experience = experience, MinimumLevel = min, MaximumLevel = max };
     public static void WriteExperienceMap()
     {
-        string filePath = FilePaths.ExperienceFilePath;
+        string filePath = FilePaths.TierExperienceFilePath;
         ISerializer serializer = new SerializerBuilder().Build();
-        string data = serializer.Serialize(m_experienceMap);
+        string data = serializer.Serialize(m_creatureExperienceMap);
         File.WriteAllText(filePath, data);
         AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo("Experience map written to disk:");
-        AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo(FilePaths.ExperienceFilePath);
+        AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo(FilePaths.TierExperienceFilePath);
     }
     private static int GetExperienceAmount(Character instance)
     {
-        if (m_experienceMap.TryGetValue(instance.name.Replace("(Clone)", string.Empty), out CreatureData data))
+        if (m_creatureExperienceMap.TryGetValue(instance.name.Replace("(Clone)", string.Empty), out ExperienceData data))
         {
             int playerLevel = PlayerManager.GetPlayerLevel(PlayerManager.GetExperience());
-            if (playerLevel < data.MinimumLevel || playerLevel > data.MaximumLevel) return 0;
+            if (AlmanacClassesPlugin._UseExperienceLevelCap.Value is AlmanacClassesPlugin.Toggle.On 
+                && (playerLevel < data.MinimumLevel || playerLevel > data.MaximumLevel)) return 0;
             return (int)(data.Experience * instance.m_level * AlmanacClassesPlugin._ExperienceMultiplier.Value);
         }
 
@@ -254,13 +260,13 @@ public static class ExperienceManager
             if (player.m_nview.IsOwner())
             {
                 PlayerManager.m_tempPlayerData.m_experience += amount;
-                DisplayText.ShowText(Color.cyan, instance.transform.position, $"+{amount} $text_xp");
             }
             else
             {
                 player.m_nview.InvokeRPC(nameof(RPC_AddExperience), amount, instance.transform.position);
             }
         }
+        DisplayText.ShowText(Color.cyan, instance.transform.position, $"+{amount} $text_xp");
     }
 
     public static void Command_GiveExperience(Player player, int amount)
@@ -272,7 +278,6 @@ public static class ExperienceManager
     public static void RPC_AddExperience(long sender, int experience, Vector3 pos)
     {
         PlayerManager.m_tempPlayerData.m_experience += experience;
-        DisplayText.ShowText(Color.cyan, pos, $"+{experience} $text_xp");
     }
 
     [HarmonyPatch(typeof(Player), nameof(Player.Awake))]

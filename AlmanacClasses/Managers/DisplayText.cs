@@ -27,13 +27,14 @@ public static class DisplayText
     {
         try
         {
+            if (DamageText.instance.m_worldTexts.Count > 200) return;
             Vector3 colorVector = pkg.ReadVector3();
             Color color = new Color(colorVector.x, colorVector.y, colorVector.z);
             Vector3 pos = pkg.ReadVector3();
             string? text = pkg.ReadString();
             
             float distance = Vector3.Distance(Utils.GetMainCamera().transform.position, pos);
-
+            if (distance > DamageText.instance.m_maxTextDistance) return;
             DamageText.WorldTextInstance instance = new DamageText.WorldTextInstance
             {
                 m_worldPos = pos + Random.insideUnitSphere * 0.5f,
@@ -42,9 +43,9 @@ public static class DisplayText
             instance.m_textField = instance.m_gui.GetComponent<TMP_Text>();
             DamageText.instance.m_worldTexts.Add(instance);
             instance.m_textField.color = color;
-            instance.m_textField.fontSize = distance <= DamageText.instance.m_smallFontDistance
+            instance.m_textField.fontSize = (distance <= DamageText.instance.m_smallFontDistance
                 ? DamageText.instance.m_smallFontSize
-                : DamageText.instance.m_largeFontSize;
+                : DamageText.instance.m_largeFontSize) * AlmanacClassesPlugin._DisplayTextFontSizeModifier.Value;
             instance.m_textField.text = Localization.instance.Localize(text);
             instance.m_timer = 0.0f;
         }

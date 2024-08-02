@@ -95,7 +95,7 @@ public class Talent
     public float GetAttack(int level) => m_values == null ? 0f : (m_values.m_modifyAttack?.Value ?? 0f) * level - (level - 1);
     public float GetBleed(int level) => m_values == null ? 0f : (m_values.m_bleed?.Value ?? 0f) * level;
     public float GetSpeedModifier(int level) => m_values == null ? 0f : (m_values.m_speed?.Value ?? 0f) * level - (level - 1);
-    public float GetChance(int level) => m_values == null ? 0f : Mathf.Clamp((m_values.m_chance?.Value ?? 0f) * level, 0f, 100f);
+    public float GetChance(int level) => m_values == null ? 0f : Mathf.Clamp((m_values.m_chance?.Value ?? 0f) + (level - 1) * 5f, 0f, 100f);
     public float GetReflect(int level) => m_values == null ? 0f : (m_values.m_reflect?.Value ?? 0f) * level;
     public float GetAddedComfort(int level) => m_values == null ? 0f : (m_values.m_comfort?.Value ?? 0f) * level;
     public float GetDamageReduction(int level) => m_values == null ? 1f : Mathf.Clamp01(1 - ((m_values.m_damageReduction?.Value ?? 1f) - 0.1f * (level - 1)));
@@ -807,9 +807,7 @@ public static class TalentManager
             m_altButtonSprite = SpriteManager.CrownIcon,
             m_values = new Talent.TalentValues()
             {
-                m_chance = _Plugin.config("Warrior - Survivor", "Chance", 20f,
-                    new ConfigDescription("Set the chance to not die and regain health",
-                        new AcceptableValueRange<float>(0f, 100f))),
+                m_chance = _Plugin.config("Warrior - Survivor", "Chance", 20f, new ConfigDescription("Set the chance to not die and regain health", new AcceptableValueRange<float>(0f, 100f))),
             },
             m_cost = _Plugin.config("Warrior - Survivor", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock ability", new AcceptableValueRange<int>(1, 10))),
             m_alt = _Plugin.config("Warrior - Survivor", "Enable", Toggle.Off, "If on, replaces dual wield talent"),
@@ -2162,7 +2160,7 @@ public static class TalentManager
                     m_attackSpeedReduction = _Plugin.config("Warrior - Monkey Wrench", "Attack Speed Reduction", 0.5f, new ConfigDescription("Set the attack speed reduction modifier", new AcceptableValueRange<float>(0f, 1f)))
                 },
                 m_cap = _Plugin.config("Warrior - Monkey Wrench", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101))),
-                m_passiveActive = false,
+                m_passiveActive = true,
             },
             new()
             {

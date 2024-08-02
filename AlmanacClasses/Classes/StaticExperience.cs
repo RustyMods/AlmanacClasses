@@ -1,27 +1,136 @@
-﻿using AlmanacClasses.Managers;
+﻿using System.Collections.Generic;
+using System.IO;
+using AlmanacClasses.FileSystem;
+using AlmanacClasses.Managers;
+using BepInEx;
 using HarmonyLib;
+using ServerSync;
 using UnityEngine;
+using YamlDotNet.Serialization;
 
 namespace AlmanacClasses.Classes;
 
 public static class StaticExperience
 {
+    private static readonly CustomSyncedValue<string> m_serverStaticExperienceMap = new(AlmanacClassesPlugin.ConfigSync, "ServerStaticExperienceMap", "");
+    private static Dictionary<string, ExperienceManager.ExperienceData> m_staticExperienceMap = new();
+
+    public static void LoadServerStaticExperienceWatcher()
+    {
+        m_serverStaticExperienceMap.ValueChanged += () =>
+        {
+            if (!ZNet.instance || ZNet.instance.IsServer()) return;
+            if (m_serverStaticExperienceMap.Value.IsNullOrWhiteSpace()) return;
+            try
+            {
+                var deserializer = new DeserializerBuilder().Build();
+                var data =
+                    deserializer.Deserialize<Dictionary<string, ExperienceManager.ExperienceData>>(
+                        m_serverStaticExperienceMap.Value);
+                m_staticExperienceMap = data;
+            }
+            catch
+            {
+                AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to parse server static experience map");
+            }
+        };
+    }
+
+    public static void UpdateServerStaticExperience()
+    {
+        if (!ZNet.instance || !ZNet.instance.IsServer()) return;
+        var serializer = new SerializerBuilder().Build();
+        m_serverStaticExperienceMap.Value = serializer.Serialize(m_staticExperienceMap);
+    }
+    public static void LoadStaticMap()
+    {
+        m_staticExperienceMap = GetDefaultStaticMap();
+        if (File.Exists(FilePaths.StaticExperienceFilePath))
+        {
+            var deserializer = new DeserializerBuilder().Build();
+            m_staticExperienceMap = deserializer.Deserialize<Dictionary<string, ExperienceManager.ExperienceData>>(File.ReadAllText(FilePaths.StaticExperienceFilePath));
+        }
+        else
+        {
+            var serializer = new SerializerBuilder().Build();
+            var serial = serializer.Serialize(m_staticExperienceMap);
+            File.WriteAllText(FilePaths.StaticExperienceFilePath, serial);
+        }
+    }
+    
+    private static Dictionary<string, ExperienceManager.ExperienceData> GetDefaultStaticMap()
+    {
+        return new Dictionary<string, ExperienceManager.ExperienceData>()
+        {
+            ["Beech_Stub"] = ExperienceManager.CreateData(10, 1, 100),
+            ["BirchStub"] = ExperienceManager.CreateData(15, 1, 100),
+            ["OakStub"] = ExperienceManager.CreateData(20, 1, 100),
+            ["Pinetree_01_Stub"] = ExperienceManager.CreateData(10, 1, 100),
+            ["FirTree_Stub"] = ExperienceManager.CreateData(10, 1, 100),
+            ["SwampTree1_Stub"] = ExperienceManager.CreateData(15, 1, 100),
+            ["MineRock_Tin"] = ExperienceManager.CreateData(2, 1, 20),
+            ["rock4_copper_frac"] = ExperienceManager.CreateData(2, 1, 20),
+            ["mudpile2_frac"] = ExperienceManager.CreateData(3, 10, 40),
+            ["silvervein_frac"] = ExperienceManager.CreateData(3, 10, 50),
+            ["MineRock_Obsidian"] = ExperienceManager.CreateData(5, 5, 50),
+            ["giant_brain_frac"] = ExperienceManager.CreateData(10, 20, 70),
+            ["sapling_seedturnip"] = ExperienceManager.CreateData(1, 5, 40),
+            ["sapling_turnip"] = ExperienceManager.CreateData(1, 5, 40),
+            ["sapling_seedcarrot"] = ExperienceManager.CreateData(1, 5, 40),
+            ["sapling_carrot"] = ExperienceManager.CreateData(1, 5, 40),
+            ["sapling_onion"] = ExperienceManager.CreateData(2, 5, 50),
+            ["sapling_seedonion"] = ExperienceManager.CreateData(2, 5, 50),
+            ["sapling_barley"] = ExperienceManager.CreateData(2, 5, 100),
+            ["sapling_flax"] = ExperienceManager.CreateData(2, 5, 100),
+            ["sapling_magecap"] = ExperienceManager.CreateData(3, 5, 100),
+            ["sapling_jotunpuffs"] = ExperienceManager.CreateData(3, 5, 100),
+            ["Birch1"] = ExperienceManager.CreateData(5, 5, 100),
+            ["Birch1_aut"] = ExperienceManager.CreateData(5, 5, 100),
+            ["Birch2"] = ExperienceManager.CreateData(5, 5, 100),
+            ["Birch2_aut"] = ExperienceManager.CreateData(5, 5, 100),
+            ["Beech1"] = ExperienceManager.CreateData(1, 5, 100),
+            ["beech_log"] = ExperienceManager.CreateData(1, 5, 100),
+            ["beech_log_half"] = ExperienceManager.CreateData(1, 5, 100),
+            ["Birch_log"] = ExperienceManager.CreateData(5, 5, 100),
+            ["Birch_log_half"] = ExperienceManager.CreateData(5, 5, 100),
+            ["FirTree"] = ExperienceManager.CreateData(1, 1, 100),
+            ["FirTree_log"] = ExperienceManager.CreateData(1, 1, 100),
+            ["FirTree_log_half"] = ExperienceManager.CreateData(1, 1, 100),
+            ["Oak1"] = ExperienceManager.CreateData(10, 5, 100),
+            ["Oak_log"] = ExperienceManager.CreateData(5, 5, 100),
+            ["Oak_log_half"] = ExperienceManager.CreateData(5, 5, 100),
+            ["SwampTree1"] = ExperienceManager.CreateData(5, 5, 100),
+            ["SwampTree1_log"] = ExperienceManager.CreateData(5, 5, 100),
+            ["YggaShoot1"] = ExperienceManager.CreateData(10, 20, 100),
+            ["YggaShoot2"] = ExperienceManager.CreateData(10, 20, 100),
+            ["YggaShoot3"] = ExperienceManager.CreateData(10, 20, 100),
+            ["yggashoot_log"] = ExperienceManager.CreateData(10, 20, 100),
+            ["yggashoot_log_half"] = ExperienceManager.CreateData(10, 20, 100),
+        };
+    }
+
+    private static void CheckMap(string prefabName, Vector3 position, Player player)
+    {
+        if (!m_staticExperienceMap.TryGetValue(prefabName.Replace("(Clone)", string.Empty), out ExperienceManager.ExperienceData data)) return;
+        int playerLevel = PlayerManager.GetPlayerLevel(PlayerManager.GetExperience());
+        if (AlmanacClassesPlugin._UseExperienceLevelCap.Value is AlmanacClassesPlugin.Toggle.On 
+            && (playerLevel > data.MaximumLevel || playerLevel < data.MinimumLevel)) return;
+        float exp = data.Experience * AlmanacClassesPlugin._ExperienceMultiplier.Value;
+        AddExperience(player, (int)exp, position);
+    }
+
     [HarmonyPatch(typeof(Destructible), nameof(Destructible.RPC_Damage))]
     private static class Destructible_RPC_Damage_Patch
     {
         private static void Postfix(Destructible __instance, HitData hit)
         {
-            var attacker = hit.GetAttacker();
+            if (!__instance.m_nview.IsOwner()) return;
+            Character attacker = hit.GetAttacker();
             if (attacker == null) return;
             if (attacker is not Player player) return;
             if (!hit.CheckToolTier(__instance.m_minToolTier)) return;
-            if (hit.GetTotalDamage() < 1) return; 
-            if (__instance.m_destructibleType is DestructibleType.Tree) return;
-            float exp = Mathf.Max((__instance.m_minToolTier + 1) * AlmanacClassesPlugin._ExperienceMultiplier.Value, 1);
-            if (__instance.m_nview.IsOwner())
-            {
-                AddExperience(player, (int)exp, __instance.transform.position);
-            }
+            if (hit.GetTotalDamage() < 1) return;
+            CheckMap(__instance.name, __instance.transform.position, player);
         }
     }
 
@@ -35,11 +144,7 @@ public static class StaticExperience
             if (attacker is not Player player) return;
             if (!hit.CheckToolTier(__instance.m_minToolTier)) return;
             if (hit.GetTotalDamage() < 1) return; 
-            float exp = Mathf.Max((__instance.m_minToolTier + 1) * AlmanacClassesPlugin._ExperienceMultiplier.Value, 1);
-            if (__instance.m_nview.IsOwner())
-            {
-                AddExperience(player, (int)exp, __instance.transform.position);
-            }
+            CheckMap(__instance.name, __instance.transform.position, player);
         }
     }
 
@@ -53,11 +158,7 @@ public static class StaticExperience
             if (attacker is not Player player) return;
             if (!hit.CheckToolTier(__instance.m_minToolTier)) return;
             if (hit.GetTotalDamage() < 1) return; 
-            float exp = Mathf.Max((__instance.m_minToolTier + 1) * AlmanacClassesPlugin._ExperienceMultiplier.Value, 1);
-            if (__instance.m_nview.IsOwner())
-            {
-                AddExperience(player, (int)exp, __instance.transform.position);
-            }
+            CheckMap(__instance.name, __instance.transform.position, player);
         }
     }
 
@@ -71,11 +172,7 @@ public static class StaticExperience
             if (attacker is not Player player) return;
             if (!hit.CheckToolTier(__instance.m_minToolTier)) return;
             if (hit.GetTotalDamage() < 1) return;
-            float exp = Mathf.Max((__instance.m_minToolTier + 1) * AlmanacClassesPlugin._ExperienceMultiplier.Value, 1);
-            if (__instance.m_nview.IsOwner())
-            {
-                AddExperience(player, (int)exp, __instance.transform.position);
-            }
+            CheckMap(__instance.name, __instance.transform.position, player);
         }
     }
 
@@ -89,11 +186,7 @@ public static class StaticExperience
             if (attacker is not Player player) return;
             if (!hit.CheckToolTier(__instance.m_minToolTier)) return;
             if (hit.GetTotalDamage() < 1) return; 
-            float exp = Mathf.Max((__instance.m_minToolTier + 1) * AlmanacClassesPlugin._ExperienceMultiplier.Value, 1);
-            if (__instance.m_nview.IsOwner())
-            {
-                AddExperience(player, (int)exp, __instance.transform.position);
-            }
+            CheckMap(__instance.name, __instance.transform.position, player);
         }
     }
 
@@ -115,7 +208,8 @@ public static class StaticExperience
         private static void Postfix(Player __instance, Piece piece)
         {
             if (!piece.m_cultivatedGroundOnly) return;
-            AddExperience(__instance, 1, __instance.transform.position);
+            CheckMap(piece.name, __instance.transform.position, __instance);
+            // AddExperience(__instance, 1, __instance.transform.position);
         }
     }
 
@@ -124,11 +218,11 @@ public static class StaticExperience
         if (player.m_nview.IsOwner())
         {
             PlayerManager.m_tempPlayerData.m_experience += amount;
-            DisplayText.ShowText(new Color(0.1f, 0.7f, 0.8f, 1f), player.transform.position, $"+{amount} $text_xp");
         }
         else
         {
             player.m_nview.InvokeRPC(nameof(ExperienceManager.RPC_AddExperience), amount, position);
         }
+        DisplayText.ShowText(Color.cyan, player.transform.position, $"+{amount} $text_xp");
     }
 }

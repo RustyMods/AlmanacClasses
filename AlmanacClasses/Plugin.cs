@@ -23,7 +23,7 @@ namespace AlmanacClasses
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
-        internal const string ModVersion = "0.5.0";
+        internal const string ModVersion = "0.5.1";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
         private static readonly string ConfigFileName = ModGUID + ".cfg";
@@ -77,6 +77,8 @@ namespace AlmanacClasses
         public static ConfigEntry<KeyCode> _Spell6 = null!;
         public static ConfigEntry<KeyCode> _Spell7 = null!;
         public static ConfigEntry<KeyCode> _Spell8 = null!;
+        public static ConfigEntry<float> _DisplayTextFontSizeModifier = null!;
+        public static ConfigEntry<Toggle> _UseExperienceLevelCap = null!;
         public void Awake()
         {
             Localizer.Load(); 
@@ -92,13 +94,14 @@ namespace AlmanacClasses
             LoadPieces.LoadClassAltar();
             AnimationManager.LoadCustomAnimations();
             ExperienceManager.LoadCreatureMap();
-            
+            StaticExperience.LoadStaticMap();
             Assembly assembly = Assembly.GetExecutingAssembly();
             _harmony.PatchAll(assembly);
             SetupWatcher();
             
             AddAttackSpeedModifiers();
-            
+            ExperienceManager.LoadServerExperienceMapWatcher();
+            StaticExperience.LoadServerStaticExperienceWatcher();
             Watcher.InitWatcher();
         }
         public void Update()
@@ -193,9 +196,6 @@ namespace AlmanacClasses
 
             _characteristicCap = config("4 - Characteristics", "0 - Prestige Cap", 5,
                 "Set maximum level for characteristic talents");
-            
-            _EnableRaven = config("2 - Settings", "Raven", Toggle.On,
-                "If on, plugin adds Munin raven to altar prefab");
         }
         private void InitSettingsConfigs()
         {
@@ -254,6 +254,11 @@ namespace AlmanacClasses
                 "If on, upon death, player loses experience");
             _experienceLossFactor = config("2 - Settings", "Experience Loss Factor", 0.2f,
                 new ConfigDescription("Experience loss factor", new AcceptableValueRange<float>(0f, 1f)));
+            _EnableRaven = config("2 - Settings", "Raven", Toggle.On,
+                "If on, plugin adds Munin raven to altar prefab");
+            _DisplayTextFontSizeModifier = config("2 - Settings", "Display Text Font Size Modifier", 1f,
+                new ConfigDescription("Modify the size of the visual text", new AcceptableValueRange<float>(0.1f, 5f)));
+            _UseExperienceLevelCap = config("2 - Settings", "Use Experience Level Cap", Toggle.On, "If on, player must be between a certain level to gain experience, defined by experience map files");
         }
 
         private void InitKeyCodeConfigs()

@@ -370,13 +370,15 @@ public static class LoadedAssets
         };
 
         GameObject FX_Lightning = instance.GetPrefab("fx_Lightning");
+        GameObject FX_lightningClone = Object.Instantiate(FX_Lightning, AlmanacClassesPlugin._Root.transform, false);
+        FX_lightningClone.name = "fx_Lightning_timed";
         FX_Electric = new EffectList()
         {
             m_effectPrefabs = new[]
             {
                 new EffectList.EffectData()
                 {
-                    m_prefab = FX_Lightning,
+                    m_prefab = FX_lightningClone,
                     m_enabled = true,
                     m_attach = true,
                     m_scale = true,
@@ -384,6 +386,8 @@ public static class LoadedAssets
                 }
             }
         };
+        
+        RegisterToZNetScene(FX_lightningClone);
 
         GameObject fx_CharredStone_Destruction = instance.GetPrefab("fx_CharredStone_Destruction");
         FX_RogueBleed = new EffectList()

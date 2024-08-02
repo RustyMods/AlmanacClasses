@@ -31,7 +31,7 @@ public static class BattleFury
         float chance = talent.GetChance(talent.GetLevel());
         float random = Random.Range(0, 101);
         if (random > chance) return;
-        var amount = talent.GetStamina(talent.GetLevel());
+        float amount = talent.GetStamina(talent.GetLevel());
         Player.m_localPlayer.AddStamina(amount);
         
         Transform transform = Player.m_localPlayer.transform;

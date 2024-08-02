@@ -22,6 +22,9 @@ public class SE_MonkeyWrench : StatusEffect
 
     public override void ModifyAttack(Skills.SkillType skill, ref HitData hitData)
     {
+        if (m_character is not Player player) return;
+        if (player.GetCurrentWeapon() == null) return;
+        if (!MonkeyWrench.IsMonkeyWrenchItem(player.GetCurrentWeapon().m_shared.m_name)) return;
         hitData.ApplyModifier(m_talent.GetDamageReduction(m_talent.GetLevel()));
     }
 
@@ -148,6 +151,7 @@ public static class MonkeyWrench
     }
     private static void AddEquipStatusEffect(ItemDrop.ItemData item)
     {
+        return;
         if (item.m_shared.m_equipStatusEffect) return;
         item.m_shared.m_equipStatusEffect = ObjectDB.instance.GetStatusEffect("SE_MonkeyWrench".GetStableHashCode());
     }

@@ -59,6 +59,8 @@ public static class CallOfLightning
             component.ClaimOwnership();
             component.Destroy();
         }
+
+        startEffects = null;
     }
     private static void SetAOEComponent(Aoe component, HitData.DamageTypes damages)
     {
