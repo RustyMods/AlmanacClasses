@@ -45,14 +45,24 @@ public static class StaticExperience
     public static void LoadStaticMap()
     {
         m_staticExperienceMap = GetDefaultStaticMap();
+        var serializer = new SerializerBuilder().Build();
         if (File.Exists(FilePaths.StaticExperienceFilePath))
         {
             var deserializer = new DeserializerBuilder().Build();
-            m_staticExperienceMap = deserializer.Deserialize<Dictionary<string, ExperienceManager.ExperienceData>>(File.ReadAllText(FilePaths.StaticExperienceFilePath));
+            var data = deserializer.Deserialize<Dictionary<string, ExperienceManager.ExperienceData>>(File.ReadAllText(FilePaths.StaticExperienceFilePath));
+            if (m_staticExperienceMap.Count > data.Count)
+            {
+                foreach (var kvp in m_staticExperienceMap)
+                {
+                    if (data.ContainsKey(kvp.Key)) continue;
+                    data[kvp.Key] = kvp.Value;
+                }
+                File.WriteAllText(FilePaths.StaticExperienceFilePath, serializer.Serialize(data));
+            }
+            m_staticExperienceMap = data;
         }
         else
         {
-            var serializer = new SerializerBuilder().Build();
             var serial = serializer.Serialize(m_staticExperienceMap);
             File.WriteAllText(FilePaths.StaticExperienceFilePath, serial);
         }
@@ -62,8 +72,30 @@ public static class StaticExperience
     {
         return new Dictionary<string, ExperienceManager.ExperienceData>()
         {
+            ["Beech1"] = ExperienceManager.CreateData(1, 1, 100),
             ["Beech_Stub"] = ExperienceManager.CreateData(10, 1, 100),
+            ["beech_log"] = ExperienceManager.CreateData(1, 1, 100),
+            ["beech_log_half"] = ExperienceManager.CreateData(1, 1, 100),
+            ["Birch1"] = ExperienceManager.CreateData(5, 5, 100),
             ["BirchStub"] = ExperienceManager.CreateData(15, 1, 100),
+            ["Birch1_aut"] = ExperienceManager.CreateData(5, 5, 100),
+            ["Birch2"] = ExperienceManager.CreateData(5, 5, 100),
+            ["Birch2_aut"] = ExperienceManager.CreateData(5, 5, 100),
+            ["Birch_log"] = ExperienceManager.CreateData(5, 5, 100),
+            ["Birch_log_half"] = ExperienceManager.CreateData(5, 5, 100),
+            ["FirTree"] = ExperienceManager.CreateData(1, 1, 100),
+            ["FirTree_log"] = ExperienceManager.CreateData(1, 1, 100),
+            ["FirTree_log_half"] = ExperienceManager.CreateData(1, 1, 100),
+            ["Oak1"] = ExperienceManager.CreateData(10, 5, 100),
+            ["Oak_log"] = ExperienceManager.CreateData(5, 5, 100),
+            ["Oak_log_half"] = ExperienceManager.CreateData(5, 5, 100),
+            ["SwampTree1"] = ExperienceManager.CreateData(5, 5, 100),
+            ["SwampTree1_log"] = ExperienceManager.CreateData(5, 5, 100),
+            ["YggaShoot1"] = ExperienceManager.CreateData(10, 20, 100),
+            ["YggaShoot2"] = ExperienceManager.CreateData(10, 20, 100),
+            ["YggaShoot3"] = ExperienceManager.CreateData(10, 20, 100),
+            ["yggashoot_log"] = ExperienceManager.CreateData(10, 20, 100),
+            ["yggashoot_log_half"] = ExperienceManager.CreateData(10, 20, 100),
             ["OakStub"] = ExperienceManager.CreateData(20, 1, 100),
             ["Pinetree_01_Stub"] = ExperienceManager.CreateData(10, 1, 100),
             ["FirTree_Stub"] = ExperienceManager.CreateData(10, 1, 100),
@@ -84,32 +116,22 @@ public static class StaticExperience
             ["sapling_flax"] = ExperienceManager.CreateData(2, 5, 100),
             ["sapling_magecap"] = ExperienceManager.CreateData(3, 5, 100),
             ["sapling_jotunpuffs"] = ExperienceManager.CreateData(3, 5, 100),
-            ["Birch1"] = ExperienceManager.CreateData(5, 5, 100),
-            ["Birch1_aut"] = ExperienceManager.CreateData(5, 5, 100),
-            ["Birch2"] = ExperienceManager.CreateData(5, 5, 100),
-            ["Birch2_aut"] = ExperienceManager.CreateData(5, 5, 100),
-            ["Beech1"] = ExperienceManager.CreateData(1, 5, 100),
-            ["beech_log"] = ExperienceManager.CreateData(1, 5, 100),
-            ["beech_log_half"] = ExperienceManager.CreateData(1, 5, 100),
-            ["Birch_log"] = ExperienceManager.CreateData(5, 5, 100),
-            ["Birch_log_half"] = ExperienceManager.CreateData(5, 5, 100),
-            ["FirTree"] = ExperienceManager.CreateData(1, 1, 100),
-            ["FirTree_log"] = ExperienceManager.CreateData(1, 1, 100),
-            ["FirTree_log_half"] = ExperienceManager.CreateData(1, 1, 100),
-            ["Oak1"] = ExperienceManager.CreateData(10, 5, 100),
-            ["Oak_log"] = ExperienceManager.CreateData(5, 5, 100),
-            ["Oak_log_half"] = ExperienceManager.CreateData(5, 5, 100),
-            ["SwampTree1"] = ExperienceManager.CreateData(5, 5, 100),
-            ["SwampTree1_log"] = ExperienceManager.CreateData(5, 5, 100),
-            ["YggaShoot1"] = ExperienceManager.CreateData(10, 20, 100),
-            ["YggaShoot2"] = ExperienceManager.CreateData(10, 20, 100),
-            ["YggaShoot3"] = ExperienceManager.CreateData(10, 20, 100),
-            ["yggashoot_log"] = ExperienceManager.CreateData(10, 20, 100),
-            ["yggashoot_log_half"] = ExperienceManager.CreateData(10, 20, 100),
+            ["Fish1"] = ExperienceManager.CreateData(10, 1, 100),
+            ["Fish2"] = ExperienceManager.CreateData(20, 1, 100),
+            ["Fish3"] = ExperienceManager.CreateData(30, 1, 100),
+            ["Fish4_cave"] = ExperienceManager.CreateData(40, 1, 100),
+            ["Fish5"] = ExperienceManager.CreateData(50, 1, 100),
+            ["Fish6"] = ExperienceManager.CreateData(60, 1, 100),
+            ["Fish7"] = ExperienceManager.CreateData(70, 1, 100),
+            ["Fish8"] = ExperienceManager.CreateData(80, 1, 100),
+            ["Fish9"] = ExperienceManager.CreateData(90, 1, 100),
+            ["Fish10"] = ExperienceManager.CreateData(100, 1, 100),
+            ["Fish11"] = ExperienceManager.CreateData(110, 1, 100),
+            ["Fish12"] = ExperienceManager.CreateData(120, 1, 100),
         };
     }
 
-    private static void CheckMap(string prefabName, Vector3 position, Player player)
+    private static void CheckExperienceMap(string prefabName, Vector3 position, Player player)
     {
         if (!m_staticExperienceMap.TryGetValue(prefabName.Replace("(Clone)", string.Empty), out ExperienceManager.ExperienceData data)) return;
         int playerLevel = PlayerManager.GetPlayerLevel(PlayerManager.GetExperience());
@@ -130,7 +152,7 @@ public static class StaticExperience
             if (attacker is not Player player) return;
             if (!hit.CheckToolTier(__instance.m_minToolTier)) return;
             if (hit.GetTotalDamage() < 1) return;
-            CheckMap(__instance.name, __instance.transform.position, player);
+            CheckExperienceMap(__instance.name, __instance.transform.position, player);
         }
     }
 
@@ -139,12 +161,12 @@ public static class StaticExperience
     {
         private static void Postfix(MineRock __instance, HitData hit)
         {
-            var attacker = hit.GetAttacker();
+            Character attacker = hit.GetAttacker();
             if (attacker == null) return;
             if (attacker is not Player player) return;
             if (!hit.CheckToolTier(__instance.m_minToolTier)) return;
             if (hit.GetTotalDamage() < 1) return; 
-            CheckMap(__instance.name, __instance.transform.position, player);
+            CheckExperienceMap(__instance.name, __instance.transform.position, player);
         }
     }
 
@@ -153,12 +175,12 @@ public static class StaticExperience
     {
         private static void Postfix(MineRock5 __instance, HitData hit)
         {
-            var attacker = hit.GetAttacker();
+            Character attacker = hit.GetAttacker();
             if (attacker == null) return;
             if (attacker is not Player player) return;
             if (!hit.CheckToolTier(__instance.m_minToolTier)) return;
             if (hit.GetTotalDamage() < 1) return; 
-            CheckMap(__instance.name, __instance.transform.position, player);
+            CheckExperienceMap(__instance.name, __instance.transform.position, player);
         }
     }
 
@@ -167,12 +189,12 @@ public static class StaticExperience
     {
         private static void Postfix(TreeBase __instance, HitData hit)
         {
-            var attacker = hit.GetAttacker();
+            Character attacker = hit.GetAttacker();
             if (attacker == null) return;
             if (attacker is not Player player) return;
             if (!hit.CheckToolTier(__instance.m_minToolTier)) return;
             if (hit.GetTotalDamage() < 1) return;
-            CheckMap(__instance.name, __instance.transform.position, player);
+            CheckExperienceMap(__instance.name, __instance.transform.position, player);
         }
     }
 
@@ -186,7 +208,7 @@ public static class StaticExperience
             if (attacker is not Player player) return;
             if (!hit.CheckToolTier(__instance.m_minToolTier)) return;
             if (hit.GetTotalDamage() < 1) return; 
-            CheckMap(__instance.name, __instance.transform.position, player);
+            CheckExperienceMap(__instance.name, __instance.transform.position, player);
         }
     }
 
@@ -205,11 +227,24 @@ public static class StaticExperience
     [HarmonyPatch(typeof(Player), nameof(Player.PlacePiece))]
     private static class Player_PlacePiece_Patch
     {
-        private static void Postfix(Player __instance, Piece piece)
+        private static void Postfix(Player __instance, Piece piece, ref bool __result)
         {
-            if (!piece.m_cultivatedGroundOnly) return;
-            CheckMap(piece.name, __instance.transform.position, __instance);
-            // AddExperience(__instance, 1, __instance.transform.position);
+            if (!piece.m_cultivatedGroundOnly || !__result) return;
+            CheckExperienceMap(piece.name, __instance.transform.position, __instance);
+        }
+    }
+
+    [HarmonyPatch(typeof(Fish), nameof(Fish.OnHooked))]
+    private static class Fish_OnHooked_Patch
+    {
+        private static void Postfix(Fish __instance)
+        {
+            if (!__instance) return;
+            if (__instance.m_fishingFloat == null) return;
+            Character owner = __instance.m_fishingFloat.GetOwner();
+            if (owner == null) return;
+            if (owner is not Player player) return;
+            CheckExperienceMap(__instance.name, __instance.m_fishingFloat.transform.position, player);
         }
     }
 
@@ -223,6 +258,6 @@ public static class StaticExperience
         {
             player.m_nview.InvokeRPC(nameof(ExperienceManager.RPC_AddExperience), amount, position);
         }
-        DisplayText.ShowText(Color.cyan, player.transform.position, $"+{amount} $text_xp");
+        DisplayText.ShowText(Color.cyan, position, $"+{amount} $text_xp");
     }
 }

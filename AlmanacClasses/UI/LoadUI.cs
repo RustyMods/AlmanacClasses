@@ -205,7 +205,7 @@ public static class LoadUI
         ExpHudFillBar.fillAmount = 0f;
         ExpHudText.text = "";
         // OriginalExpBarColor = ExpHudFillBar.color;
-
+        
         InfoHoverElement = AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("ElementHover_UI");
         Font? NorseBold = GetFont("Norsebold");
         AddFonts(ExperienceBarHUD.GetComponentsInChildren<Text>(), NorseBold);
@@ -320,7 +320,7 @@ public static class LoadUI
         int level = PlayerManager.GetPlayerLevel(experience);
         int nxtLvlExp = PlayerManager.GetRequiredExperience(level + 1);
         ExpHudText.text = $"{experience} / {nxtLvlExp}";
-        ExperienceBarFill.fillAmount = 
+        ExpHudFillBar.fillAmount = 
             level == 1 
                 ? (float)experience / nxtLvlExp 
                 : 1f - (float)(nxtLvlExp - experience) / (nxtLvlExp - PlayerManager.GetRequiredExperience(level));

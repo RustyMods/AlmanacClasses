@@ -77,9 +77,11 @@ public static class SpellBook
             component.resizeTextForBestFit = true;
         };
     }
+    
     public static void UpdateAbilities()
     {
         if (!Player.m_localPlayer || Player.m_localPlayer.IsDead() || Minimap.IsOpen()) return;
+
         DestroyElements();
 
         foreach (KeyValuePair<int, AbilityData> kvp in m_abilities)

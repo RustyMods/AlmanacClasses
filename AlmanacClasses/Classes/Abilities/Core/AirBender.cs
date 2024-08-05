@@ -96,6 +96,7 @@ public static class AirBender
             velocity += normalized * (num4 - num5);
         }
         Vector3 jump = velocity + instance.m_moveDir * instance.m_jumpForceForward * num3;
+        instance.GetSEMan().ApplyStatusEffectJumpMods(ref jump);
         if (flag) jump *= instance.m_jumpForceTiredFactor;
         if (jump.x <= 0.0 && jump.y <= 0.0 && jump.z <= 0.0) return;
         instance.m_body.WakeUp();

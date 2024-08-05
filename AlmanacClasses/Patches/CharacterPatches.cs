@@ -1,7 +1,6 @@
 ﻿using AlmanacClasses.Classes;
 using AlmanacClasses.Classes.Abilities.Core;
 using AlmanacClasses.Classes.Abilities.Warrior;
-using BepInEx;
 using HarmonyLib;
 
 namespace AlmanacClasses.Patches;

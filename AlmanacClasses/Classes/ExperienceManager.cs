@@ -182,8 +182,27 @@ public static class ExperienceManager
         AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo("Experience map written to disk:");
         AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo(FilePaths.TierExperienceFilePath);
     }
+
+    private static int GetRaiderExperience()
+    {
+        if (!Player.m_localPlayer) return 0;
+        return Player.m_localPlayer.GetCurrentBiome() switch
+        {
+            Heightmap.Biome.BlackForest => 10,
+            Heightmap.Biome.Swamp => 20,
+            Heightmap.Biome.Mountain => 40,
+            Heightmap.Biome.Plains => 60,
+            Heightmap.Biome.Mistlands => 80,
+            Heightmap.Biome.AshLands or Heightmap.Biome.DeepNorth => 100,
+            _ => 5
+        };
+    }
     private static int GetExperienceAmount(Character instance)
     {
+        if (instance.name.Replace("(Clone)", string.Empty) == "VikingRaider")
+        {
+            return (int)(GetRaiderExperience() * instance.m_level * AlmanacClassesPlugin._ExperienceMultiplier.Value);
+        }
         if (m_creatureExperienceMap.TryGetValue(instance.name.Replace("(Clone)", string.Empty), out ExperienceData data))
         {
             int playerLevel = PlayerManager.GetPlayerLevel(PlayerManager.GetExperience());
@@ -224,6 +243,7 @@ public static class ExperienceManager
     }
     private static int GetExpByBiome()
     {
+        if (!Player.m_localPlayer) return 0;
         switch (Player.m_localPlayer.GetCurrentBiome())
         {
             case Heightmap.Biome.Meadows:
@@ -248,7 +268,7 @@ public static class ExperienceManager
                 return 1;
         }
     }
-    
+
     public static void AddExperience(Character instance)
     {
         if (!instance || instance.name.IsNullOrWhiteSpace()) return;
