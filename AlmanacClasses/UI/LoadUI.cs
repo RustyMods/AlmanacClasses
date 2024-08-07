@@ -702,7 +702,7 @@ public static class LoadUI
     public static void ResetTalents(bool command = false)
     {
         MonkeyWrench.ResetTwoHandedWeapons();
-        SpellBook.DestroyElements();
+        // SpellBook.DestroyElements();
         SpellBook.m_abilities.Clear();
         RemoveStatusEffects();
         ClearCheckedTalents();
@@ -1181,6 +1181,7 @@ public static class LoadUI
             m_data = ability
         });
         Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_added_spell");
+        SpellBook.UpdateAbilities();
         return true;
     }
 

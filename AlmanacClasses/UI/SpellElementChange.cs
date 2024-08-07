@@ -1,55 +1,110 @@
-﻿using System;
-using AlmanacClasses.Classes;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using Object = UnityEngine.Object;
-using Vector3 = UnityEngine.Vector3;
 
 namespace AlmanacClasses.UI;
-
-public class SpellElementChange : MonoBehaviour, IPointerEnterHandler
+public class SpellElementChange : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
-    private static GameObject? title;
-    private static GameObject? element;
-    private static int fromIndex;
-    
+    private static int? selectedSpellIndex;
+    private static GameObject? selectedSpellObject;
+    private static GameObject? draggedSpellImage;
+    public static GameObject? title;
+
     public AbilityData data = null!;
     public int index;
-    
-    public void OnPointerEnter(PointerEventData eventData)
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (selectedSpellIndex == null)
+        {
+            if (!Input.GetKey(KeyCode.LeftAlt))
+            {
+                SelectSpell();
+            } 
+            else 
+            {
+                SpellBarMove.updateElement = true;
+            }
+        }
+        else
+        {
+            MoveSpell();
+        }
+    }
+    private void SelectSpell()
+    {
+        if (selectedSpellObject != null)
+        {
+            var previousImage = selectedSpellObject.GetComponent<Image>();
+            if (previousImage != null)
+            {
+                previousImage.color = Color.white;
+            }
+        }
+
+        selectedSpellIndex = index;
+        selectedSpellObject = gameObject;
+
+        draggedSpellImage = new GameObject("DraggedSpell");
+        draggedSpellImage.transform.SetParent(Hud.instance.transform, false);
+        var image = draggedSpellImage.AddComponent<Image>();
+        if (data.m_data.GetSprite() == null) return;
+        image.sprite = data.m_data.GetSprite();
+        image.raycastTarget = false;
+
+        RectTransform rectTransform = draggedSpellImage.GetComponent<RectTransform>();
+        var originalRectTransform = GetComponent<RectTransform>();
+        rectTransform.sizeDelta = originalRectTransform.sizeDelta;
+    }
+
+    private void MoveSpell()
+    {
+        if (selectedSpellIndex == null || selectedSpellObject == null) return;
+
+        int fromIndex = (int)selectedSpellIndex;
+        int toIndex = index;
+
+        (SpellBook.m_abilities[fromIndex], SpellBook.m_abilities[toIndex]) = (SpellBook.m_abilities[toIndex], SpellBook.m_abilities[fromIndex]);
+
+        selectedSpellIndex = null;
+        selectedSpellObject = null;
+
+        if (draggedSpellImage != null)
+        {
+            Destroy(draggedSpellImage);
+            draggedSpellImage = null;
+        }
+
+        SpellBook.UpdateAbilities();
+
+        if (LoadUI.MenuInfoPanel) LoadUI.MenuInfoPanel.SetActive(false);
+        if (title) Destroy(title);
+    }
+
+    private void ShowSpellInfo()
     {
         try
         {
             if (!TalentBook.IsTalentBookVisible())
             {
-                LoadUI.MenuInfoPanel.SetActive(!element);
-                Utils.FindChild(LoadUI.MenuInfoPanel.transform, "$text_name").GetComponent<Text>().text = Localization.instance.Localize($"<color=orange>{data.m_data.GetName()}</color>");
-                Utils.FindChild(LoadUI.MenuInfoPanel.transform, "$text_description").GetComponent<Text>().text = data.m_data.GetTooltip();
+                LoadUI.MenuInfoPanel.SetActive(true);
+                var nameText = Utils.FindChild(LoadUI.MenuInfoPanel.transform, "$text_name").GetComponent<Text>();
+                var descriptionText = Utils.FindChild(LoadUI.MenuInfoPanel.transform, "$text_description").GetComponent<Text>();
+                if (nameText != null && descriptionText != null)
+                {
+                    nameText.text = Localization.instance.Localize($"<color=orange>{data.m_data.GetName()}</color>");
+                    descriptionText.text = data.m_data.GetTooltip();
+                }
             }
             else
             {
                 if (title) Destroy(title);
                 title = Instantiate(LoadUI.SpellBarHoverName, Hud.instance.transform, false);
-                title.GetComponent<Text>().text = Localization.instance.Localize($"<color=orange>{data.m_data.GetName()}</color>");
-                title.transform.position = transform.position + new Vector3(0f, 60f);
-            }
-
-            if (!Input.GetKeyDown(KeyCode.Mouse0)) return;
-            if (element != null)
-            {
-                Destroy(element);
-                (SpellBook.m_abilities[fromIndex], SpellBook.m_abilities[index]) = (SpellBook.m_abilities[index], SpellBook.m_abilities[fromIndex]);
-                if (title) Destroy(title);
-            }
-            else
-            {
-                if (Input.GetKey(KeyCode.LeftAlt)) return;
-                element = Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_element"), Hud.instance.transform, false);
-                element.transform.SetAsFirstSibling();
-                fromIndex = index;
-                Utils.FindChild(element.transform, "$image_icon").GetComponent<Image>().sprite = data.m_data.GetSprite();
-                if (title) Destroy(title);
+                var titleText = title.GetComponent<Text>();
+                if (titleText != null)
+                {
+                    titleText.text = Localization.instance.Localize($"<color=orange>{data.m_data.GetName()}</color>");
+                    title.transform.position = transform.position + new Vector3(0f, 60f);
+                }
             }
         }
         catch
@@ -58,16 +113,46 @@ public class SpellElementChange : MonoBehaviour, IPointerEnterHandler
         }
     }
 
-    public static void UpdateSpellMouseElement()
+    public void OnPointerEnter(PointerEventData eventData)
     {
-        if (Input.GetKeyDown(KeyCode.Escape)) DestroyElement();
-        if (element != null) element.transform.position = Input.mousePosition + new Vector3(35f, 35f);
+        if (!Input.GetKey(KeyCode.LeftAlt) && draggedSpellImage == null)
+        {
+            ShowSpellInfo();
+        }
     }
 
-    public static void DestroyElement()
+    public void OnPointerExit(PointerEventData eventData)
     {
-        if (element) Destroy(element);
+        if (LoadUI.MenuInfoPanel) LoadUI.MenuInfoPanel.SetActive(false);
+        if (title) Destroy(title);
+    }
+
+    private void Update()
+    {
+        if (draggedSpellImage != null)
+        {
+            draggedSpellImage.transform.position = Input.mousePosition + new Vector3(35f, 35f);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            CancelSpellExchange();
+        }
+    }
+
+    private void CancelSpellExchange()
+    {
+        selectedSpellIndex = null;
+        selectedSpellObject = null;
+
+        if (draggedSpellImage != null)
+        {
+            Destroy(draggedSpellImage);
+            draggedSpellImage = null;
+        }
+
         if (LoadUI.MenuInfoPanel) LoadUI.MenuInfoPanel.SetActive(false);
         if (title) Destroy(title);
     }
 }
+

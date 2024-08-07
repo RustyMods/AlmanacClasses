@@ -104,16 +104,35 @@ namespace AlmanacClasses
             StaticExperience.LoadServerStaticExperienceWatcher();
             Watcher.InitWatcher();
         }
+        // public void Update()
+        // {
+        //     float dt = Time.deltaTime;
+        //     
+        //     TalentBook.UpdateTalentBookUI();
+        //     AbilityManager.CheckInput();
+        //     
+        //     SpellElementChange.UpdateSpellMouseElement();
+        //     ExperienceBarMove.UpdateElement();
+        //     SpellBarMove.UpdateElement();
+        //     
+        //     PlayerManager.UpdatePassiveEffects(dt);
+        //
+        //     if (_ShowUIEnabled.Value is Toggle.On)
+        //     {
+        //         if (Input.GetKeyDown(_ShowUIKey.Value)) TalentBook.ShowUI();
+        //     }
+        // }
+
         public void Update()
         {
             float dt = Time.deltaTime;
-            
+
             TalentBook.UpdateTalentBookUI();
             AbilityManager.CheckInput();
-            
-            SpellElementChange.UpdateSpellMouseElement();
-            ExperienceBarMove.UpdateElement();
-            SpellBarMove.UpdateElement();
+
+            if (SpellBarMove.updateElement) SpellBarMove.UpdateElement();
+
+            if (ExperienceBarMove.updateElement) ExperienceBarMove.UpdateElement();
             
             PlayerManager.UpdatePassiveEffects(dt);
 
@@ -122,7 +141,7 @@ namespace AlmanacClasses
                 if (Input.GetKeyDown(_ShowUIKey.Value)) TalentBook.ShowUI();
             }
         }
-
+        
         private void AddAttackSpeedModifiers()
         {
             AnimationSpeedManager.Add((character, speed) =>

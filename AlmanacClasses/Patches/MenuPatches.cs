@@ -1,5 +1,6 @@
 ﻿using AlmanacClasses.UI;
 using HarmonyLib;
+using UnityEngine;
 
 namespace AlmanacClasses.Patches;
 
@@ -10,9 +11,11 @@ public static class MenuPatches
     {
         private static void Postfix()
         {
-            SpellElementChange.DestroyElement();
+            // SpellElementChange.DestroyElement();
             ExperienceBarMove.updateElement = false;
             SpellBarMove.updateElement = false;
+            if (LoadUI.MenuInfoPanel) LoadUI.MenuInfoPanel.SetActive(false);
+            if (SpellElementChange.title) Object.Destroy(SpellElementChange.title);
         }
     }
 }
