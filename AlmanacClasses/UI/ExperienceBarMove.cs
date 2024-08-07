@@ -16,7 +16,6 @@ public class ExperienceBarMove : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        // updateElement = !updateElement;
         updateElement = true;
     }
 }

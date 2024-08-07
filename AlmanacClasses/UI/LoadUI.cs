@@ -35,9 +35,6 @@ public static class LoadUI
     private static GameObject InfoHoverElement = null!;
     public static GameObject SpellBarHoverName = null!;
     public static GameObject MenuInfoPanel = null!;
-
-    // public static Color OriginalExpBarColor;
-
     [Header("Image Elements")]
     private static Image ExpHudFillBar = null!;
     public static Image ExperienceBarFill = null!;
@@ -204,8 +201,6 @@ public static class LoadUI
         ExpHudText = ExperienceBarHUD.transform.Find("$text_experience").GetComponent<Text>();
         ExpHudFillBar.fillAmount = 0f;
         ExpHudText.text = "";
-        // OriginalExpBarColor = ExpHudFillBar.color;
-        
         InfoHoverElement = AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("ElementHover_UI");
         Font? NorseBold = GetFont("Norsebold");
         AddFonts(ExperienceBarHUD.GetComponentsInChildren<Text>(), NorseBold);
@@ -702,7 +697,6 @@ public static class LoadUI
     public static void ResetTalents(bool command = false)
     {
         MonkeyWrench.ResetTwoHandedWeapons();
-        // SpellBook.DestroyElements();
         SpellBook.m_abilities.Clear();
         RemoveStatusEffects();
         ClearCheckedTalents();

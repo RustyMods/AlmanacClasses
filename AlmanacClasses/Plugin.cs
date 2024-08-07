@@ -104,25 +104,7 @@ namespace AlmanacClasses
             StaticExperience.LoadServerStaticExperienceWatcher();
             Watcher.InitWatcher();
         }
-        // public void Update()
-        // {
-        //     float dt = Time.deltaTime;
-        //     
-        //     TalentBook.UpdateTalentBookUI();
-        //     AbilityManager.CheckInput();
-        //     
-        //     SpellElementChange.UpdateSpellMouseElement();
-        //     ExperienceBarMove.UpdateElement();
-        //     SpellBarMove.UpdateElement();
-        //     
-        //     PlayerManager.UpdatePassiveEffects(dt);
-        //
-        //     if (_ShowUIEnabled.Value is Toggle.On)
-        //     {
-        //         if (Input.GetKeyDown(_ShowUIKey.Value)) TalentBook.ShowUI();
-        //     }
-        // }
-
+        
         public void Update()
         {
             float dt = Time.deltaTime;

@@ -11,7 +11,6 @@ public static class MenuPatches
     {
         private static void Postfix()
         {
-            // SpellElementChange.DestroyElement();
             ExperienceBarMove.updateElement = false;
             SpellBarMove.updateElement = false;
             if (LoadUI.MenuInfoPanel) LoadUI.MenuInfoPanel.SetActive(false);

@@ -28,7 +28,6 @@ public static class CommandsManager
                     PlayerManager.m_tempPlayerData.m_boughtTalents.Clear();
                     PlayerManager.m_playerTalents.Clear();
                     CharacteristicManager.ResetCharacteristics();
-                    // SpellBook.DestroyElements();
                     SpellBook.ClearSpellBook();
                     SpellBook.m_abilities.Clear();
                     LoadUI.ResetTalents(true);
