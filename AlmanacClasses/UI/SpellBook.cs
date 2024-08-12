@@ -144,44 +144,52 @@ public static class SpellBook
 
     private static void UpdateCooldownDisplay(AbilityData abilityData)
     {
-        if (abilityData.m_go == null) return;
-        if (!Utils.FindChild(abilityData.m_go.transform, "$image_gray").TryGetComponent(out Image gray)) return;
-        if (!Utils.FindChild(abilityData.m_go.transform, "$image_fill").TryGetComponent(out Image fill)) return;
-        if (!Utils.FindChild(abilityData.m_go.transform, "$text_timer").TryGetComponent(out Text timer)) return;
-        if (AbilityManager.m_cooldownMap.TryGetValue(abilityData.m_data.m_key, out float ratio))
+        if (abilityData.m_go == null || !Player.m_localPlayer) return;
+        try
         {
-            if (abilityData.m_data.m_statusEffectHash == 0)
+            if (!Utils.FindChild(abilityData.m_go.transform, "$image_gray").TryGetComponent(out Image gray)) return;
+            if (!Utils.FindChild(abilityData.m_go.transform, "$image_fill").TryGetComponent(out Image fill)) return;
+            if (!Utils.FindChild(abilityData.m_go.transform, "$text_timer").TryGetComponent(out Text timer)) return;
+            if (AbilityManager.m_cooldownMap.TryGetValue(abilityData.m_data.m_key, out float ratio))
             {
-                gray.fillAmount = 0f;
-            }
-            else
-            {
-                if (Player.m_localPlayer.GetSEMan().HaveStatusEffect(abilityData.m_data.m_statusEffectHash))
-                {
-                    StatusEffect? effect = Player.m_localPlayer.GetSEMan().GetStatusEffect(abilityData.m_data.m_statusEffectHash);
-                    float time = effect.GetRemaningTime();
-                    float normal = Mathf.Clamp01(time / effect.m_ttl);
-                    gray.fillAmount = time > 0 ? normal : 0f;
-                }
-                else
+                if (abilityData.m_data.m_statusEffectHash == 0)
                 {
                     gray.fillAmount = 0f;
                 }
-            }
+                else
+                {
+                    if (Player.m_localPlayer.GetSEMan().HaveStatusEffect(abilityData.m_data.m_statusEffectHash))
+                    {
+                        StatusEffect? effect = Player.m_localPlayer.GetSEMan()
+                            .GetStatusEffect(abilityData.m_data.m_statusEffectHash);
+                        float time = effect.GetRemaningTime();
+                        float normal = Mathf.Clamp01(time / effect.m_ttl);
+                        gray.fillAmount = time > 0 ? normal : 0f;
+                    }
+                    else
+                    {
+                        gray.fillAmount = 0f;
+                    }
+                }
 
-            fill.fillAmount = ratio;
-            int cooldownTime = (int)(abilityData.m_data.GetCooldown(abilityData.m_data.GetLevel()) * ratio);
-            timer.text = GetCooldownColored(cooldownTime);
-            if (cooldownTime <= 0)
+                fill.fillAmount = ratio;
+                int cooldownTime = (int)(abilityData.m_data.GetCooldown(abilityData.m_data.GetLevel()) * ratio);
+                timer.text = GetCooldownColored(cooldownTime);
+                if (cooldownTime <= 0)
+                {
+                    timer.text = Localization.instance.Localize("$info_ready");
+                }
+            }
+            else
             {
+                gray.fillAmount = 0f;
+                fill.fillAmount = 0f;
                 timer.text = Localization.instance.Localize("$info_ready");
             }
         }
-        else
+        catch
         {
-            gray.fillAmount = 0f;
-            fill.fillAmount = 0f;
-            timer.text = Localization.instance.Localize("$info_ready");
+            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to update ability cooldown");
         }
     }
 
