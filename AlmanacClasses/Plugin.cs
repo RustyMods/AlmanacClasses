@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Reflection;
 using AlmanacClasses.Classes;
@@ -13,7 +12,6 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using JetBrains.Annotations;
 using ServerSync;
 using UnityEngine;
 
@@ -23,7 +21,7 @@ namespace AlmanacClasses
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
-        internal const string ModVersion = "0.5.4";
+        internal const string ModVersion = "0.5.7";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
         private static readonly string ConfigFileName = ModGUID + ".cfg";
@@ -79,6 +77,8 @@ namespace AlmanacClasses
         public static ConfigEntry<KeyCode> _Spell8 = null!;
         public static ConfigEntry<float> _DisplayTextFontSizeModifier = null!;
         public static ConfigEntry<Toggle> _UseExperienceLevelCap = null!;
+
+        public static ConfigEntry<string> _CustomBackground = null!;
         public void Awake()
         {
             Localizer.Load(); 
@@ -95,6 +95,7 @@ namespace AlmanacClasses
             AnimationManager.LoadCustomAnimations();
             ExperienceManager.LoadCreatureMap();
             StaticExperience.LoadStaticMap();
+            SpriteManager.ReadBackgroundFiles();
             Assembly assembly = Assembly.GetExecutingAssembly();
             _harmony.PatchAll(assembly);
             SetupWatcher();
@@ -182,7 +183,8 @@ namespace AlmanacClasses
             _serverConfigLocked = config("1 - General", "Lock Configuration", Toggle.On,
                 "If on, the configuration is locked and can be changed by server admins only.");
             _ = ConfigSync.AddLockingConfigEntry(_serverConfigLocked);
-
+            _CustomBackground = config("1 - General", "Custom Background", "", "Set name of png file to use as background");
+            _CustomBackground.SettingChanged += (_, _) => LoadUI.UpdateBackground();
             InitSettingsConfigs();
             InitKeyCodeConfigs();
 
@@ -300,14 +302,6 @@ namespace AlmanacClasses
             bool synchronizedSetting = true)
         {
             return config(group, name, value, new ConfigDescription(description), synchronizedSetting);
-        }
-
-        private class ConfigurationManagerAttributes
-        {
-            [UsedImplicitly] public int? Order;
-            [UsedImplicitly] public bool? Browsable;
-            [UsedImplicitly] public string? Category;
-            [UsedImplicitly] public Action<ConfigEntryBase>? CustomDrawer;
         }
     }
 }

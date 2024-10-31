@@ -97,15 +97,19 @@ public static class StaticExperience
             ["yggashoot_log"] = ExperienceManager.CreateData(10, 20, 100),
             ["yggashoot_log_half"] = ExperienceManager.CreateData(10, 20, 100),
             ["OakStub"] = ExperienceManager.CreateData(20, 1, 100),
+            ["PineTree"] = ExperienceManager.CreateData(10, 1, 100),
+            ["Pinetree_01"] = ExperienceManager.CreateData(10, 1, 100),
+            ["PineTree_log"] = ExperienceManager.CreateData(10, 1, 100),
+            ["PineTree_log_half"] = ExperienceManager.CreateData(10, 1, 100),
             ["Pinetree_01_Stub"] = ExperienceManager.CreateData(10, 1, 100),
             ["FirTree_Stub"] = ExperienceManager.CreateData(10, 1, 100),
             ["SwampTree1_Stub"] = ExperienceManager.CreateData(15, 1, 100),
             ["MineRock_Tin"] = ExperienceManager.CreateData(2, 1, 20),
-            ["rock4_copper_frac"] = ExperienceManager.CreateData(2, 1, 20),
-            ["mudpile2_frac"] = ExperienceManager.CreateData(3, 10, 40),
-            ["silvervein_frac"] = ExperienceManager.CreateData(3, 10, 50),
+            ["$piece_deposit_copper"] = ExperienceManager.CreateData(2, 1, 20),
+            ["$piece_mudpile"] = ExperienceManager.CreateData(3, 10, 40),
+            ["$piece_deposit_silvervein"] = ExperienceManager.CreateData(3, 10, 50),
             ["MineRock_Obsidian"] = ExperienceManager.CreateData(5, 5, 50),
-            ["giant_brain_frac"] = ExperienceManager.CreateData(10, 20, 70),
+            ["$piece_giant_brain"] = ExperienceManager.CreateData(10, 20, 70),
             ["sapling_seedturnip"] = ExperienceManager.CreateData(1, 5, 40),
             ["sapling_turnip"] = ExperienceManager.CreateData(1, 5, 40),
             ["sapling_seedcarrot"] = ExperienceManager.CreateData(1, 5, 40),
@@ -141,12 +145,27 @@ public static class StaticExperience
         AddExperience(player, (int)exp, position);
     }
 
+    [HarmonyPatch(typeof(Pickable), nameof(Pickable.Interact))]
+    private static class Pickable_Interact_Patch
+    {
+        private static void Postfix(Pickable __instance, Humanoid character, bool __result)
+        {
+            if (!__result) return;
+            if (character is not Player player) return;
+            if (__instance.m_tarPreventsPicking)
+            {
+                if (__instance.m_floating && __instance.m_floating.IsInTar()) return;
+            }
+            CheckExperienceMap(__instance.name, __instance.transform.position, player);
+        }
+    }
+
     [HarmonyPatch(typeof(Destructible), nameof(Destructible.RPC_Damage))]
     private static class Destructible_RPC_Damage_Patch
     {
         private static void Postfix(Destructible __instance, HitData hit)
         {
-            if (!__instance.m_nview.IsOwner()) return;
+            // if (!__instance.m_nview.IsOwner()) return;
             Character attacker = hit.GetAttacker();
             if (attacker == null) return;
             if (attacker is not Player player) return;
@@ -179,8 +198,8 @@ public static class StaticExperience
             if (attacker == null) return;
             if (attacker is not Player player) return;
             if (!hit.CheckToolTier(__instance.m_minToolTier)) return;
-            if (hit.GetTotalDamage() < 1) return; 
-            CheckExperienceMap(__instance.name, __instance.transform.position, player);
+            if (hit.GetTotalDamage() < 1) return;
+            CheckExperienceMap(__instance.GetHoverName(), __instance.transform.position, player);
         }
     }
 
@@ -227,9 +246,9 @@ public static class StaticExperience
     [HarmonyPatch(typeof(Player), nameof(Player.PlacePiece))]
     private static class Player_PlacePiece_Patch
     {
-        private static void Postfix(Player __instance, Piece piece, ref bool __result)
+        private static void Postfix(Player __instance, Piece piece)
         {
-            if (!piece.m_cultivatedGroundOnly || !__result) return;
+            if (!piece.m_cultivatedGroundOnly) return;
             CheckExperienceMap(piece.name, __instance.transform.position, __instance);
         }
     }

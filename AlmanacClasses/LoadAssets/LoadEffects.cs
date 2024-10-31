@@ -47,6 +47,8 @@ public static class LoadedAssets
     public static EffectList FX_RogueBleed = null!;
 
     public static EffectList SFX_Dverger_Shot = null!;
+
+    public static EffectList FX_ChainLightning_Hit = null!;
     
     private static readonly int EmissionColor = Shader.PropertyToID("_EmissionColor");
 
@@ -212,6 +214,19 @@ public static class LoadedAssets
         RegisterToZNetScene(customLightning);
 
         lightning_AOE = customLightning;
+        FX_ChainLightning_Hit = new EffectList()
+        {
+            m_effectPrefabs = new[]
+            {
+                new EffectList.EffectData()
+                {
+                    m_prefab = ZNetScene.instance.GetPrefab("fx_chainlightning_hit"),
+                    m_enabled = true,
+                    m_scale = true,
+                    m_inheritParentScale = true
+                }
+            }
+        };
         GoblinBeam = instance.GetPrefab("projectile_beam");
         Meteor = instance.GetPrefab("projectile_meteor_fader");
         TrollStone = instance.GetPrefab("troll_throw_projectile");

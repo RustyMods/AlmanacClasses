@@ -10,7 +10,7 @@ public static class RainProof
         private static bool Prefix(SEMan __instance, int nameHash)
         {
             if (__instance.m_character != Player.m_localPlayer) return true;
-            if (nameHash != Character.s_statusEffectWet) return true;
+            if (nameHash != SEMan.s_statusEffectWet) return true;
             return !PlayerManager.m_playerTalents.ContainsKey("RainProof");
         }
     }

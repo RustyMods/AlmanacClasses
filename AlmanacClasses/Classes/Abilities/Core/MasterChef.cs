@@ -25,21 +25,21 @@ public static class MasterChef
             }
         }
     }
-
+    
     [HarmonyPatch(typeof(ItemDrop.ItemData), nameof(ItemDrop.ItemData.GetTooltip), typeof(ItemDrop.ItemData),
-        typeof(int), typeof(bool), typeof(float))]
+        typeof(int), typeof(bool), typeof(float), typeof(int))]
     private static class AddExtraTooltip
     {
-        private static void Postfix(ItemDrop.ItemData item, int qualityLevel, bool crafting, ref string __result)
+        private static bool Prefix(ItemDrop.ItemData item, int qualityLevel, bool crafting, ref string __result)
         {
-            if (!PlayerManager.m_playerTalents.TryGetValue("MasterChef", out Talent ability)) return;
-            if (item.m_shared.m_itemType is not ItemDrop.ItemData.ItemType.Consumable) return;
+            if (!PlayerManager.m_playerTalents.TryGetValue("MasterChef", out Talent ability)) return true;
+            if (item.m_shared.m_itemType is not ItemDrop.ItemData.ItemType.Consumable) return true;
             float modifier = ability.GetFoodModifier(ability.GetLevel());
             Player localPlayer = Player.m_localPlayer;
-
+    
             StringBuilder stringBuilder = new StringBuilder();
             AddPrefix(stringBuilder, item, crafting, qualityLevel);
-
+    
             if (item.m_shared.m_food > 0.0 || item.m_shared.m_foodStamina > 0.0 || item.m_shared.m_foodEitr > 0.0)
             {
                 if (item.m_shared.m_food > 0.0)
@@ -48,22 +48,24 @@ public static class MasterChef
                         "\n$item_food_health: <color=#ff8080ff>{0}</color> <color=#adff2f>+{2:0}</color> ($item_current:<color=yellow>{1:0}</color>)",
                         item.m_shared.m_food, localPlayer.GetMaxHealth(), item.m_shared.m_food * modifier - item.m_shared.m_food);
                 }
-
+    
                 if (item.m_shared.m_foodStamina > 0.0)
                 {
                     stringBuilder.AppendFormat(
                         "\n$item_food_stamina: <color=#ffff80ff>{0}</color> <color=#adff2f>+{2:0}</color> ($item_current:<color=yellow>{1:0}</color>)",
                         item.m_shared.m_foodStamina, localPlayer.GetMaxStamina(), item.m_shared.m_foodStamina * modifier - item.m_shared.m_foodStamina);
                 }
-
+    
                 if (item.m_shared.m_foodEitr > 0.0)
                 {
                     stringBuilder.AppendFormat(
                         "\n$item_food_eitr: <color=#9090ffff>{0}</color> <color=#adff2f>+{2:0}</color> ($item_current:<color=yellow>{1:0}</color>)",
                         item.m_shared.m_foodEitr, localPlayer.GetMaxEitr(), item.m_shared.m_foodEitr * modifier - item.m_shared.m_foodEitr);
-
                 }
 
+                stringBuilder.AppendFormat("\n$item_food_duration: <color=orange>{0}</color>",
+                    ItemDrop.ItemData.GetDurationString(item.m_shared.m_foodBurnTime));
+    
                 if (item.m_shared.m_foodRegen > 0.0)
                 {
                     stringBuilder.AppendFormat("\n$item_food_regen: <color=orange>{0} hp/tick</color>",
@@ -72,21 +74,21 @@ public static class MasterChef
             }
             
             AddPostfix(stringBuilder, localPlayer, item, qualityLevel);
-
+    
             stringBuilder.Append($"\n\n<color=#adff2f>{ability.GetName()}</color>");
             stringBuilder.Append($"\n{ability.GetTooltip()}");
             __result = Localization.instance.Localize(stringBuilder.ToString());
+            return false;
         }
     }
-
+    
     private static void AddPrefix(StringBuilder stringBuilder, ItemDrop.ItemData item, bool crafting, int qualityLevel)
     {
         stringBuilder.Append(item.m_shared.m_description + "\n");
         if (item.m_shared.m_dlc.Length > 0)
             stringBuilder.Append("\n<color=#00FFFF>$item_dlc</color>");
         if (item.m_worldLevel > 0)
-            stringBuilder.Append("\n<color=orange>$item_newgameplusitem " +
-                                 (item.m_worldLevel != 1 ? item.m_worldLevel.ToString() : "") + "</color>");
+            stringBuilder.Append("\n<color=orange>$item_newgameplusitem " + (item.m_worldLevel != 1 ? item.m_worldLevel.ToString() : "") + "</color>");
         if (item.m_crafterID != 0L)
             stringBuilder.AppendFormat("\n$item_crafter: <color=orange>{0}</color>",
                 CensorShittyWords.FilterUGC(item.m_crafterName, UGCType.CharacterName,
@@ -104,7 +106,7 @@ public static class MasterChef
                 ? $"\n$item_durability: <color=orange>{item.GetMaxDurability()}</color>"
                 : $"\n$item_durability: <color=orange>{(int)(item.GetDurabilityPercentage() * 100f)}%</color> <color=yellow>({item.m_durability}/{item.GetMaxDurability(qualityLevel)})</color>");
         }
-
+    
         if (item.m_shared.m_canBeReparied && !crafting && item.m_shared.m_useDurability)
         {
             Recipe recipe = ObjectDB.instance.GetRecipe(item);
@@ -114,7 +116,7 @@ public static class MasterChef
             }
         }
     }
-
+    
     private static void AddPostfix(StringBuilder stringBuilder, Player localPlayer, ItemDrop.ItemData item, int qualityLevel)
     {
         float skillLevel = localPlayer.GetSkillLevel(item.m_shared.m_skillType);

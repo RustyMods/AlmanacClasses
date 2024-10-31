@@ -140,8 +140,8 @@ public class Talent
             Heightmap.Biome.Ocean => scene.GetPrefab(m_creatures.m_ocean?.Value ?? "Serpent") ?? scene.GetPrefab("Serpent"),
             _ => scene.GetPrefab("Neck")
         };
-
-        return creature.GetComponent<Humanoid>() ? creature : null;
+        return creature.TryGetComponent(out Humanoid component) ? creature : null;
+        // return creature.GetComponent<Humanoid>() ? creature : null;
     }
     public GameObject? GetCreaturesByLevel(int level)
     {

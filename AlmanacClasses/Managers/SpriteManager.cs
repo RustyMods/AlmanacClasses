@@ -1,4 +1,7 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using AlmanacClasses.FileSystem;
 using UnityEngine;
 using static AlmanacClasses.AlmanacClassesPlugin;
 
@@ -44,7 +47,8 @@ public static class SpriteManager
     public static readonly Sprite WarriorIcon = _AssetBundle.LoadAsset<Sprite>("warrior_icon");
     
     public static Sprite Wishbone_Icon = null!;
-    
+
+    public static Dictionary<string, Sprite> m_backgrounds = new ();
     public static void LoadSpriteResources()
     {
         ZNetScene scene = ZNetScene.instance;
@@ -53,6 +57,28 @@ public static class SpriteManager
         {
             Wishbone_Icon = wishboneItem.m_itemData.GetIcon();
         }
+    }
+
+    public static void ReadBackgroundFiles()
+    {
+        FilePaths.CreateFolders();
+        foreach (var file in Directory.GetFiles(FilePaths.CustomBackgroundFilePath, "*.png"))
+        {
+            RegisterBackground(file);
+        }
+    }
+
+    private static void RegisterBackground(string fileName)
+    {
+        if (!File.Exists(fileName)) return;
+
+        byte[] fileData = File.ReadAllBytes(fileName);
+        Texture2D texture = new Texture2D(4, 4);
+
+        if (!texture.LoadImage(fileData)) return;
+        texture.name = Path.GetFileName(fileName);
+        var sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
+        m_backgrounds[texture.name] = sprite;
     }
 
     private static Sprite? RegisterSprite(string fileName, string folderName = "icons")

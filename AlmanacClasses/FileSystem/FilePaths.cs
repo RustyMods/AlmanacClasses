@@ -11,9 +11,12 @@ public static class FilePaths
     public static readonly string TierExperienceFilePath = ExperienceFolderPath + Path.DirectorySeparatorChar + "ExperienceMap.yml";
     public static readonly string StaticExperienceFilePath = ExperienceFolderPath + Path.DirectorySeparatorChar + "StaticExperienceMap.yml";
 
+    public static readonly string CustomBackgroundFilePath = FolderPath + Path.DirectorySeparatorChar + "CustomBackground";
+
     public static void CreateFolders()
     {
         if (!Directory.Exists(FolderPath)) Directory.CreateDirectory(FolderPath);
         if (!Directory.Exists(ExperienceFolderPath)) Directory.CreateDirectory(ExperienceFolderPath);
+        if (!Directory.Exists(CustomBackgroundFilePath)) Directory.CreateDirectory(CustomBackgroundFilePath);
     }
 }

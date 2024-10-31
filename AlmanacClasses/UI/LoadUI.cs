@@ -5,6 +5,7 @@ using AlmanacClasses.Classes;
 using AlmanacClasses.Classes.Abilities;
 using AlmanacClasses.Classes.Abilities.Warrior;
 using AlmanacClasses.Managers;
+using BepInEx;
 using BepInEx.Configuration;
 using UnityEngine;
 using UnityEngine.UI;
@@ -39,6 +40,9 @@ public static class LoadUI
     private static Image ExpHudFillBar = null!;
     public static Image ExperienceBarFill = null!;
     public static Image PanelBackground = null!;
+    public static Image HeaderBackground = null!;
+    public static Image StatsBackground = null!;
+    public static Image TooltipBackground = null!;
     [Header("Text Elements")]
     private static Text ExpHudText = null!;
     public static Text PointsUsed = null!;
@@ -237,6 +241,18 @@ public static class LoadUI
             MenuInfoPanel.transform.position = AlmanacClassesPlugin._SpellBookPos.Value + config.Value;
         }
     }
+
+    public static void UpdateBackground()
+    {
+        if (AlmanacClassesPlugin._CustomBackground.Value.IsNullOrWhiteSpace()) return;
+        if (PanelBackground == null) return;
+        if (!SpriteManager.m_backgrounds.TryGetValue(AlmanacClassesPlugin._CustomBackground.Value, out Sprite background)) return;
+        PanelBackground.sprite = background;
+        HeaderBackground.sprite = background;
+        StatsBackground.sprite = background;
+        TooltipBackground.sprite = background;
+
+    }
     public static void InitSkillTree(InventoryGui instance)
     {
         AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Initializing talent UI");
@@ -248,7 +264,10 @@ public static class LoadUI
         SkillTree_UI.SetActive(false);
 
         PanelBackground = SkillTree_UI.GetComponent<Image>();
-
+        HeaderBackground = SkillTree_UI.transform.Find("Panel/$part_header/$part_title/Background").GetComponent<Image>();
+        StatsBackground = SkillTree_UI.transform.Find("Panel/$part_header/$part_stats").GetComponent<Image>();
+        TooltipBackground = SkillTree_UI.transform.Find("Panel/$part_header/$part_tooltip").GetComponent<Image>();
+        UpdateBackground();
         SetTextFont();
 
         PrestigeText = Utils.FindChild(SkillTree_UI.transform, "$text_prestige").GetComponent<Text>();
@@ -986,7 +1005,7 @@ public static class LoadUI
             PlayerManager.m_tempPlayerData.m_boughtTalents[alt.m_key] = PlayerManager.m_tempPlayerData.m_boughtTalents[original.m_key];
             PlayerManager.m_tempPlayerData.m_boughtTalents.Remove(original.m_key);
             PlayerManager.m_playerTalents[alt.m_key] = alt;
-            if (SpellBook.RemoveAbility(original));
+            SpellBook.RemoveAbility(original);
             if (alt.m_type is TalentType.Ability or TalentType.StatusEffect) AddToSpellBook(alt);
         }
         else

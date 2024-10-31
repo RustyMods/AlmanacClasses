@@ -153,12 +153,12 @@ public static class AbilityManager
                 break;
             case "TriggerHunterSpawn":
                 GameObject? rangerCreature = talent.GetCreatures(Player.m_localPlayer.GetCurrentBiome());
-                if (rangerCreature == null) break;
+                if (rangerCreature is null) break;
                 RangerSpawn.TriggerHunterSpawn(rangerCreature, talent);
                 break;
             case "TriggerShamanSpawn":
                 GameObject? creature = ZNetScene.instance.GetPrefab("Ghost");
-                if (creature == null) break;
+                if (creature is null) break;
                 ShamanSpawn.TriggerShamanSpawn(creature, talent);
                 break;
             case "TriggerSpawnTrap":

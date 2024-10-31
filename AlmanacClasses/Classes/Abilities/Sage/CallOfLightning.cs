@@ -37,17 +37,30 @@ public static class CallOfLightning
         {
             if (index > 5) break;
             Character? character = characters[index];
-            if (character == null || character.IsDead()) continue;
+            if (character is null || character.IsDead()) continue;
             if (character.IsPlayer()) continue;
             if (character.GetFaction() is Character.Faction.Players) continue;
             yield return new WaitForSeconds(1f);
-            GameObject spell = Object.Instantiate(LoadedAssets.lightning_AOE, character.transform.position, Quaternion.identity);
 
-            Transform AOE_ROD = Utils.FindChild(spell.transform, "AOE_ROD");
-            if (AOE_ROD.TryGetComponent(out Aoe AOE_Component))
+            LoadedAssets.FX_ChainLightning_Hit.Create(character.transform.position, character.transform.rotation, character.transform);
+
+            HitData hit = new HitData
             {
-                SetAOEComponent(AOE_Component, damages);
-            }
+                m_damage = damages,
+                m_dodgeable = false,
+                m_blockable = true,
+                m_skill = Skills.SkillType.ElementalMagic
+            };
+            hit.SetAttacker(Player.m_localPlayer);
+            character.Damage(hit);
+
+            // GameObject spell = Object.Instantiate(LoadedAssets.lightning_AOE, character.transform.position, Quaternion.identity);
+            //
+            // Transform AOE_ROD = Utils.FindChild(spell.transform, "AOE_ROD");
+            // if (AOE_ROD.TryGetComponent(out Aoe AOE_Component))
+            // {
+            //     SetAOEComponent(AOE_Component, damages);
+            // }
         }
 
         if (startEffects == null || !ZNetScene.instance) yield break;

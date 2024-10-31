@@ -278,6 +278,7 @@ public static class ExperienceManager
     public static void AddExperience(Character instance)
     {
         if (!instance || instance.name.IsNullOrWhiteSpace()) return;
+        if (instance.m_lastHit != null && instance.m_lastHit.GetAttacker() != null && instance.m_lastHit.GetAttacker() is not Player) return;
         int amount = GetExperienceAmount(instance);
         if (amount == 0) return;
         foreach (Player player in Player.GetAllPlayers())
