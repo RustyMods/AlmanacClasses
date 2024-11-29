@@ -203,7 +203,9 @@ public static class AbilityManager
     {
         float cost = talent.GetEitrCost(false);
         if (cost == 0f) return true;
-        if (Player.m_localPlayer.HaveEitr(cost)) return true;
+        // The HaveEitr method checks if the player's eitr is > the amount of eitr passed in instead of >=
+        // Pass in the cost - 1 to allow using abilities when the player has the exact amount required
+        if (Player.m_localPlayer.HaveEitr(cost - 1)) return true;
         Hud.instance.EitrBarEmptyFlash();
         Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$hud_eitrrequired");
         return false;
