@@ -25,12 +25,12 @@ public static class AirBender
         if (!instance) return;
         if (!PlayerManager.m_playerTalents.TryGetValue("AirBenderAlt", out Talent talent)) return;
         if (instance.IsOnGround()) return;
-        
-        if (!ZInput.GetButtonDown("Jump")) return;
+
+        if (!(ZInput.GetButtonDown("Jump") || ZInput.GetButtonDown("JoyJump"))) return;
         bool flag = false;
 
         float eitrCost = talent.GetEitrCost(true, talent.GetLevel());
-        if (!instance.HaveEitr(eitrCost))
+        if (!instance.HaveEitr(eitrCost - 1))
         {
             Hud.instance.EitrBarEmptyFlash();
             return;
@@ -54,15 +54,15 @@ public static class AirBender
             JumpCount = 0;
             return;
         }
-        
-        if (!ZInput.GetButtonDown("Jump")) return;
+
+        if (!(ZInput.GetButtonDown("Jump") || ZInput.GetButtonDown("JoyJump"))) return;
 
         if (JumpCount >= talent.GetLevel()) return;
         
         bool flag = false;
 
         float eitrCost = talent.GetEitrCost(false);
-        if (!instance.HaveEitr(eitrCost))
+        if (!instance.HaveEitr(eitrCost - 1))
         {
             Hud.instance.EitrBarEmptyFlash();
             return;
