@@ -13,6 +13,7 @@ namespace AlmanacClasses.Managers;
 public static class StatusEffectManager
 {
     private static readonly Dictionary<string, StatusEffect> m_statusEffects = new();
+    public static bool Loaded() => m_statusEffects.Count > 0;
 
     public static bool IsClassEffect(string name) => m_statusEffects.ContainsKey(name);
     public static void InitStatusEffects(ObjectDB __instance)

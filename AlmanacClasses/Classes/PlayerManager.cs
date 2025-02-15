@@ -89,7 +89,7 @@ public static class PlayerManager
     private static float m_updateTimer;
     public static void UpdatePassiveEffects(float dt)
     {
-        if (!Player.m_localPlayer) return;
+        if (!Player.m_localPlayer || !StatusEffectManager.Loaded()) return;
         m_updateTimer += dt;
         if (m_updateTimer < 1f) return;
         m_updateTimer = 0.0f;
@@ -98,15 +98,18 @@ public static class PlayerManager
 
     private static void AddPassiveStatusEffects(Player instance)
     {
+        var seMan = instance.GetSEMan();
         foreach (KeyValuePair<string, Talent> talent in m_playerTalents)
         {
             if (talent.Value.m_type is not TalentType.Passive) continue;
             if (talent.Value.m_statusEffectHash == 0) continue;
             if (!talent.Value.m_passiveActive) continue;
-            instance.GetSEMan().AddStatusEffect(talent.Value.m_statusEffectHash);
+            if (seMan.GetStatusEffect(talent.Value.m_statusEffectHash)) continue;
+            seMan.AddStatusEffect(talent.Value.m_statusEffectHash);
         }
 
-        instance.GetSEMan().AddStatusEffect("SE_Characteristic".GetStableHashCode());
+        if (seMan.GetStatusEffect("SE_Characteristic".GetStableHashCode())) return;
+        seMan.AddStatusEffect("SE_Characteristic".GetStableHashCode());
     }
 
     private static void InitPlayerTalents()
