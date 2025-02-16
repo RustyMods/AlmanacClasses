@@ -30,7 +30,7 @@ public static class AirBender
         bool flag = false;
 
         float eitrCost = talent.GetEitrCost(true, talent.GetLevel());
-        if (!instance.HaveEitr(eitrCost))
+        if (!instance.HaveEitr(eitrCost - 1))
         {
             Hud.instance.EitrBarEmptyFlash();
             return;
@@ -62,7 +62,7 @@ public static class AirBender
         bool flag = false;
 
         float eitrCost = talent.GetEitrCost(false);
-        if (!instance.HaveEitr(eitrCost))
+        if (!instance.HaveEitr(eitrCost - 1))
         {
             Hud.instance.EitrBarEmptyFlash();
             return;
