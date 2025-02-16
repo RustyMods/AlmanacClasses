@@ -25,8 +25,8 @@ public static class AirBender
         if (!instance) return;
         if (!PlayerManager.m_playerTalents.TryGetValue("AirBenderAlt", out Talent talent)) return;
         if (instance.IsOnGround()) return;
-        
-        if (!ZInput.GetButtonDown("Jump")) return;
+
+        if (!(ZInput.GetButtonDown("Jump") || ZInput.GetButtonDown("JoyJump"))) return;
         bool flag = false;
 
         float eitrCost = talent.GetEitrCost(true, talent.GetLevel());
@@ -54,8 +54,8 @@ public static class AirBender
             JumpCount = 0;
             return;
         }
-        
-        if (!ZInput.GetButtonDown("Jump")) return;
+
+        if (!(ZInput.GetButtonDown("Jump") || ZInput.GetButtonDown("JoyJump"))) return;
 
         if (JumpCount >= talent.GetLevel()) return;
         
