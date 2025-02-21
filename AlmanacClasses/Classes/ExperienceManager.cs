@@ -107,7 +107,7 @@ public static class ExperienceManager
             ["Eikthyr"] = CreateData(10, 1, 15),
             ["Greydwarf"] = CreateData(2, 5, 25),
             ["Greydwarf_Elite"] = CreateData(5, 5, 25),
-            ["Greydawrf_Shaman"] = CreateData(5, 5, 25),
+            ["Greydwarf_Shaman"] = CreateData(5, 5, 25),
             ["Ghost"] = CreateData(3, 5, 25),
             ["Skeleton"] = CreateData(2, 5, 25),
             ["Troll"] = CreateData(10, 5, 25),

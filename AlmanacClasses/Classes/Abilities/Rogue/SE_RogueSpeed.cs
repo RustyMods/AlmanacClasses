@@ -20,7 +20,7 @@ public class SE_RogueSpeed : StatusEffect
         speed *= m_talent.GetSpeedModifier(m_talent.GetLevel());
     }
 
-    public override void ModifyRunStaminaDrain(float baseDrain, ref float drain)
+    public override void ModifyRunStaminaDrain(float baseDrain, ref float drain, Vector3 dir)
     {
         drain *= m_talent.GetRunStaminaDrain(m_talent.GetLevel());
     }

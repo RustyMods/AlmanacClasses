@@ -18,7 +18,11 @@ public static class Forager
             {
                 if (!IsForageItem(__instance.m_itemPrefab.name, talent.GetCustomForageItems())) return;
             }
-            __instance.Drop(__instance.m_itemPrefab, 1, (int)(__instance.m_amount * talent.GetForageModifier(talent.GetLevel())));
+            var bonusChance = talent.GetForageModifier(talent.GetLevel()) - 1.0f;
+            if (ClassUtilities.RandomBoolWithWeight(bonusChance))
+            {
+                __instance.Drop(__instance.m_itemPrefab, 1, __instance.m_amount);
+            }
         }
     }
 
@@ -36,8 +40,10 @@ public static class Forager
                 if (!IsForageItem(__instance.m_itemPrefab.name, talent.GetCustomForageItems())) return;
             }
 
-            __result += Localization.instance.Localize($"\n{talent.GetName()}: <color=orange>+ {(int)(__instance.m_amount * talent.GetForageModifier(talent.GetLevel()))}</color>");
+            var bonusChance = (talent.GetForageModifier(talent.GetLevel()) - 1.0f) * 100.0f;
+            __result += Localization.instance.Localize($"\n[{talent.GetName()} <color=orange>{talent.GetLevel()}</color>]: <color=orange>{bonusChance}%</color> Double Drop");
         }
     }
+
     private static bool IsForageItem(string prefabName, List<string> list) => list.Contains(prefabName);
 }
