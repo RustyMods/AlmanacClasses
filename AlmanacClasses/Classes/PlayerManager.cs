@@ -127,7 +127,7 @@ public static class PlayerManager
         {
             if (!TalentManager.m_talents.TryGetValue(kvp.Value, out Talent match)) continue;
             if (match == null) continue;
-            SpellBook.m_abilities[kvp.Key] = new AbilityData() { m_data = match };
+            SpellBook.m_abilities[kvp.Key] = new SpellBook.AbilityData() { m_data = match };
         }
     }
 
@@ -152,12 +152,12 @@ public static class PlayerManager
         {
             Talent talent = kvp.Value;
             if (talent.m_alt?.Value is AlmanacClassesPlugin.Toggle.Off) continue;
-            LoadUI.ChangeButton(talent, false, talent.GetFillLine());
+            LoadUI.ChangeButton(talent, false);
         }
     }
     private static void SaveSpellBook()
     {
-        foreach (KeyValuePair<int, AbilityData> kvp in SpellBook.m_abilities)
+        foreach (KeyValuePair<int, SpellBook.AbilityData> kvp in SpellBook.m_abilities)
         {
             m_tempPlayerData.m_spellBook[kvp.Key] = kvp.Value.m_data.m_key;
         }
@@ -225,6 +225,7 @@ public static class PlayerManager
     {
         m_tempPlayerData.m_experience += amount;
         DisplayText.ShowText(Color.cyan, Player.m_localPlayer.transform.position, $"+{amount} $text_xp");
+        ExperienceBar.UpdateExperienceBar();
     }
     public static int GetExperience() => m_tempPlayerData.m_experience;
     
@@ -260,7 +261,9 @@ public static class PlayerManager
             if (__instance != Player.m_localPlayer) return;
             InitPlayerTalents();
             if (m_playerTalents.ContainsKey("MonkeyWrench")) MonkeyWrench.ModifyTwoHandedWeapons();
-            LoadUI.SetHUDVisibility(AlmanacClassesPlugin._HudVisible.Value is AlmanacClassesPlugin.Toggle.On);
+            // LoadUI.SetHUDVisibility(AlmanacClassesPlugin._HudVisible.Value is AlmanacClassesPlugin.Toggle.On);
+            ExperienceBar.SetHUDVisibility(AlmanacClassesPlugin._HudVisible.Value is AlmanacClassesPlugin.Toggle.On);
+            ExperienceBar.UpdateExperienceBar();
         } 
     }
     

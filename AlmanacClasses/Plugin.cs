@@ -35,7 +35,7 @@ namespace AlmanacClasses
         public static readonly AssetBundle _AssetBundle = GetAssetBundle("classesbundle");
         public static AlmanacClassesPlugin _Plugin = null!;
         public static GameObject _Root = null!;
-        
+        public static ConfigEntry<LoadUI.FontOptions> _Font = null!;
         private static ConfigEntry<Toggle> _serverConfigLocked = null!;
         public static ConfigEntry<int> _PrestigeThreshold = null!;
         public static ConfigEntry<int> _ResetCost = null!;
@@ -114,7 +114,6 @@ namespace AlmanacClasses
             AbilityManager.CheckInput();
 
             if (SpellBarMove.updateElement) SpellBarMove.UpdateElement();
-
             if (ExperienceBarMove.updateElement) ExperienceBarMove.UpdateElement();
             
             PlayerManager.UpdatePassiveEffects(dt);
@@ -183,6 +182,8 @@ namespace AlmanacClasses
             _serverConfigLocked = config("1 - General", "Lock Configuration", Toggle.On,
                 "If on, the configuration is locked and can be changed by server admins only.");
             _ = ConfigSync.AddLockingConfigEntry(_serverConfigLocked);
+            _Font = config("1 - General", "Font", LoadUI.FontOptions.NorseBold, "Set UI font");
+            _Font.SettingChanged += LoadUI.OnFontChange;
             _CustomBackground = config("1 - General", "Custom Background", "", "Set name of png file to use as background");
             _CustomBackground.SettingChanged += (_, _) => LoadUI.UpdateBackground();
             InitSettingsConfigs();
@@ -213,15 +214,15 @@ namespace AlmanacClasses
 
             _ExperienceBarPos = config("2 - Settings", "XP Bar Position", new Vector2(300f, 25f),
                 "Set the position of the experience bar", false);
-            _ExperienceBarPos.SettingChanged += LoadUI.OnChangeExperienceBarPosition;
+            _ExperienceBarPos.SettingChanged += ExperienceBar.OnChangeExperienceBarPosition;
             _ExperienceBarScale = config("2 - Settings", "XP Bar Scale", 100f,
                 new ConfigDescription("Set the scale of the experience bar", new AcceptableValueRange<float>(0, 100)),
                 false);
-            _ExperienceBarScale.SettingChanged += LoadUI.OnExperienceBarScaleChange;
+            _ExperienceBarScale.SettingChanged += ExperienceBar.OnExperienceBarScaleChange;
 
             _HudVisible = config("2 - Settings", "XP Bar Visible", Toggle.On, "If on, experience bar is visible on HUD",
                 false);
-            _HudVisible.SettingChanged += LoadUI.OnChangeExperienceBarVisibility;
+            _HudVisible.SettingChanged += ExperienceBar.OnChangeExperienceBarVisibility;
 
             _SpellBookPos = config("2 - Settings", "Spell Bar Position", new Vector2(1500f, 100f),
                 "Set the location of the spellbar", false);
@@ -242,7 +243,7 @@ namespace AlmanacClasses
                     new AcceptableValueRange<int>(0, 10)));
             _MenuTooltipPosition = config("2 - Settings", "Menu Tooltip Position", new Vector2(0f, 150f),
                 "Set position of spell bar tooltip, always attached to spell bar position", false);
-            _MenuTooltipPosition.SettingChanged += LoadUI.OnMenuInfoPanelConfigChange;
+            _MenuTooltipPosition.SettingChanged += SpellInfo.OnSpellInfoPositionChange;
 
             _ChanceForOrb = config("2 - Settings", "Experience Orb Drop Rate", 1,
                 new ConfigDescription("Set the drop chance to drop experience orbs",

@@ -13,7 +13,10 @@ public static class MenuPatches
         {
             ExperienceBarMove.updateElement = false;
             SpellBarMove.updateElement = false;
-            if (LoadUI.MenuInfoPanel) LoadUI.MenuInfoPanel.SetActive(false);
+
+            SpellInfo.m_instance.SetMenuVisible(false);
+
+            // if (LoadUI.MenuInfoPanel) LoadUI.MenuInfoPanel.SetActive(false);
             if (SpellElementChange.title) Object.Destroy(SpellElementChange.title);
         }
     }

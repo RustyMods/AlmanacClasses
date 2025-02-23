@@ -10,7 +10,7 @@ public class SpellElementChange : MonoBehaviour, IPointerClickHandler, IPointerE
     private static GameObject? draggedSpellImage;
     public static GameObject? title;
 
-    public AbilityData data = null!;
+    public SpellBook.AbilityData data = null!;
     public int index;
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -55,7 +55,6 @@ public class SpellElementChange : MonoBehaviour, IPointerClickHandler, IPointerE
         var originalRectTransform = GetComponent<RectTransform>();
         rectTransform.sizeDelta = originalRectTransform.sizeDelta;
     }
-
     private void MoveSpell()
     {
         if (selectedSpellIndex == null || selectedSpellObject == null) return;
@@ -76,24 +75,19 @@ public class SpellElementChange : MonoBehaviour, IPointerClickHandler, IPointerE
 
         SpellBook.UpdateAbilities();
 
-        if (LoadUI.MenuInfoPanel) LoadUI.MenuInfoPanel.SetActive(false);
+        SpellInfo.m_instance.SetMenuVisible(false);
+        // if (LoadUI.MenuInfoPanel) LoadUI.MenuInfoPanel.SetActive(false);
         if (title) Destroy(title);
     }
-
     private void ShowSpellInfo()
     {
         try
         {
             if (!TalentBook.IsTalentBookVisible())
             {
-                LoadUI.MenuInfoPanel.SetActive(true);
-                var nameText = Utils.FindChild(LoadUI.MenuInfoPanel.transform, "$text_name").GetComponent<Text>();
-                var descriptionText = Utils.FindChild(LoadUI.MenuInfoPanel.transform, "$text_description").GetComponent<Text>();
-                if (nameText != null && descriptionText != null)
-                {
-                    nameText.text = Localization.instance.Localize($"<color=orange>{data.m_data.GetName()}</color>");
-                    descriptionText.text = data.m_data.GetTooltip();
-                }
+                SpellInfo.m_instance.SetMenuVisible(true);
+                SpellInfo.m_instance.SetName(Localization.instance.Localize($"<color=orange>{data.m_data.GetName()}</color>"));
+                SpellInfo.m_instance.SetDescription(data.m_data.GetTooltip());
             }
             else
             {
@@ -123,7 +117,7 @@ public class SpellElementChange : MonoBehaviour, IPointerClickHandler, IPointerE
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (LoadUI.MenuInfoPanel) LoadUI.MenuInfoPanel.SetActive(false);
+        SpellInfo.m_instance.SetMenuVisible(false);
         if (title) Destroy(title);
     }
 
@@ -140,7 +134,7 @@ public class SpellElementChange : MonoBehaviour, IPointerClickHandler, IPointerE
         }
     }
 
-    private void CancelSpellExchange()
+    private static void CancelSpellExchange()
     {
         selectedSpellIndex = null;
         selectedSpellObject = null;
@@ -151,7 +145,7 @@ public class SpellElementChange : MonoBehaviour, IPointerClickHandler, IPointerE
             draggedSpellImage = null;
         }
 
-        if (LoadUI.MenuInfoPanel) LoadUI.MenuInfoPanel.SetActive(false);
+        SpellInfo.m_instance.SetMenuVisible(false);
         if (title) Destroy(title);
     }
 }

@@ -5,6 +5,7 @@ using AlmanacClasses.Classes.Abilities.Core;
 using AlmanacClasses.FileSystem;
 using AlmanacClasses.LoadAssets;
 using AlmanacClasses.Managers;
+using AlmanacClasses.UI;
 using BepInEx;
 using HarmonyLib;
 using ServerSync;
@@ -246,6 +247,7 @@ public static class ExperienceManager
         if (lost == 0) return;
         PlayerManager.m_tempPlayerData.m_experience -= lost;
         Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, $"$msg_lost_experience: {lost}");
+        ExperienceBar.UpdateExperienceBar();
     }
     private static int GetExpByBiome()
     {
@@ -294,6 +296,7 @@ public static class ExperienceManager
             }
         }
         DisplayText.ShowText(Color.cyan, instance.transform.position, $"+{amount} $text_xp");
+        ExperienceBar.UpdateExperienceBar();
     }
 
     public static void Command_GiveExperience(Player player, int amount)
@@ -305,6 +308,7 @@ public static class ExperienceManager
     public static void RPC_AddExperience(long sender, int experience, Vector3 pos)
     {
         PlayerManager.m_tempPlayerData.m_experience += experience;
+        ExperienceBar.UpdateExperienceBar();
     }
 
     [HarmonyPatch(typeof(Player), nameof(Player.Awake))]

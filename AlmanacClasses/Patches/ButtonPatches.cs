@@ -13,7 +13,7 @@ public static class ButtonPatches
         private static void Postfix(Selectable __instance)
         {
             if (!__instance) return;
-            if (!LoadUI.IsTalentButton(__instance)) return;
+            if (!TalentButton.IsTalentButton(__instance)) return;
             if (!TalentManager.m_talentsByButton.TryGetValue(__instance.name, out Talent talent))
             {
                 if (__instance.name == "$button_center")
@@ -68,7 +68,7 @@ public static class ButtonPatches
     {
         private static void Postfix(Selectable __instance)
         {
-            if (!LoadUI.IsTalentButton(__instance)) return;
+            if (!TalentButton.IsTalentButton(__instance)) return;
             LoadUI.TalentName.text = Localization.instance.Localize("$info_hover");
             string desc = 
                 "[<color=orange>L.Alt</color>] + [<color=orange>Mouse0</color>] - $info_move_spellbar" 
@@ -85,6 +85,10 @@ public static class ButtonPatches
     [HarmonyPatch(typeof(Selectable), nameof(Selectable.OnSelect))]
     private static class Button_OnSelect_Patch
     {
-        private static bool Prefix(Selectable __instance) => !LoadUI.IsTalentButton(__instance);
+        private static bool Prefix(Selectable __instance)
+        {
+            return !TalentButton.IsTalentButton(__instance);
+            // return !LoadUI.IsTalentButton(__instance);
+        }
     }
 }

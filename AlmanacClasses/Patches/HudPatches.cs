@@ -12,7 +12,7 @@ public static class HudPatches
         private static void Postfix(Hud __instance)
         {
             if (!__instance) return;
-            LoadUI.InitHudExperienceBar(__instance);
+            LoadUI.InitHud(__instance);
         }
     }
 
@@ -23,7 +23,7 @@ public static class HudPatches
         {
             if (!__instance || ! Player.m_localPlayer) return;
             if (Player.m_localPlayer.IsTeleporting() || Player.m_localPlayer.IsDead() || Player.m_localPlayer.IsSleeping()) return;
-            LoadUI.UpdateExperienceBarHud();
+            // LoadUI.UpdateExperienceBarHud();
             SpellBook.UpdateAbilities();
         }
     }

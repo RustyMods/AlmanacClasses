@@ -133,6 +133,7 @@
         <Compile Include="Classes\Abilities\Bard\SE_SongOfHealing.cs" />
         <Compile Include="Classes\Abilities\Bard\SE_SongOfSpeed.cs" />
         <Compile Include="Classes\Abilities\Bard\SE_SongOfVitality.cs" />
+        <Compile Include="Classes\Abilities\ClassUtilities.cs" />
         <Compile Include="Classes\Abilities\Core\AirBender.cs" />
         <Compile Include="Classes\Abilities\Core\Berzerker.cs" />
         <Compile Include="Classes\Abilities\Core\Comfort.cs" />
@@ -206,14 +207,19 @@
         <Compile Include="Patches\ObjectDBPatches.cs" />
         <Compile Include="Patches\PlayerControllerPatches.cs" />
         <Compile Include="Patches\StoreGUIPatches.cs" />
+        <Compile Include="Patches\TextsDialoguePatches.cs" />
         <Compile Include="Plugin.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="UI\ExperienceBar.cs" />
         <Compile Include="UI\ExperienceBarMove.cs" />
         <Compile Include="UI\LoadUI.cs" />
+        <Compile Include="UI\SpellElement.cs" />
+        <Compile Include="UI\SpellInfo.cs" />
         <Compile Include="UI\SpellBarMove.cs" />
         <Compile Include="UI\SpellBook.cs" />
         <Compile Include="UI\SpellElementChange.cs" />
         <Compile Include="UI\TalentBook.cs" />
+        <Compile Include="UI\TalentButton.cs" />
         <Compile Include="VersionHandshake.cs" />
     </ItemGroup>
     <ItemGroup>

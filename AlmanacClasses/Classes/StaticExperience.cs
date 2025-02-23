@@ -2,6 +2,7 @@
 using System.IO;
 using AlmanacClasses.FileSystem;
 using AlmanacClasses.Managers;
+using AlmanacClasses.UI;
 using BepInEx;
 using HarmonyLib;
 using ServerSync;
@@ -278,5 +279,6 @@ public static class StaticExperience
             player.m_nview.InvokeRPC(nameof(ExperienceManager.RPC_AddExperience), amount, position);
         }
         DisplayText.ShowText(Color.cyan, position, $"+{amount} $text_xp");
+        ExperienceBar.UpdateExperienceBar();
     }
 }

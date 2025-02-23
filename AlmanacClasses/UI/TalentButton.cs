@@ -1,0 +1,181 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using AlmanacClasses.Classes;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace AlmanacClasses.UI;
+
+public class TalentButton : MonoBehaviour
+{
+    public static readonly List<Selectable> m_selectables = new();
+    public static readonly List<TalentButton> m_checkedTalents = new();
+    public static readonly Dictionary<string, TalentButton> m_allButtons = new();
+    public static readonly Dictionary<TalentButton, Dictionary<string, Image>> m_fillLineMap = new();
+    public static readonly Dictionary<TalentButton, Sprite> m_buttonOriginalSpriteMap = new();
+    public static TalentButton m_centerButton = null!;
+    
+    public Dictionary<string, Image> m_fillLines = new();
+    public Button m_button = null!;
+    private GameObject? m_checkmark;
+    public Image m_iconBackground = null!;
+    public Image? m_icon;
+    public Image? m_checkmarkIcon;
+    
+    public void Init()
+    {
+        m_button = GetComponent<Button>();
+        m_selectables.Add(m_button);
+        if (Utils.FindChild(transform, "Checkmark") is { } checkmark)
+        {
+            m_checkmark = checkmark.gameObject;
+            m_checkmarkIcon = m_checkmark.GetComponent<Image>();
+        }
+
+        Transform background = transform.Find("background");
+        if (!background) background = transform.Find("Background");
+        m_iconBackground = background.GetComponent<Image>();
+        m_allButtons[name] = this;
+        if (name == "$button_center") m_centerButton = this;
+        if (transform.Find("icon") is { } icon && icon.TryGetComponent(out Image iconImage))
+        {
+            m_buttonOriginalSpriteMap[this] = iconImage.sprite;
+            m_icon = iconImage;
+        }
+    }
+
+    public void SetCheckmark(bool enable)
+    {
+        if (m_checkmark is not null) m_checkmark.SetActive(enable);
+        if (enable) m_checkedTalents.Add(this);
+        else m_checkedTalents.Remove(this);
+    }
+
+    public bool IsChecked() => m_checkedTalents.Contains(this);
+    public static void ClearAll()
+    {
+        foreach (var button in m_allButtons.Values) button.SetCheckmark(false);
+        m_checkedTalents.Add(m_centerButton);
+    }
+
+    public void Select(Talent ability)
+    {
+        if (!PlayerManager.m_playerTalents.ContainsKey(ability.m_key)) return;
+        LoadUI.SelectedTalent = ability;
+        SetAllButtonColors(Color.white);
+        SetButtonColor(new Color(1f, 0.5f, 0f, 1f));
+    }
+
+    public void SetButtonColor(Color color) => m_iconBackground.color = color;
+
+    public void SetButtonIcons(Sprite sprite)
+    {
+        if (m_icon == null || m_checkmarkIcon == null) return;
+        m_icon.sprite = sprite;
+        m_checkmarkIcon.sprite = sprite;
+    }
+
+    public static void SetAllButtonColors(Color color)
+    {
+        foreach (var button in m_allButtons.Values)
+        {
+            button.m_iconBackground.color = color;
+        }
+    }
+
+    public static bool CheckCost(int cost)
+    {
+        if (cost <= TalentManager.GetAvailableTalentPoints()) return true;
+        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_not_enough_tp");
+        return false;
+    }
+    
+    public static bool IsEndAbility(string name)
+    {
+        if (!LoadUI.EndTalents.ContainsKey(name)) return true;
+        if (CanBuyEndAbility(name)) return true;
+        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_need_connected_talents");
+        return false;
+    }
+    
+    
+    public static bool IsConnected(Dictionary<string, Image> lines, out Dictionary<string, Image> validatedLines, bool msg = true)
+    {
+        validatedLines = new Dictionary<string, Image>();
+        foreach (var checkedButton in m_checkedTalents)
+        {
+            if (lines.TryGetValue(checkedButton.name, out Image line))
+            {
+                validatedLines[checkedButton.name] = line;
+            }
+        }
+
+        if (validatedLines.Count != 0) return true;
+        if (msg) Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_need_previous_talent");
+        return false;
+    }
+
+    private static bool CanBuyEndAbility(string button)
+    {
+        return !LoadUI.EndTalents.TryGetValue(button, out List<string> requirements) || requirements.All(requirement => m_checkedTalents.Find(x => x.name == requirement));
+    }
+
+    private static void ButtonEvent(TalentButton talentButton, Dictionary<string, Image> lines, string key)
+    {
+        if (!TalentManager.m_talents.TryGetValue(key, out Talent ability))
+        {
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_failed_to_get_talent");
+            return;
+        }
+
+        talentButton.Select(ability);
+        if (talentButton.IsChecked()) return;
+        if (!IsEndAbility(talentButton.name)) return;
+        if (!IsConnected(lines, out Dictionary<string, Image> validatedLines)) return;
+        if (!CheckCost(ability.GetCost())) return;
+        LoadUI.PurchaseTalent(ability);
+        LoadUI.CheckMonkeyWrench(ability);
+        switch (ability.m_type)
+        {
+            case TalentType.Passive:
+                LoadUI.AddStatusEffect(ability);
+                break;
+            case TalentType.Ability or TalentType.StatusEffect:
+                if (!LoadUI.AddToSpellBook(ability)) return;
+                break;
+            case TalentType.Characteristic:
+                CharacteristicManager.AddCharacteristic(ability.GetCharacteristicType(),
+                    ability.GetCharacteristic(ability.GetLevel()));
+                break;
+        }
+
+        talentButton.SetCheckmark(true);
+        LoadUI.SetLines(validatedLines);
+        TalentBook.ShowUI();
+    }
+    
+    public static void RemapButton(string name, Dictionary<string, Image> lines, string key)
+    {
+        if (!m_allButtons.TryGetValue(name, out TalentButton talentButton)) return;
+        talentButton.m_button.onClick.RemoveAllListeners();
+        talentButton.m_button.onClick.AddListener(() =>
+        {
+            ButtonEvent(talentButton, lines, key);
+        });
+        if (!talentButton.TryGetComponent(out ButtonSfx component)) return;
+        component.Start();
+    }
+    
+    public static void SetButton(Transform parent, string name, Dictionary<string, Image> lines, string key)
+    {
+        TalentButton talentButton = parent.Find(name).GetComponent<TalentButton>();
+        m_fillLineMap[talentButton] = lines;
+        talentButton.m_fillLines = lines;
+        talentButton.m_button.onClick.AddListener(() =>
+        {
+            ButtonEvent(talentButton, lines, key);
+        });
+    }
+
+    public static bool IsTalentButton(Selectable button) => m_selectables.Contains(button);
+}

@@ -1,12 +1,12 @@
 ﻿using AlmanacClasses.Classes;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace AlmanacClasses.UI;
 
 public class TalentBook : MonoBehaviour, Interactable, Hoverable
 {
     public string m_name = "$title_altar";
-    
     public bool Interact(Humanoid user, bool hold, bool alt)
     {
         if (hold || alt) return false;
@@ -43,12 +43,12 @@ public class TalentBook : MonoBehaviour, Interactable, Hoverable
 
         LoadUI.PrestigeText.text = "";
         LoadUI.ExperienceTitleText.text = Localization.instance.Localize("$text_experience");
-        LoadUI.LevelText.text = string.Format("{0}: <color=orange>{1}</color>",
-            Localization.instance.Localize("$text_level"), level);
+        LoadUI.LevelText.text = $"{Localization.instance.Localize("$text_level")}: <color=orange>{level}</color>";
         LoadUI.ExperienceText.text = $"<color=orange>{experience}</color>" + " / " + $"<color=orange>{nextXP}</color>";
         LoadUI.ExperienceBarFill.fillAmount = (float)experience / (float)nextXP;
         LoadUI.TalentPointsText.text = Localization.instance.Localize("$text_talent_points") + ": " + $"<color=orange>{availableTalents}</color>";
         LoadUI.CharacteristicsTitleText.text = Localization.instance.Localize("$almanac_characteristic");
+        
         LoadUI.ConstitutionText.text = $"<color=orange>{constitution}</color>";
         LoadUI.DexterityText.text = $"<color=orange>{dexterity}</color>";
         LoadUI.IntelligenceText.text = $"<color=orange>{intelligence}</color>";
@@ -78,7 +78,6 @@ public class TalentBook : MonoBehaviour, Interactable, Hoverable
             LoadUI.RequiredPoints.text = Localization.instance.Localize("$text_required_points_to_prestige: <color=orange>0</color>");
         }
     }
-
     public static void HideUI()
     {
         if (!LoadUI.SkillTree_UI) return;
@@ -86,7 +85,6 @@ public class TalentBook : MonoBehaviour, Interactable, Hoverable
         Player.m_localPlayer.m_zanim.SetInt("crafting", 0);
         LoadUI.DeselectTalent();
     }
-
     public static void UpdateTalentBookUI()
     {
         if (!Input.GetKeyDown(KeyCode.Escape) || !IsTalentBookVisible()) return;
@@ -95,7 +93,6 @@ public class TalentBook : MonoBehaviour, Interactable, Hoverable
     }
 
     public static bool IsTalentBookVisible() => LoadUI.SkillTree_UI && LoadUI.SkillTree_UI.activeInHierarchy;
-
     public bool UseItem(Humanoid user, ItemDrop.ItemData item) => false;
     public string GetHoverText() => Localization.instance.Localize(m_name) + "\n" + Localization.instance.Localize("[<color=yellow><b>$KEY_Use</b></color>] $info_open_book");
     public string GetHoverName() => Localization.instance.Localize(m_name);

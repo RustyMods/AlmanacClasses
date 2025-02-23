@@ -38,7 +38,6 @@ public class Talent
     public TalentCreatures? m_creatures;
     public CreaturesByLevel? m_creaturesByLevel;
     public ResistancePercentages? m_resistances;
-    public float m_line = 1f;
     public Sprite? m_altButtonSprite;
     public ConfigEntry<string>? m_forageItems;
     public ConfigEntry<Toggle>? m_useAnimation;
@@ -51,7 +50,6 @@ public class Talent
         output.AddRange(m_forageItems.Value.Split(':'));
         return output;
     }
-    public float GetFillLine() => m_line;
     public int GetLevel() => m_level;
     public void AddLevel() => ++m_level;
     public int GetPrestigeCap() => m_cap?.Value ?? int.MaxValue;
@@ -726,12 +724,11 @@ public static class TalentManager
             m_length = _Plugin.config("Core - Treasure Hunter", "Length", 60f, new ConfigDescription("Set length of ability", new AcceptableValueRange<float>(1f, 1000f))),
             m_alt = _Plugin.config("Core - Treasure Hunter", "Enable", Toggle.Off, "If on, replaces forage talent"),
             m_cap = _Plugin.config("Core - Treasure Hunter", "Prestige Cap", 1, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 10))),
-            m_line = 0.7f,
             m_altButtonSprite = SpriteManager.ScrollMap
         };
         TreasureHunter.m_alt.SettingChanged += (sender, args) =>
         {
-            LoadUI.ChangeButton(TreasureHunter, TreasureHunter.m_alt.Value is Toggle.Off, TreasureHunter.m_line);
+            LoadUI.ChangeButton(TreasureHunter, TreasureHunter.m_alt.Value is Toggle.Off);
         };
 
         Talent Berzerk = new Talent()
@@ -785,13 +782,12 @@ public static class TalentManager
             m_alt = _Plugin.config("Core - AirBender Alt", "Enable", Toggle.Off, "If on, replaces the airbender talent"),
             m_cap = _Plugin.config("Core - AirBender Alt", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 10))),
             m_eitrCost = _Plugin.config("Core - AirBender Alt", "Eitr Cost", 5f, new ConfigDescription("Set eitr cost", new AcceptableValueRange<float>(0f, 101f))),
-            m_line = 0.7f,
             m_eitrCostReduces = true
         };
 
         AirBenderAlt.m_alt.SettingChanged += (sender, args) =>
         {
-            LoadUI.ChangeButton(AirBenderAlt, AirBenderAlt.m_alt.Value is Toggle.Off, AirBenderAlt.m_line);
+            LoadUI.ChangeButton(AirBenderAlt, AirBenderAlt.m_alt.Value is Toggle.Off);
         };
 
         return new List<Talent>() { TreasureHunter, Berzerk, Sailor, AirBenderAlt };

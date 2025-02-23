@@ -12,7 +12,7 @@ public static class SpellBarMove
         if (updateElement)
         {
             AlmanacClassesPlugin._SpellBookPos.Value = Input.mousePosition;
-            LoadUI.MenuInfoPanel.transform.position = AlmanacClassesPlugin._SpellBookPos.Value + AlmanacClassesPlugin._MenuTooltipPosition.Value;
+            SpellInfo.m_instance.SetPosition(AlmanacClassesPlugin._SpellBookPos.Value + AlmanacClassesPlugin._MenuTooltipPosition.Value);
         }
 
         if (Input.GetKeyDown(KeyCode.Escape))
