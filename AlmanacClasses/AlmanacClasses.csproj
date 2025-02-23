@@ -223,10 +223,8 @@
         <Compile Include="VersionHandshake.cs" />
     </ItemGroup>
     <ItemGroup>
-        <EmbeddedResource Include="..\..\..\bundles_2024\classesbundle">
-          <Link>assets\classesbundle</Link>
-        </EmbeddedResource>
         <Content Include=".gitignore" />
+        <EmbeddedResource Include="assets\classesbundle" />
         <Content Include="environment.props" />
         <Content Include="ILRepack.targets" />
         <Content Include="Libs\AnimationSpeedManager.dll" />
