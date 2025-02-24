@@ -81,6 +81,9 @@
         <Reference Include="BepInEx">
             <HintPath>$(BepInExPath)\core\BepInEx.dll</HintPath>
         </Reference>
+        <Reference Include="gui_framework">
+          <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\valheim_Data\Managed\publicized_assemblies\gui_framework_publicized.dll</HintPath>
+        </Reference>
         <Reference Include="ServerSync">
             <HintPath>Libs\ServerSync.dll</HintPath>
         </Reference>
@@ -212,7 +215,9 @@
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="UI\ExperienceBar.cs" />
         <Compile Include="UI\ExperienceBarMove.cs" />
+        <Compile Include="UI\FillLines.cs" />
         <Compile Include="UI\LoadUI.cs" />
+        <Compile Include="UI\Prestige.cs" />
         <Compile Include="UI\SpellElement.cs" />
         <Compile Include="UI\SpellInfo.cs" />
         <Compile Include="UI\SpellBarMove.cs" />

@@ -6,7 +6,7 @@ namespace AlmanacClasses.Managers;
 
 public static class AnimationManager
 {
-    private static readonly List<string> animations = new()
+    public static readonly List<string> animations = new()
     {   "gpower", "staff_summon", "emote_sit", 
         "emote_dance", "emote_despair", "emote_cry",
         "emote_point", "emote_flex", "emote_wave",

@@ -6,6 +6,9 @@ namespace AlmanacClasses.Patches;
 
 public static class GamePatches
 {
+    /// <summary>
+    /// Make sure the class system cleans up so when user re-logs, the system is refreshed to initial states
+    /// </summary>
     [HarmonyPatch(typeof(Game), nameof(Game.Logout))]
     private static class Game_Logout_Patches
     {

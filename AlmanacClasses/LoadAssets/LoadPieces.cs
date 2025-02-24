@@ -1,5 +1,4 @@
-﻿using AlmanacClasses.Managers;
-using AlmanacClasses.UI;
+﻿using AlmanacClasses.UI;
 using PieceManager;
 using UnityEngine;
 
@@ -20,5 +19,9 @@ public static class LoadPieces
         Transform book = altar.Prefab.transform.GetChild(0);
         book.gameObject.AddComponent<TalentBook>();
         altar.Prefab.AddComponent<AltarEffectFade>();
+        altar.PlaceEffects = new() { "vfx_Place_workbench", "sfx_build_hammer_stone" };
+        altar.DestroyedEffects = new() { "vfx_RockDestroyed", "sfx_rock_destroyed" };
+        altar.HitEffects = new() { "vfx_RockHit" };
+        altar.SwitchEffects = new() { "vfx_Place_throne02" };
     }
 }

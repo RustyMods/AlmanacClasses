@@ -8,6 +8,9 @@ using UnityEngine.UI;
 
 namespace AlmanacClasses.UI;
 
+/// <summary>
+/// Component that controls the spell bar
+/// </summary>
 public class SpellBook : MonoBehaviour
 {
     public static SpellBook m_instance = null!;
@@ -19,6 +22,7 @@ public class SpellBook : MonoBehaviour
     public Text[] m_elementTexts = null!;
     // Root parent that contains instantiated elements
     private Transform m_contentList = null!;
+    private float m_timer;
     public void Init()
     {
         m_instance = this;
@@ -30,6 +34,17 @@ public class SpellBook : MonoBehaviour
         m_elementTexts = m_element.GetComponentsInChildren<Text>();
         m_contentList = transform.Find("$part_content");
         UpdateFontSize();
+    }
+
+    public void Update()
+    {
+        if (!m_instance || !Player.m_localPlayer || Minimap.IsOpen()) return;
+        if (Player.m_localPlayer.IsTeleporting() || Player.m_localPlayer.IsDead() || Player.m_localPlayer.IsSleeping()) return;
+        m_timer += Time.deltaTime;
+        if (m_timer < 1f) return;
+        m_timer = 0.0f;
+
+        UpdateAbilities();
     }
 
     public static void OnSpellBarPosChange(object sender, EventArgs e)
@@ -122,7 +137,7 @@ public class SpellBook : MonoBehaviour
             }
 
             Sprite? icon = kvp.Value.m_data.GetSprite();
-            var spellElement = element.GetComponent<SpellElement>();
+            if (!element.TryGetComponent(out SpellElement spellElement)) return;
             spellElement.SetIcon(icon);
             spellElement.SetHotkey(GetKeyCode(kvp.Key));
             kvp.Value.m_go = element;
@@ -223,6 +238,28 @@ public class SpellBook : MonoBehaviour
             > 10 => $"<color=#FFAA33>{time}</color>",
             _ => time.ToString()
         };
+    }
+    
+    public static bool AddToSpellBook(Talent ability)
+    {
+        if (IsAbilityInBook(ability))
+        {
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_spell_in_book");
+            return false;
+        }
+        if (m_abilities.Count > 7)
+        {
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_spell_book_full");
+            return false;
+        }
+
+        m_abilities.Add(m_abilities.Count, new AbilityData()
+        {
+            m_data = ability
+        });
+        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_added_spell");
+        UpdateAbilities();
+        return true;
     }
     
     public class AbilityData

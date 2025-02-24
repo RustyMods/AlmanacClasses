@@ -3,6 +3,12 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace AlmanacClasses.UI;
+/// <summary>
+/// Allows user to manipulate spell book spell indexes
+/// To place the spells in the slots of their choice
+/// Additionally, since it records its index, it is used when updating the cooldowns
+/// to make sure only the casted spells are updating their visuals
+/// </summary>
 public class SpellElementChange : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
     private static int? selectedSpellIndex;
@@ -12,6 +18,19 @@ public class SpellElementChange : MonoBehaviour, IPointerClickHandler, IPointerE
 
     public SpellBook.AbilityData data = null!;
     public int index;
+    
+    private void Update()
+    {
+        if (draggedSpellImage is not null)
+        {
+            draggedSpellImage.transform.position = Input.mousePosition + new Vector3(35f, 35f);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            CancelSpellExchange();
+        }
+    }
     public void OnPointerClick(PointerEventData eventData)
     {
         if (selectedSpellIndex == null)
@@ -20,9 +39,9 @@ public class SpellElementChange : MonoBehaviour, IPointerClickHandler, IPointerE
             {
                 SelectSpell();
             } 
-            else 
+            else
             {
-                SpellBarMove.updateElement = true;
+                SpellBarMove.updateElement = !SpellBarMove.updateElement;
             }
         }
         else
@@ -76,7 +95,6 @@ public class SpellElementChange : MonoBehaviour, IPointerClickHandler, IPointerE
         SpellBook.UpdateAbilities();
 
         SpellInfo.m_instance.SetMenuVisible(false);
-        // if (LoadUI.MenuInfoPanel) LoadUI.MenuInfoPanel.SetActive(false);
         if (title) Destroy(title);
     }
     private void ShowSpellInfo()
@@ -106,7 +124,6 @@ public class SpellElementChange : MonoBehaviour, IPointerClickHandler, IPointerE
             // ignored
         }
     }
-
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (!Input.GetKey(KeyCode.LeftAlt) && draggedSpellImage == null)
@@ -114,26 +131,11 @@ public class SpellElementChange : MonoBehaviour, IPointerClickHandler, IPointerE
             ShowSpellInfo();
         }
     }
-
     public void OnPointerExit(PointerEventData eventData)
     {
         SpellInfo.m_instance.SetMenuVisible(false);
         if (title) Destroy(title);
     }
-
-    private void Update()
-    {
-        if (draggedSpellImage != null)
-        {
-            draggedSpellImage.transform.position = Input.mousePosition + new Vector3(35f, 35f);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            CancelSpellExchange();
-        }
-    }
-
     private static void CancelSpellExchange()
     {
         selectedSpellIndex = null;

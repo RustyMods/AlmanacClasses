@@ -4,6 +4,11 @@ using UnityEngine.UI;
 
 namespace AlmanacClasses.UI;
 
+/// <summary>
+/// Container to hold the spell elements
+/// In order to change their info
+/// Instantiated in the spell book content list
+/// </summary>
 public class SpellElement : MonoBehaviour
 {
     private static readonly List<SpellElement> m_instances = new();

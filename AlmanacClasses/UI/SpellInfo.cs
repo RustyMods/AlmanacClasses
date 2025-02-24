@@ -28,10 +28,9 @@ public class SpellInfo : MonoBehaviour
 
     public void SetPosition(Vector3 pos) => transform.position = pos;
     public void SetMenuVisible(bool enable) => gameObject.SetActive(enable);
-
+    public bool IsVisible() => gameObject.activeInHierarchy;
     public void SetName(string text) => m_name.text = text;
     public void SetDescription(string text) => m_description.text = text;
-    
     public static void OnSpellInfoPositionChange(object sender, EventArgs e)
     {
         m_instance.SetPosition(AlmanacClassesPlugin._SpellBookPos.Value + AlmanacClassesPlugin._MenuTooltipPosition.Value);

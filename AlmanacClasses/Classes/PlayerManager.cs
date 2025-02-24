@@ -38,8 +38,9 @@ public static class PlayerManager
         ClearPlayerData();
         ClearPlayerTalents();
     }
-    private static readonly string m_oldKey = "AlmanacClassesPlayerData";
-    private static readonly string m_playerDataKey = "AlmanacClassesPlayerData_New";
+
+    private const string m_oldKey = "AlmanacClassesPlayerData";
+    public const string m_playerDataKey = "AlmanacClassesPlayerData_New";
     public static PlayerData m_tempPlayerData = new();
     public static readonly Dictionary<string, Talent> m_playerTalents = new();
 
@@ -163,7 +164,7 @@ public static class PlayerManager
         }
     }
 
-    private static void SavePlayerData()
+    public static void SavePlayerData()
     {
         if (!Player.m_localPlayer) return;
         SaveSpellBook();
@@ -261,7 +262,6 @@ public static class PlayerManager
             if (__instance != Player.m_localPlayer) return;
             InitPlayerTalents();
             if (m_playerTalents.ContainsKey("MonkeyWrench")) MonkeyWrench.ModifyTwoHandedWeapons();
-            // LoadUI.SetHUDVisibility(AlmanacClassesPlugin._HudVisible.Value is AlmanacClassesPlugin.Toggle.On);
             ExperienceBar.SetHUDVisibility(AlmanacClassesPlugin._HudVisible.Value is AlmanacClassesPlugin.Toggle.On);
             ExperienceBar.UpdateExperienceBar();
         } 

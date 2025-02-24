@@ -5,6 +5,9 @@ using UnityEngine.UI;
 
 namespace AlmanacClasses.UI;
 
+/// <summary>
+/// Container which controls the experience bar
+/// </summary>
 public class ExperienceBar : MonoBehaviour
 {
     public static ExperienceBar m_instance = null!;

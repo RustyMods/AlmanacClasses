@@ -273,12 +273,12 @@ public static class StaticExperience
         if (player.m_nview.IsOwner())
         {
             PlayerManager.m_tempPlayerData.m_experience += amount;
+            DisplayText.ShowText(Color.cyan, position, $"+{amount} $text_xp");
+            ExperienceBar.UpdateExperienceBar();
         }
         else
         {
             player.m_nview.InvokeRPC(nameof(ExperienceManager.RPC_AddExperience), amount, position);
         }
-        DisplayText.ShowText(Color.cyan, position, $"+{amount} $text_xp");
-        ExperienceBar.UpdateExperienceBar();
     }
 }

@@ -13,7 +13,7 @@ namespace AlmanacClasses.LoadAssets
         private static RuntimeAnimatorController? VanillaController;
         private static readonly Dictionary<string, KeyValuePair<RuntimeAnimatorController, string>> Controllers = new();
         private static readonly Dictionary<string, AnimationClip> AllExternalAnimations = new();
-        private static readonly List<List<string>> AllAnimationSets = new();
+        public static readonly List<List<string>> AllAnimationSets = new();
         private static string? _asmName;
         private static string AssemblyName() => _asmName ??= Assembly.GetExecutingAssembly().GetName().Name;
 

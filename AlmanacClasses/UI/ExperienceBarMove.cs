@@ -1,12 +1,17 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace AlmanacClasses.UI;
 
+/// <summary>
+/// Allows to move the experience bar
+/// </summary>
 public class ExperienceBarMove : MonoBehaviour, IPointerClickHandler
 {
     public static bool updateElement;
-    public static void UpdateElement()
+
+    public void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape)) updateElement = false;
 
@@ -16,6 +21,6 @@ public class ExperienceBarMove : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        updateElement = true;
+        updateElement = !updateElement;
     }
 }

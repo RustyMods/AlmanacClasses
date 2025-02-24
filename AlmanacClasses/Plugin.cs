@@ -113,8 +113,7 @@ namespace AlmanacClasses
             TalentBook.UpdateTalentBookUI();
             AbilityManager.CheckInput();
 
-            if (SpellBarMove.updateElement) SpellBarMove.UpdateElement();
-            if (ExperienceBarMove.updateElement) ExperienceBarMove.UpdateElement();
+            // if (SpellBarMove.updateElement) SpellBarMove.UpdateElement();
             
             PlayerManager.UpdatePassiveEffects(dt);
 

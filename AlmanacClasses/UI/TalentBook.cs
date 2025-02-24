@@ -1,9 +1,12 @@
 ﻿using AlmanacClasses.Classes;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace AlmanacClasses.UI;
 
+/// <summary>
+/// Component attached to buildable altar prefab
+/// Allows user to interact with the prefab and access the UI
+/// </summary>
 public class TalentBook : MonoBehaviour, Interactable, Hoverable
 {
     public string m_name = "$title_altar";
@@ -83,7 +86,7 @@ public class TalentBook : MonoBehaviour, Interactable, Hoverable
         if (!LoadUI.SkillTree_UI) return;
         LoadUI.SkillTree_UI.SetActive(false);
         Player.m_localPlayer.m_zanim.SetInt("crafting", 0);
-        LoadUI.DeselectTalent();
+        Prestige.DeselectTalent();
     }
     public static void UpdateTalentBookUI()
     {

@@ -302,13 +302,14 @@ public static class ExperienceManager
     public static void Command_GiveExperience(Player player, int amount)
     {
         if (!player.m_nview.IsValid()) return;
-        player.m_nview.InvokeRPC(nameof(RPC_AddExperience), amount);
+        player.m_nview.InvokeRPC(nameof(RPC_AddExperience), amount, player.transform.position);
     }
 
     public static void RPC_AddExperience(long sender, int experience, Vector3 pos)
     {
         PlayerManager.m_tempPlayerData.m_experience += experience;
         ExperienceBar.UpdateExperienceBar();
+        DisplayText.ShowText(Color.cyan, pos, $"+{experience} $text_xp");
     }
 
     [HarmonyPatch(typeof(Player), nameof(Player.Awake))]

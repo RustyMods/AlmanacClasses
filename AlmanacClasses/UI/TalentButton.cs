@@ -6,6 +6,11 @@ using UnityEngine.UI;
 
 namespace AlmanacClasses.UI;
 
+/// <summary>
+/// Attached to Buttons
+/// Contains all the necessary methods to control the buttons
+/// </summary>
+[RequireComponent(typeof(Button))]
 public class TalentButton : MonoBehaviour
 {
     public static readonly List<Selectable> m_selectables = new();
@@ -21,7 +26,7 @@ public class TalentButton : MonoBehaviour
     public Image m_iconBackground = null!;
     public Image? m_icon;
     public Image? m_checkmarkIcon;
-    
+    public FillLines m_fillLine = null!;
     public void Init()
     {
         m_button = GetComponent<Button>();
@@ -61,7 +66,7 @@ public class TalentButton : MonoBehaviour
     public void Select(Talent ability)
     {
         if (!PlayerManager.m_playerTalents.ContainsKey(ability.m_key)) return;
-        LoadUI.SelectedTalent = ability;
+        Prestige.SelectedTalent = ability;
         SetAllButtonColors(Color.white);
         SetButtonColor(new Color(1f, 0.5f, 0f, 1f));
     }
@@ -97,23 +102,35 @@ public class TalentButton : MonoBehaviour
         Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_need_connected_talents");
         return false;
     }
-    
-    
-    public static bool IsConnected(Dictionary<string, Image> lines, out Dictionary<string, Image> validatedLines, bool msg = true)
+
+    public static bool IsConnected(Dictionary<string, Image> lines, bool msg = true)
     {
-        validatedLines = new Dictionary<string, Image>();
-        foreach (var checkedButton in m_checkedTalents)
+        foreach (var buttonName in lines.Keys)
         {
-            if (lines.TryGetValue(checkedButton.name, out Image line))
-            {
-                validatedLines[checkedButton.name] = line;
-            }
+            if (buttonName == "$button_center") return true;
+            if (!m_allButtons.TryGetValue(buttonName, out TalentButton button)) continue;
+            if (button.IsChecked()) return true;
         }
 
-        if (validatedLines.Count != 0) return true;
         if (msg) Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_need_previous_talent");
         return false;
     }
+    
+    // public static bool IsConnected(Dictionary<string, Image> lines, out Dictionary<string, Image> validatedLines, bool msg = true)
+    // {
+    //     validatedLines = new Dictionary<string, Image>();
+    //     foreach (var checkedButton in m_checkedTalents)
+    //     {
+    //         if (lines.TryGetValue(checkedButton.name, out Image line))
+    //         {
+    //             validatedLines[checkedButton.name] = line;
+    //         }
+    //     }
+    //
+    //     if (validatedLines.Count != 0) return true;
+    //     if (msg) Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_need_previous_talent");
+    //     return false;
+    // }
 
     private static bool CanBuyEndAbility(string button)
     {
@@ -131,7 +148,8 @@ public class TalentButton : MonoBehaviour
         talentButton.Select(ability);
         if (talentButton.IsChecked()) return;
         if (!IsEndAbility(talentButton.name)) return;
-        if (!IsConnected(lines, out Dictionary<string, Image> validatedLines)) return;
+        // if (!IsConnected(lines, out Dictionary<string, Image> validatedLines)) return;
+        if (!IsConnected(lines)) return;
         if (!CheckCost(ability.GetCost())) return;
         LoadUI.PurchaseTalent(ability);
         LoadUI.CheckMonkeyWrench(ability);
@@ -141,7 +159,7 @@ public class TalentButton : MonoBehaviour
                 LoadUI.AddStatusEffect(ability);
                 break;
             case TalentType.Ability or TalentType.StatusEffect:
-                if (!LoadUI.AddToSpellBook(ability)) return;
+                if (!SpellBook.AddToSpellBook(ability)) return;
                 break;
             case TalentType.Characteristic:
                 CharacteristicManager.AddCharacteristic(ability.GetCharacteristicType(),
@@ -150,7 +168,8 @@ public class TalentButton : MonoBehaviour
         }
 
         talentButton.SetCheckmark(true);
-        LoadUI.SetLines(validatedLines);
+        // LoadUI.SetLines(validatedLines);
+        FillLines.UpdateFillLines();
         TalentBook.ShowUI();
     }
     
@@ -175,6 +194,21 @@ public class TalentButton : MonoBehaviour
         {
             ButtonEvent(talentButton, lines, key);
         });
+
+        foreach (var kvp in lines)
+        {
+            if (FillLines.m_allLines.TryGetValue(kvp.Value, out FillLines fillLine))
+            {
+                fillLine.AddButton(kvp.Key);
+                fillLine.AddButton(name);
+            }
+            else
+            {
+                var fill = new FillLines(kvp.Value);
+                fill.AddButton(kvp.Key);
+                fill.AddButton(name);
+            }
+        }
     }
 
     public static bool IsTalentButton(Selectable button) => m_selectables.Contains(button);
