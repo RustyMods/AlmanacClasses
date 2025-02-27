@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-using Random = UnityEngine.Random;
+﻿using Random = UnityEngine.Random;
 
 namespace AlmanacClasses.Classes.Abilities.Core;
 
@@ -11,8 +8,7 @@ public static class Pickpocket
     {
         if (instance.m_lastHit == null || !instance.m_localPlayerHasHit) return;
         if (!PlayerManager.m_playerTalents.TryGetValue("DoubleLoot", out Talent ability)) return;
-        Character? attacker = instance.m_lastHit.GetAttacker();
-        if (attacker == null) return;
+        if (instance.m_lastHit.GetAttacker() is not { } attacker) return;
         if (instance.m_baseAI == null) return;
         if (instance.m_baseAI.CanSeeTarget(attacker)) return;
         if (!instance.TryGetComponent(out CharacterDrop characterDrop)) return;

@@ -186,7 +186,6 @@ public static class LoadUI
     private static Image LineRadial8 = null!;
     #endregion
     #endregion
-    private static readonly List<Image> AllLines = new();
 
     public static readonly Dictionary<string, List<string>> EndTalents = new()
     {
@@ -320,23 +319,11 @@ public static class LoadUI
         }
 
         FillLines.UpdateFillLines();
-
-        // List<Image> validLines = new();
-        // foreach (var button in TalentButton.m_checkedTalents)
-        // {
-        //     // loop within a loop - need to find a way to improve this
-        //     // foreach checked talent, if other checked talents contain the button lines, then they are connected
-        //     if (!TalentButton.IsConnected(button.m_fillLines, out Dictionary<string, Image> validatedLines, false)) continue;
-        //     validLines.AddRange(validatedLines.Values);
-        // }
-        // if (validLines.Count == 0) return;
-        // foreach (var line in validLines) line.fillAmount = 1f;
         m_initLineFillSet = true;
     }
     #region Set Line Methods
     private static void RegisterFillLines()
     {
-        AllLines.Clear();
         Transform lines = Utils.FindChild(SkillTree_UI.transform, "$part_lines");
         SetLineUp(lines);
         SetLineBard(lines);
@@ -363,19 +350,6 @@ public static class LoadUI
         LineUp3RightUp = lineUp.Find("$line_3/$part_right_up/LineFill").GetComponent<Image>();
         LineUp4Left = lineUp.Find("$line_4/$part_left/LineFill").GetComponent<Image>();
         LineUp4LeftUp = lineUp.Find("$line_4/$part_left_up/LineFill").GetComponent<Image>();
-        
-        AllLines.Add(LineCoreUp);
-        AllLines.Add(LineCoreUp2);
-        AllLines.Add(LineCoreUp3);
-        AllLines.Add(LineCoreUp4);
-        AllLines.Add(LineUp1Right);
-        AllLines.Add(LineUp1Left);
-        AllLines.Add(LineUp2Right);
-        AllLines.Add(LineUp2Left);
-        AllLines.Add(LineUp3Right);
-        AllLines.Add(LineUp3RightUp);
-        AllLines.Add(LineUp4Left);
-        AllLines.Add(LineUp4LeftUp);
     }
     private static void SetLineBard(Transform lines)
     {
@@ -392,20 +366,6 @@ public static class LoadUI
         LineBard3RightUp = lineBard.Find("$line_3/$part_right_up/LineFill").GetComponent<Image>();
         LineBard4Left = lineBard.Find("$line_4/$part_left/LineFill").GetComponent<Image>();
         LineBard4LeftUp = lineBard.Find("$line_4/$part_left_up/LineFill").GetComponent<Image>();
-        
-        AllLines.Add(LineCoreBard);
-        AllLines.Add(LineCoreBard2);
-        AllLines.Add(LineCoreBard3);
-        AllLines.Add(LineCoreBard4);
-        
-        AllLines.Add(LineBard1Right);
-        AllLines.Add(LineBard1Left);
-        AllLines.Add(LineBard2Right);
-        AllLines.Add(LineBard2Left);
-        AllLines.Add(LineBard3Right);
-        AllLines.Add(LineBard3RightUp);
-        AllLines.Add(LineBard4Left);
-        AllLines.Add(LineBard4LeftUp);
     }
     private static void SetLineShaman(Transform lines)
     {
@@ -422,19 +382,6 @@ public static class LoadUI
         LineShaman3RightUp = lineShaman.Find("$line_3/$part_right_up/LineFill").GetComponent<Image>();
         LineShaman4Left = lineShaman.Find("$line_4/$part_left/LineFill").GetComponent<Image>();
         LineShaman4LeftUp = lineShaman.Find("$line_4/$part_left_up/LineFill").GetComponent<Image>();
-        
-        AllLines.Add(LineCoreShaman);
-        AllLines.Add(LineCoreShaman2);
-        AllLines.Add(LineCoreShaman3);
-        AllLines.Add(LineCoreShaman4);
-        AllLines.Add(LineShaman1Right);
-        AllLines.Add(LineShaman1Left);
-        AllLines.Add(LineShaman2Right);
-        AllLines.Add(LineShaman2Left);
-        AllLines.Add(LineShaman3Right);
-        AllLines.Add(LineShaman3RightUp);
-        AllLines.Add(LineShaman4Left);
-        AllLines.Add(LineShaman4LeftUp);
     }
     private static void SetLineSage(Transform lines)
     {
@@ -451,19 +398,6 @@ public static class LoadUI
         LineSage3RightUp = lineSage.Find("$line_3/$part_right_up/LineFill").GetComponent<Image>();
         LineSage4Left = lineSage.Find("$line_4/$part_left/LineFill").GetComponent<Image>();
         LineSage4LeftUp = lineSage.Find("$line_4/$part_left_up/LineFill").GetComponent<Image>();
-        
-        AllLines.Add(LineCoreSage);
-        AllLines.Add(LineCoreSage2);
-        AllLines.Add(LineCoreSage3);
-        AllLines.Add(LineCoreSage4);
-        AllLines.Add(LineSage1Right);
-        AllLines.Add(LineSage1Left);
-        AllLines.Add(LineSage2Right);
-        AllLines.Add(LineSage2Left);
-        AllLines.Add(LineSage3Right);
-        AllLines.Add(LineSage3RightUp);
-        AllLines.Add(LineSage4Left);
-        AllLines.Add(LineSage4LeftUp);
     }
     private static void SetLineDown(Transform lines)
     {
@@ -481,19 +415,6 @@ public static class LoadUI
         LineDown3RightDown = lineDown.Find("$line_3/$part_right_up/LineFill").GetComponent<Image>();
         LineDown4Left = lineDown.Find("$line_4/$part_left/LineFill").GetComponent<Image>();
         LineDown4LeftDown = lineDown.Find("$line_4/$part_left_up/LineFill").GetComponent<Image>();
-        
-        AllLines.Add(LineCoreDown);
-        AllLines.Add(LineCoreDown2);
-        AllLines.Add(LineCoreDown3);
-        AllLines.Add(LineCoreDown4);
-        AllLines.Add(LineDown1Right);
-        AllLines.Add(LineDown1Left);
-        AllLines.Add(LineDown2Right);
-        AllLines.Add(LineDown2Left);
-        AllLines.Add(LineDown3Right);
-        AllLines.Add(LineDown3RightDown);
-        AllLines.Add(LineDown4Left);
-        AllLines.Add(LineDown4LeftDown);
     }
     private static void SetLineRanger(Transform lines)
     {
@@ -511,19 +432,6 @@ public static class LoadUI
         LineRanger3RightUp = lineRanger.Find("$line_3/$part_right_up/LineFill").GetComponent<Image>();
         LineRanger4Left = lineRanger.Find("$line_4/$part_left/LineFill").GetComponent<Image>();
         LineRanger4LeftUp = lineRanger.Find("$line_4/$part_left_up/LineFill").GetComponent<Image>();
-        
-        AllLines.Add(LineCoreRanger);
-        AllLines.Add(LineCoreRanger2);
-        AllLines.Add(LineCoreRanger3);
-        AllLines.Add(LineCoreRanger4);
-        AllLines.Add(LineRanger1Right);
-        AllLines.Add(LineRanger1Left);
-        AllLines.Add(LineRanger2Right);
-        AllLines.Add(LineRanger2Left);
-        AllLines.Add(LineRanger3Right);
-        AllLines.Add(LineRanger3RightUp);
-        AllLines.Add(LineRanger4Left);
-        AllLines.Add(LineRanger4LeftUp);
     }
     private static void SetLineRogue(Transform lines)
     {
@@ -541,19 +449,6 @@ public static class LoadUI
         LineRogue3RightUp = lineRogue.Find("$line_3/$part_right_up/LineFill").GetComponent<Image>();
         LineRogue4Left = lineRogue.Find("$line_4/$part_left/LineFill").GetComponent<Image>();
         LineRogue4LeftUp = lineRogue.Find("$line_4/$part_left_up/LineFill").GetComponent<Image>();
-        
-        AllLines.Add(LineCoreRogue);
-        AllLines.Add(LineCoreRogue2);
-        AllLines.Add(LineCoreRogue3);
-        AllLines.Add(LineCoreRogue4);
-        AllLines.Add(LineRogue1Right);
-        AllLines.Add(LineRogue1Left);
-        AllLines.Add(LineRogue2Right);
-        AllLines.Add(LineRogue2Left);
-        AllLines.Add(LineRogue3Right);
-        AllLines.Add(LineRogue3RightUp);
-        AllLines.Add(LineRogue4Left);
-        AllLines.Add(LineRogue4LeftUp);
     }
     private static void SetLineWarrior(Transform lines)
     {
@@ -571,20 +466,6 @@ public static class LoadUI
         LineWarrior3RightUp = lineWarrior.Find("$line_3/$part_right_up/LineFill").GetComponent<Image>();
         LineWarrior4Left = lineWarrior.Find("$line_4/$part_left/LineFill").GetComponent<Image>();
         LineWarrior4LeftUp = lineWarrior.Find("$line_4/$part_left_up/LineFill").GetComponent<Image>();
-        
-        AllLines.Add(LineCoreWarrior);
-        AllLines.Add(LineCoreWarrior2);
-        AllLines.Add(LineCoreWarrior3);
-        AllLines.Add(LineCoreWarrior4);
-
-        AllLines.Add(LineWarrior1Right);
-        AllLines.Add(LineWarrior1Left);
-        AllLines.Add(LineWarrior2Right);
-        AllLines.Add(LineWarrior2Left);
-        AllLines.Add(LineWarrior3Right);
-        AllLines.Add(LineWarrior3RightUp);
-        AllLines.Add(LineWarrior4Left);
-        AllLines.Add(LineWarrior4LeftUp);
     }
     private static void SetLineRadial(Transform lines)
     {
@@ -597,15 +478,6 @@ public static class LoadUI
         LineRadial6 = lineRadial.Find("$line_6/$part_line/LineFill").GetComponent<Image>();
         LineRadial7 = lineRadial.Find("$line_7/$part_line/LineFill").GetComponent<Image>();
         LineRadial8 = lineRadial.Find("$line_8/$part_line/LineFill").GetComponent<Image>();
-        
-        AllLines.Add(LineRadial1);
-        AllLines.Add(LineRadial2);
-        AllLines.Add(LineRadial3);
-        AllLines.Add(LineRadial4);
-        AllLines.Add(LineRadial5);
-        AllLines.Add(LineRadial6);
-        AllLines.Add(LineRadial7);
-        AllLines.Add(LineRadial8);
     }
     #endregion
     private static void LoadCloseButton()
@@ -652,10 +524,6 @@ public static class LoadUI
         ResetTalents();
         ExperienceBar.UpdateExperienceBar();
     }
-    // private static void SetAllLines(float value)
-    // {
-    //     foreach (Image line in AllLines) line.fillAmount = value;
-    // }
     private static void RemoveStatusEffects()
     {
         List<StatusEffect> effects = Player.m_localPlayer.GetSEMan().GetStatusEffects().FindAll(x => StatusEffectManager.IsClassEffect(x.name));
@@ -670,7 +538,6 @@ public static class LoadUI
         SpellBook.m_abilities.Clear();
         RemoveStatusEffects();
         TalentButton.ClearAll();
-        // SetAllLines(0f);
         FillLines.Reset();
         PlayerManager.ResetPlayerData();
         CharacteristicManager.ResetCharacteristics();
@@ -682,8 +549,7 @@ public static class LoadUI
     }
     private static void UnEquipWeapons()
     {
-        Player player = Player.m_localPlayer;
-        if (!player) return;
+        if (Player.m_localPlayer is not { } player) return;
         ItemDrop.ItemData? right = player.GetRightItem();
         ItemDrop.ItemData? left = player.GetLeftItem();
         if (right != null) player.UnequipItem(right);
@@ -693,8 +559,7 @@ public static class LoadUI
     {
         TalentButton.m_allButtons.Clear();
         Transform talents = Utils.FindChild(SkillTree_UI.transform, "$part_talents");
-        Button[] buttons = talents.GetComponentsInChildren<Button>();
-        foreach (Button button in buttons)
+        foreach (Button button in talents.GetComponentsInChildren<Button>())
         {
             button.gameObject.AddComponent<TalentButton>().Init();
             AddSFX(button);
@@ -752,7 +617,6 @@ public static class LoadUI
     {
         Transform? BardTalents = Utils.FindChild(SkillTree_UI.transform, "$part_bard_talents");
         Transform? BardCharacteristics = Utils.FindChild(SkillTree_UI.transform, "$part_bard_characteristics");
-        // these lines were miss-associated, fixed
         TalentButton.SetButton(BardCharacteristics, "$button_bard_1", new(){{"$button_center", LineCoreBard}, {"$button_bard_talent_1", LineBard1Right}, {"$button_shaman_talent_1", LineBard1Left}},  "Bard1");
         TalentButton.SetButton(BardCharacteristics, "$button_bard_2", new(){{"$button_bard_1", LineCoreBard2}},  "Bard2");
         TalentButton.SetButton(BardCharacteristics, "$button_bard_3", new(){{"$button_bard_2", LineBard2Right}},  "Bard3");
@@ -881,12 +745,9 @@ public static class LoadUI
     {
         Transform WarriorTalents = Utils.FindChild(SkillTree_UI.transform, "$part_warrior_talents");
         Transform WarriorCharacteristics = Utils.FindChild(SkillTree_UI.transform, "$part_warrior_characteristics");
-        // these were miss-associated, fixed
         TalentButton.SetButton(WarriorCharacteristics, "$button_warrior_1", new()
         {
             {"$button_center", LineCoreWarrior},
-            // {"$button_rogue_talent_1", LineWarrior1Left},
-            // {"$button_warrior_talent_1", LineWarrior1Right}
             {"$button_warrior_talent_1", LineWarrior1Left},
             {"$button_rogue_talent_1", LineWarrior1Right}
         },  "Warrior1");
@@ -931,13 +792,14 @@ public static class LoadUI
         if (!TalentButton.m_buttonOriginalSpriteMap.TryGetValue(button, out Sprite originalSprite)) return;
         if (!TalentManager.m_talentsByButton.TryGetValue(talent.m_button, out Talent original)) return;
         if (!TalentManager.m_altTalentsByButton.TryGetValue(talent.m_button, out Talent alt)) return;
-        if (talent.m_type is TalentType.Passive && talent.m_statusEffectHash != 0)
+        if (talent.m_type is TalentType.Passive && talent.m_status is { } status)
         {
-            Player.m_localPlayer.GetSEMan().RemoveStatusEffect(talent.m_statusEffectHash);
+            Player.m_localPlayer.GetSEMan().RemoveStatusEffect(status.m_nameHash);
         }
         if (!revert)
         {
-            TalentButton.RemapButton(talent.m_button, TalentButton.m_fillLineMap[button], alt.m_key);
+            TalentButton.RemapButton(talent.m_button, FillLines.m_fillLineMap[button], alt.m_key);
+
             if (talent.m_altButtonSprite != null)
             {
                 button.SetButtonIcons(talent.m_altButtonSprite);
@@ -954,13 +816,13 @@ public static class LoadUI
                     SpellBook.AddToSpellBook(alt);
                     break;
                 case TalentType.Passive:
-                    if (talent.m_statusEffectHash != 0) Player.m_localPlayer.GetSEMan().AddStatusEffect(talent.m_statusEffectHash);
+                    if (talent.m_status is { } passiveStatus) Player.m_localPlayer.GetSEMan().AddStatusEffect(passiveStatus.NameHash());
                     break;
             }
         }
         else
         {
-            TalentButton.RemapButton(talent.m_button, TalentButton.m_fillLineMap[button], original.m_key);
+            TalentButton.RemapButton(talent.m_button, FillLines.m_fillLineMap[button], original.m_key);
             button.SetButtonIcons(originalSprite);
             if (!PlayerManager.m_playerTalents.ContainsKey(alt.m_key)) return;
             PlayerManager.m_playerTalents.Remove(alt.m_key);
@@ -974,16 +836,10 @@ public static class LoadUI
                     SpellBook.AddToSpellBook(original);
                     break;
                 case TalentType.Passive:
-                    if (original.m_statusEffectHash != 0) Player.m_localPlayer.GetSEMan().AddStatusEffect(original.m_statusEffectHash);
+                    if (talent.m_status is { } passiveStatus)
+                        Player.m_localPlayer.GetSEMan().AddStatusEffect(passiveStatus.NameHash());
                     break;
             }
-        }
-    }
-    public static void SetLines(Dictionary<string, Image> validatedLines)
-    {
-        foreach (KeyValuePair<string, Image> line in validatedLines)
-        {
-            line.Value.fillAmount = 1f;
         }
     }
     public static void PurchaseTalent(Talent ability)
@@ -995,10 +851,8 @@ public static class LoadUI
 
     public static void AddStatusEffect(Talent ability)
     {
-        if (ability.m_statusEffectHash != 0)
-        {
-            Player.m_localPlayer.GetSEMan().AddStatusEffect(ability.m_statusEffectHash);
-        }
+        if (ability.m_status is not { } status) return;
+        Player.m_localPlayer.GetSEMan().AddStatusEffect(status.NameHash());
     }
 
     public static void CheckMonkeyWrench(Talent ability)

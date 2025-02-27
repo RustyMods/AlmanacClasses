@@ -17,9 +17,9 @@ public static class ObjectDBPatches
             LoadedAssets.InitVFX();
             RavenTutorialManager.InitCustomTutorials();
             MonkeyWrench.InitTwoHandedWeapons();
+            TalentManager.InitializeTalents();
             StatusEffectManager.InitStatusEffects(__instance);
             ExperienceManager.LoadExperienceOrbs();
-            TalentManager.InitializeTalents();
         }
     }
 }

@@ -76,8 +76,8 @@ public class SE_SongOfVitality : StatusEffect
         foreach (Player player in m_players)
         {
             if (player == null || player.IsDead()) continue;
-            if (player.GetSEMan().HaveStatusEffect(name.GetStableHashCode())) continue;
-            StatusEffect effect = player.GetSEMan().AddStatusEffect(name.GetStableHashCode());
+            if (player.GetSEMan().HaveStatusEffect(NameHash())) continue;
+            StatusEffect effect = player.GetSEMan().AddStatusEffect(NameHash());
             if (effect is SE_SongOfVitality song)
             {
                 song.m_modifier = m_talent?.GetHealthRegen(m_talent.GetLevel()) ?? 1f;

@@ -103,10 +103,10 @@ public static class PlayerManager
         foreach (KeyValuePair<string, Talent> talent in m_playerTalents)
         {
             if (talent.Value.m_type is not TalentType.Passive) continue;
-            if (talent.Value.m_statusEffectHash == 0) continue;
+            if (talent.Value.m_status is not { } status) continue;
             if (!talent.Value.m_passiveActive) continue;
-            if (seMan.GetStatusEffect(talent.Value.m_statusEffectHash)) continue;
-            seMan.AddStatusEffect(talent.Value.m_statusEffectHash);
+            if (seMan.GetStatusEffect(status.NameHash())) continue;
+            seMan.AddStatusEffect(status.NameHash());
         }
 
         if (seMan.GetStatusEffect("SE_Characteristic".GetStableHashCode())) return;
@@ -181,7 +181,7 @@ public static class PlayerManager
         foreach (var status in Player.m_localPlayer.GetSEMan().GetStatusEffects())
         {
             if (!StatusEffectManager.IsClassEffect(status.name)) continue;
-            if (!TalentManager.m_talentsByStatusEffect.TryGetValue(status.m_nameHash, out Talent talent)) continue;
+            if (!TalentManager.m_talentsByStatusEffect.TryGetValue(status.NameHash(), out Talent talent)) continue;
             if (talent.m_values == null) continue;
             output += (int)talent.GetHealth(talent.GetLevel());
         }

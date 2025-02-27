@@ -6,6 +6,7 @@ namespace AlmanacClasses.UI;
 public class FillLines
 {
     public static readonly Dictionary<Image, FillLines> m_allLines = new();
+    public static readonly Dictionary<TalentButton, Dictionary<string, Image>> m_fillLineMap = new();
     private readonly Image m_image;
     private readonly List<TalentButton> m_buttons = new List<TalentButton>();
 

@@ -1,9 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AlmanacClasses.Classes.Abilities.Ranger;
-using AlmanacClasses.Classes.Abilities.Sage;
-using AlmanacClasses.Classes.Abilities.Shaman;
 using AlmanacClasses.Managers;
 using AlmanacClasses.UI;
 using BepInEx.Configuration;
@@ -125,53 +122,15 @@ public static class AbilityManager
     private static bool CheckStatusEffect(Talent talent)
     {
         if (talent.m_type is not TalentType.StatusEffect) return false;
-        if (talent.m_statusEffectHash == 0) return false;
-        if (Player.m_localPlayer.GetSEMan().HaveStatusEffect(talent.m_statusEffectHash)) return false;
-        Player.m_localPlayer.GetSEMan().AddStatusEffect(talent.m_statusEffectHash);
+        if (talent.m_status is not { } status) return false;
+        if (Player.m_localPlayer.GetSEMan().HaveStatusEffect(status.NameHash())) return false;
+        Player.m_localPlayer.GetSEMan().AddStatusEffect(status.NameHash());
         return true;
     }
     private static bool CheckAbilityName(Talent talent)
     {
         if (talent.m_type is not TalentType.Ability) return false;
-        HitData.DamageTypes damages = talent.GetDamages(talent.GetLevel());
-        switch (talent.m_ability)
-        {
-            case "TriggerStoneThrow":
-                StoneThrow.TriggerStoneThrow(damages);
-                break;
-            case "TriggerRootBeam":
-                RootBeam.TriggerRootBeam(damages);
-                break;
-            case "TriggerMeteor":
-                MeteorStrike.TriggerMeteor(damages);
-                break;
-            case "TriggerLightningAOE":
-                if (!CallOfLightning.TriggerLightningAOE(talent)) return false;
-                break;
-            case "TriggerGoblinBeam":
-                GoblinBeam.TriggerGoblinBeam(damages);
-                break;
-            case "TriggerHunterSpawn":
-                GameObject? rangerCreature = talent.GetCreatures(Player.m_localPlayer.GetCurrentBiome());
-                if (rangerCreature is null) break;
-                RangerSpawn.TriggerHunterSpawn(rangerCreature, talent);
-                break;
-            case "TriggerShamanSpawn":
-                GameObject? creature = ZNetScene.instance.GetPrefab("Ghost");
-                if (creature is null) break;
-                ShamanSpawn.TriggerShamanSpawn(creature, talent);
-                break;
-            case "TriggerSpawnTrap":
-                RangerTrap.TriggerSpawnTrap(damages, talent.GetLength(talent.GetLevel()));
-                break;
-            case "TriggerHeal":
-                if (!ShamanHeal.TriggerHeal(talent.GetHealAmount(talent.GetLevel()))) return false;
-                break;
-            case "TriggerIceBreath":
-                IceBreath.TriggerIceBreath(damages);
-                break;
-        }
-        return true;
+        return talent.m_ability is { } action && action.Invoke();
     }
     private static bool CheckCost(Talent talent) => CheckEitrCost(talent) && CheckStaminaCost(talent) && CheckHealthCost(talent);
 

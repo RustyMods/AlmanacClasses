@@ -154,7 +154,9 @@ public static class DualWield
             leftItem = null;
             isDualWielding = false;
             if (!PlayerManager.m_playerTalents.TryGetValue("DualWield", out Talent talent)) return;
-            if (__instance.GetSEMan().RemoveStatusEffect(talent.m_statusEffectHash)) talent.m_passiveActive = false;
+            if (talent.m_status is { } status && __instance.GetSEMan().RemoveStatusEffect(status.NameHash()))
+                talent.m_passiveActive = false;
+            // if (__instance.GetSEMan().RemoveStatusEffect(talent.m_statusEffectHash)) talent.m_passiveActive = false;
         }
     }
 

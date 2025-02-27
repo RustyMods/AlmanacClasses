@@ -87,7 +87,6 @@ public static class MonkeyWrench
             };
             TwoHandedWeapons[item] = data;
         }
-        
     }
     public static void ModifyTwoHandedWeapons()
     {

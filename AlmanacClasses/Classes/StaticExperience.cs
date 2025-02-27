@@ -166,10 +166,7 @@ public static class StaticExperience
     {
         private static void Postfix(Destructible __instance, HitData hit)
         {
-            // if (!__instance.m_nview.IsOwner()) return;
-            Character attacker = hit.GetAttacker();
-            if (attacker == null) return;
-            if (attacker is not Player player) return;
+            if (hit.GetAttacker() is not Player player) return;
             if (!hit.CheckToolTier(__instance.m_minToolTier)) return;
             if (hit.GetTotalDamage() < 1) return;
             CheckExperienceMap(__instance.name, __instance.transform.position, player);
@@ -181,9 +178,7 @@ public static class StaticExperience
     {
         private static void Postfix(MineRock __instance, HitData hit)
         {
-            Character attacker = hit.GetAttacker();
-            if (attacker == null) return;
-            if (attacker is not Player player) return;
+            if (hit.GetAttacker() is not Player player) return;
             if (!hit.CheckToolTier(__instance.m_minToolTier)) return;
             if (hit.GetTotalDamage() < 1) return; 
             CheckExperienceMap(__instance.name, __instance.transform.position, player);
@@ -195,9 +190,7 @@ public static class StaticExperience
     {
         private static void Postfix(MineRock5 __instance, HitData hit)
         {
-            Character attacker = hit.GetAttacker();
-            if (attacker == null) return;
-            if (attacker is not Player player) return;
+            if (hit.GetAttacker() is not Player player) return;
             if (!hit.CheckToolTier(__instance.m_minToolTier)) return;
             if (hit.GetTotalDamage() < 1) return;
             CheckExperienceMap(__instance.GetHoverName(), __instance.transform.position, player);
@@ -209,9 +202,7 @@ public static class StaticExperience
     {
         private static void Postfix(TreeBase __instance, HitData hit)
         {
-            Character attacker = hit.GetAttacker();
-            if (attacker == null) return;
-            if (attacker is not Player player) return;
+            if (hit.GetAttacker() is not Player player) return;
             if (!hit.CheckToolTier(__instance.m_minToolTier)) return;
             if (hit.GetTotalDamage() < 1) return;
             CheckExperienceMap(__instance.name, __instance.transform.position, player);
@@ -223,9 +214,7 @@ public static class StaticExperience
     {
         private static void Postfix(TreeLog __instance, HitData hit)
         {
-            var attacker = hit.GetAttacker();
-            if (attacker == null) return;
-            if (attacker is not Player player) return;
+            if (hit.GetAttacker() is not Player player) return;
             if (!hit.CheckToolTier(__instance.m_minToolTier)) return;
             if (hit.GetTotalDamage() < 1) return; 
             CheckExperienceMap(__instance.name, __instance.transform.position, player);
@@ -238,8 +227,7 @@ public static class StaticExperience
         private static void Postfix(Tameable __instance)
         {
             if (!__instance.m_nview.IsOwner()) return;
-            Player closestPlayer = Player.GetClosestPlayer(__instance.transform.position, 30f);
-            if (!closestPlayer) return;
+            if (Player.GetClosestPlayer(__instance.transform.position, 30f) is not {} closestPlayer) return;
             AddExperience(closestPlayer, 10 * __instance.m_character.m_level, __instance.transform.position);
         }
     }
@@ -259,11 +247,8 @@ public static class StaticExperience
     {
         private static void Postfix(Fish __instance)
         {
-            if (!__instance) return;
-            if (__instance.m_fishingFloat == null) return;
-            Character owner = __instance.m_fishingFloat.GetOwner();
-            if (owner == null) return;
-            if (owner is not Player player) return;
+            if (!__instance || __instance.m_fishingFloat == null) return;
+            if (__instance.m_fishingFloat.GetOwner() is not Player player) return;
             CheckExperienceMap(__instance.name, __instance.m_fishingFloat.transform.position, player);
         }
     }

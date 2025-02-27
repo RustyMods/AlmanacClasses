@@ -85,25 +85,14 @@ public static class CommandsManager
                     if (!creature.GetComponent<MonsterAI>()) return false;
                     RangerSpawn.TriggerHunterSpawn(creature, level);
                     return true;
-                }, optionsFetcher: args =>
+                }, optionsFetcher: () =>
                 {
                     if (!ZNetScene.instance) return new();
                     List<string> list = (from prefab in ZNetScene.instance.m_prefabs
                         where prefab.GetComponent<Character>()
                         select prefab.name).ToList();
                     list.Sort();
-                    string currentSearch = args[2];
-
-                    List<string> output;
-                    if (!currentSearch.IsNullOrWhiteSpace())
-                    {
-                        int indexOf = list.IndexOf(currentSearch);
-                        output = indexOf != -1 ? list.GetRange(indexOf, list.Count - indexOf) : list;
-                        output = output.FindAll(x => x.ToLower().Contains(currentSearch.ToLower()));
-                    }
-                    else output = list;
-
-                    return output;
+                    return list;
                 });
             TalentCommand emote = new TalentCommand("emote", "[name<string>] runs custom emote, if you use talents emote list, it will print the list of available emotes",
                 args =>
@@ -129,7 +118,7 @@ public static class CommandsManager
                     }
 
                     return true;
-                }, optionsFetcher: args =>
+                }, optionsFetcher: () =>
                 {
                     if (!Player.m_localPlayer) return new();
                     List<string> list = new();
@@ -140,18 +129,7 @@ public static class CommandsManager
                     }
                     list.Add("list");
                     list.Sort();
-                    List<string> output;
-                    string currentSearch = args[2];
-
-                    if (!currentSearch.IsNullOrWhiteSpace())
-                    {
-                        int indexOf = list.IndexOf(currentSearch);
-                        output = indexOf != -1 ? list.GetRange(indexOf, list.Count - indexOf) : list;
-                        output = output.FindAll(x => x.ToLower().Contains(currentSearch.ToLower()));
-                    }
-                    else output = list;
-
-                    return output;
+                    return list;
                 });
             TalentCommand give = new TalentCommand("give", "[playerName<string>] [amount<int>] gives player experience, admin only, no cost must be enabled",
                 args =>
@@ -177,26 +155,15 @@ public static class CommandsManager
                     AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo("Gave " + player.GetHoverName() + " " + amount +
                                                                       " experience");
                     return true;
-                }, optionsFetcher: args =>
+                }, optionsFetcher: () =>
                 {
                     var list = Player.GetAllPlayers().Select(player => player.GetHoverName()).ToList();
                     list.Sort();
-                    List<string> output;
-                    string currentSearch = args[2];
-
-                    if (!currentSearch.IsNullOrWhiteSpace())
-                    {
-                        int indexOf = list.IndexOf(currentSearch);
-                        output = indexOf != -1 ? list.GetRange(indexOf, list.Count - indexOf) : list;
-                        output = output.FindAll(x => x.ToLower().Contains(currentSearch.ToLower()));
-                    }
-                    else output = list;
-
-                    return output;
+                    return list;
                 });
             TalentCommand size = new TalentCommand("size",
                 "prints to console the kilobyte size of almanac class system data saved on player file",
-                args =>
+                _ =>
                 {
                     if (!Player.m_localPlayer) return false;
                     if (!Player.m_localPlayer.m_customData.TryGetValue(PlayerManager.m_playerDataKey, out string data))
@@ -210,7 +177,7 @@ public static class CommandsManager
                     AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo("Almanac Classes data size: " + kilobytes + " kilobytes");
                     return true;
                 });
-            TalentCommand save = new TalentCommand("save", "saves almanac class data to player", args =>
+            TalentCommand save = new TalentCommand("save", "saves almanac class data to player", _ =>
             {
                 PlayerManager.SavePlayerData();
                 AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo("Client: Saved player data");
@@ -236,12 +203,21 @@ public static class CommandsManager
             if (!m_commands.TryGetValue(strArray[1], out TalentCommand command)) return true;
             if (command.HasOptions() && strArray.Length == 3)
             {
-                List<string> list = command.FetchOptions(strArray);
-                if (list.Count <= 0) __instance.m_search.text = command.m_description;
+                List<string> list = command.FetchOptions();
+                List<string> filteredList;
+                string currentSearch = strArray[2];
+                if (!currentSearch.IsNullOrWhiteSpace())
+                {
+                    int indexOf = list.IndexOf(currentSearch);
+                    filteredList = indexOf != -1 ? list.GetRange(indexOf, list.Count - indexOf) : list;
+                    filteredList = filteredList.FindAll(x => x.ToLower().Contains(currentSearch.ToLower()));
+                }
+                else filteredList = list;
+                if (filteredList.Count <= 0) __instance.m_search.text = command.m_description;
                 else
                 {
                     __instance.m_lastSearch.Clear();
-                    __instance.m_lastSearch.AddRange(list);
+                    __instance.m_lastSearch.AddRange(filteredList);
                     __instance.m_lastSearch.Remove(word);
                     __instance.m_search.text = "";
                     int maxShown = 10;
@@ -269,11 +245,11 @@ public static class CommandsManager
         public readonly string m_description;
         public readonly bool m_isSecret;
         private readonly Func<Terminal.ConsoleEventArgs, bool> m_command;
-        private readonly Func<string[], List<string>>? m_optionFetcher;
+        private readonly Func<List<string>>? m_optionFetcher;
         public bool Run(Terminal.ConsoleEventArgs args) => m_command(args);
-        public List<string> FetchOptions(string[] args) => m_optionFetcher == null ? new() :  m_optionFetcher(args);
+        public List<string> FetchOptions() => m_optionFetcher == null ? new() :  m_optionFetcher();
         public bool HasOptions() => m_optionFetcher != null;
-        public TalentCommand(string input, string description, Func<Terminal.ConsoleEventArgs, bool> command, Func<string[], List<string>>? optionsFetcher = null, bool isSecret = false)
+        public TalentCommand(string input, string description, Func<Terminal.ConsoleEventArgs, bool> command, Func<List<string>>? optionsFetcher = null, bool isSecret = false)
         {
             m_input = input;
             m_description = description;

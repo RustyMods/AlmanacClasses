@@ -35,7 +35,9 @@ public static class Survivor
             if (__result > 0.0) return;
             if (PlayerManager.m_playerTalents.TryGetValue("Survivor", out Talent talent))
             {
-                if (__instance.GetSEMan().HaveStatusEffect(talent.m_statusEffectHash)) return;
+                if (talent.m_status is not { } status) return;
+                if (__instance.GetSEMan().HaveStatusEffect(status.NameHash())) return;
+                // if (__instance.GetSEMan().HaveStatusEffect(talent.m_statusEffectHash)) return;
                 float chance = talent.GetChance(talent.GetLevel());
                 float random = Random.Range(0, 101f);
                 if (random < chance)
@@ -43,7 +45,8 @@ public static class Survivor
                     float quarter = __instance.GetMaxHealth() / 4f;
                     __instance.Heal(quarter);
                     __result = quarter;
-                    __instance.GetSEMan().AddStatusEffect(talent.m_statusEffectHash);
+                    __instance.GetSEMan().AddStatusEffect(status.NameHash());
+                    // __instance.GetSEMan().AddStatusEffect(talent.m_statusEffectHash);
                 }
             }
         }

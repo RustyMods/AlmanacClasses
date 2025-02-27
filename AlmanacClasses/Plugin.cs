@@ -24,7 +24,7 @@ namespace AlmanacClasses
         internal const string ModVersion = "0.5.8";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
-        private static readonly string ConfigFileName = ModGUID + ".cfg";
+        private const string ConfigFileName = ModGUID + ".cfg";
         private static readonly string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
         internal static string ConnectionError = "";
         private readonly Harmony _harmony = new(ModGUID);
@@ -35,6 +35,7 @@ namespace AlmanacClasses
         public static readonly AssetBundle _AssetBundle = GetAssetBundle("classesbundle");
         public static AlmanacClassesPlugin _Plugin = null!;
         public static GameObject _Root = null!;
+        
         public static ConfigEntry<LoadUI.FontOptions> _Font = null!;
         private static ConfigEntry<Toggle> _serverConfigLocked = null!;
         public static ConfigEntry<int> _PrestigeThreshold = null!;
@@ -112,11 +113,7 @@ namespace AlmanacClasses
 
             TalentBook.UpdateTalentBookUI();
             AbilityManager.CheckInput();
-
-            // if (SpellBarMove.updateElement) SpellBarMove.UpdateElement();
-            
             PlayerManager.UpdatePassiveEffects(dt);
-
             if (_ShowUIEnabled.Value is Toggle.On)
             {
                 if (Input.GetKeyDown(_ShowUIKey.Value)) TalentBook.ShowUI();
@@ -267,7 +264,7 @@ namespace AlmanacClasses
         private void InitKeyCodeConfigs()
         {
             _SpellAlt = config("3 - Spell Keys", "Alt Key", KeyCode.LeftAlt, "Set the alt key code, If None, then it ignores", false);
-            _SpellAlt.SettingChanged += (sender, args) =>
+            _SpellAlt.SettingChanged += (_, _) =>
             {
                 if (Localization.instance == null) return;
                 LoadUI.SpellBarHotKeyTooltip.text = Localization.instance.Localize($"$info_spellbook_key: <color=orange>{_SpellAlt.Value}</color>");

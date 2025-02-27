@@ -16,7 +16,7 @@ public class TalentButton : MonoBehaviour
     public static readonly List<Selectable> m_selectables = new();
     public static readonly List<TalentButton> m_checkedTalents = new();
     public static readonly Dictionary<string, TalentButton> m_allButtons = new();
-    public static readonly Dictionary<TalentButton, Dictionary<string, Image>> m_fillLineMap = new();
+    // public static readonly Dictionary<TalentButton, Dictionary<string, Image>> m_fillLineMap = new();
     public static readonly Dictionary<TalentButton, Sprite> m_buttonOriginalSpriteMap = new();
     public static TalentButton m_centerButton = null!;
     
@@ -188,12 +188,14 @@ public class TalentButton : MonoBehaviour
     public static void SetButton(Transform parent, string name, Dictionary<string, Image> lines, string key)
     {
         TalentButton talentButton = parent.Find(name).GetComponent<TalentButton>();
-        m_fillLineMap[talentButton] = lines;
+        // m_fillLineMap[talentButton] = lines;
         talentButton.m_fillLines = lines;
         talentButton.m_button.onClick.AddListener(() =>
         {
             ButtonEvent(talentButton, lines, key);
         });
+
+        FillLines.m_fillLineMap[talentButton] = lines;
 
         foreach (var kvp in lines)
         {

@@ -151,6 +151,7 @@
         <Compile Include="Classes\Abilities\Core\SE_Sailor.cs" />
         <Compile Include="Classes\Abilities\Core\SE_TreasureHunter.cs" />
         <Compile Include="Classes\Abilities\Core\Trader.cs" />
+        <Compile Include="Classes\Abilities\Friendly.cs" />
         <Compile Include="Classes\Abilities\Ranger\RangerSpawn.cs" />
         <Compile Include="Classes\Abilities\Ranger\RangerTrap.cs" />
         <Compile Include="Classes\Abilities\Ranger\SE_Hunter.cs" />

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace AlmanacClasses.Classes
+namespace AlmanacClasses.Classes.Abilities
 {
     public static class ClassUtilities
     {

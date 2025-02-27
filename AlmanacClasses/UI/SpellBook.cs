@@ -160,16 +160,15 @@ public class SpellBook : MonoBehaviour
             if (!abilityData.m_go.TryGetComponent(out SpellElement component)) return;
             if (AbilityManager.m_cooldownMap.TryGetValue(abilityData.m_data.m_key, out float ratio))
             {
-                if (abilityData.m_data.m_statusEffectHash == 0)
+                if (abilityData.m_data.m_status is not { } status)
                 {
                     component.SetGrayAmount(0f);
                 }
                 else
                 {
-                    if (Player.m_localPlayer.GetSEMan().HaveStatusEffect(abilityData.m_data.m_statusEffectHash))
+                    if (Player.m_localPlayer.GetSEMan().HaveStatusEffect(status.NameHash()))
                     {
-                        StatusEffect? effect = Player.m_localPlayer.GetSEMan()
-                            .GetStatusEffect(abilityData.m_data.m_statusEffectHash);
+                        StatusEffect? effect = Player.m_localPlayer.GetSEMan().GetStatusEffect(status.NameHash());
                         float time = effect.GetRemaningTime();
                         float normal = Mathf.Clamp01(time / effect.m_ttl);
                         component.SetGrayAmount(time > 0 ? normal : 0f);
@@ -179,6 +178,25 @@ public class SpellBook : MonoBehaviour
                         component.SetGrayAmount(0f);
                     }
                 }
+                // if (abilityData.m_data.m_statusEffectHash == 0)
+                // {
+                //     component.SetGrayAmount(0f);
+                // }
+                // else
+                // {
+                //     if (Player.m_localPlayer.GetSEMan().HaveStatusEffect(abilityData.m_data.m_statusEffectHash))
+                //     {
+                //         StatusEffect? effect = Player.m_localPlayer.GetSEMan()
+                //             .GetStatusEffect(abilityData.m_data.m_statusEffectHash);
+                //         float time = effect.GetRemaningTime();
+                //         float normal = Mathf.Clamp01(time / effect.m_ttl);
+                //         component.SetGrayAmount(time > 0 ? normal : 0f);
+                //     }
+                //     else
+                //     {
+                //         component.SetGrayAmount(0f);
+                //     }
+                // }
 
                 component.SetFillAmount(ratio);
                 int cooldownTime = (int)(abilityData.m_data.GetCooldown(abilityData.m_data.GetLevel()) * ratio);

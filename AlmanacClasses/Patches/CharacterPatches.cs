@@ -16,7 +16,7 @@ public static class CharacterPatches
             if (__instance.IsPlayer()) return;
             if (!__instance.m_nview) return;
             if (!__instance.m_nview.IsValid()) return;
-            if (__instance.m_nview.GetZDO().GetBool(Classes.Abilities.SpawnSystem.FriendlyKey)) return;
+            if (ExperienceManager.IsFriendlyCreature(__instance)) return;
             ExperienceManager.AddExperience(__instance);
             ExperienceManager.DropOrb(__instance);
             ExperienceManager.SetDefeatKey(__instance);

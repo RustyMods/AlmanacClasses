@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using AlmanacClasses.Classes.Abilities;
 using AlmanacClasses.Classes.Abilities.Core;
 using AlmanacClasses.FileSystem;
 using AlmanacClasses.LoadAssets;
@@ -226,8 +227,7 @@ public static class ExperienceManager
     {
         private static void Postfix(Player __instance)
         {
-            if (!__instance) return;
-            if (__instance != Player.m_localPlayer) return;
+            if (!__instance || __instance != Player.m_localPlayer) return;
             LoseExperience();
         }
     }
@@ -286,17 +286,8 @@ public static class ExperienceManager
         foreach (Player player in Player.GetAllPlayers())
         {
             if (!player.m_nview.IsValid()) continue;
-            if (player.m_nview.IsOwner())
-            {
-                PlayerManager.m_tempPlayerData.m_experience += amount;
-            }
-            else
-            {
-                player.m_nview.InvokeRPC(nameof(RPC_AddExperience), amount, instance.transform.position);
-            }
+            player.m_nview.InvokeRPC(nameof(RPC_AddExperience), amount, instance.transform.position);
         }
-        DisplayText.ShowText(Color.cyan, instance.transform.position, $"+{amount} $text_xp");
-        ExperienceBar.UpdateExperienceBar();
     }
 
     public static void Command_GiveExperience(Player player, int amount)
@@ -460,8 +451,7 @@ public static class ExperienceManager
             if (AlmanacClassesPlugin._DisplayExperience.Value is AlmanacClassesPlugin.Toggle.Off) return;
             foreach (KeyValuePair<Character, EnemyHud.HudData> kvp in __instance.m_huds)
             {
-                if (kvp.Key == null) continue;
-                if (kvp.Value.m_gui == null) continue;
+                if (kvp.Key == null || kvp.Value.m_gui == null) continue;
                 if (kvp.Key.IsBoss() || kvp.Key.IsPlayer()) continue;
                 if (IsFriendlyCreature(kvp.Key)) continue;
                 int amount = GetExperienceAmount(kvp.Key);
@@ -470,11 +460,5 @@ public static class ExperienceManager
             }
         }
     }
-
-    private static bool IsFriendlyCreature(Character character)
-    {
-        if (!character.m_nview) return false;
-        if (!character.m_nview.IsValid()) return false;
-        return character.m_nview.GetZDO() != null && character.m_nview.GetZDO().GetBool(Abilities.SpawnSystem.FriendlyKey);
-    }
+    public static bool IsFriendlyCreature(Character character) => character.GetComponent<Friendly>();
 }
