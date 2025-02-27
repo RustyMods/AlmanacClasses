@@ -32,6 +32,7 @@ public static class CommandsManager
             TalentCommand reset = new TalentCommand("reset", "resets all player almanac class talent data", _ =>
             {
                 PlayerManager.m_tempPlayerData.m_experience = 0;
+                ExperienceBar.UpdateExperienceBar();
                 PlayerManager.m_tempPlayerData.m_boughtTalents.Clear();
                 PlayerManager.m_playerTalents.Clear();
                 CharacteristicManager.ResetCharacteristics();
@@ -68,6 +69,7 @@ public static class CommandsManager
                 if (args.Length < 3) return false;
                 if (!int.TryParse(args[2], out int amount)) return false;
                 PlayerManager.m_tempPlayerData.m_experience += amount;
+                ExperienceBar.UpdateExperienceBar();
                 Player.m_localPlayer.Message(MessageHud.MessageType.Center, "Increased experience by " + amount);
                 return true;
             });
