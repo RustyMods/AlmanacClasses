@@ -27,7 +27,6 @@ public static class RogueBackstab
         {
             if (!Player.m_localPlayer) return;
             if (!PlayerManager.m_playerTalents.TryGetValue("RogueBackstab", out Talent talent)) return;
-            // if (!Player.m_localPlayer.GetSEMan().HaveStatusEffect(talent.m_statusEffectHash)) return;
             if (talent.m_status is { } status &&
                 !Player.m_localPlayer.GetSEMan().HaveStatusEffect(status.NameHash())) return;
             if (!hit.GetAttacker()) return;

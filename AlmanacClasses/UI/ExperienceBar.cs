@@ -50,10 +50,12 @@ public class ExperienceBar : MonoBehaviour
         int experience = PlayerManager.GetExperience();
         int level = PlayerManager.GetPlayerLevel(experience);
         int nxtLvlExp = PlayerManager.GetRequiredExperience(level + 1);
+        int previousLvlExp = PlayerManager.GetRequiredExperience(level);
+        float difference = nxtLvlExp - previousLvlExp;
+        float current = experience - previousLvlExp;
+        float percentage = current / difference;
         m_instance.SetText($"{experience} / {nxtLvlExp}");
-        m_instance.SetFill(level == 1 
-            ? (float)experience / nxtLvlExp 
-            : 1f - (float)(nxtLvlExp - experience) / (nxtLvlExp - PlayerManager.GetRequiredExperience(level)));
+        m_instance.SetFill(percentage);
     }
     
     public static void OnChangeExperienceBarVisibility(object sender, EventArgs e)
