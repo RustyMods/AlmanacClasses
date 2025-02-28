@@ -16,17 +16,14 @@ public class TalentButton : MonoBehaviour
     public static readonly List<Selectable> m_selectables = new();
     public static readonly List<TalentButton> m_checkedTalents = new();
     public static readonly Dictionary<string, TalentButton> m_allButtons = new();
-    // public static readonly Dictionary<TalentButton, Dictionary<string, Image>> m_fillLineMap = new();
     public static readonly Dictionary<TalentButton, Sprite> m_buttonOriginalSpriteMap = new();
     public static TalentButton m_centerButton = null!;
     
-    public Dictionary<string, Image> m_fillLines = new();
     public Button m_button = null!;
     private GameObject? m_checkmark;
     public Image m_iconBackground = null!;
     public Image? m_icon;
     public Image? m_checkmarkIcon;
-    public FillLines m_fillLine = null!;
     public void Init()
     {
         m_button = GetComponent<Button>();
@@ -115,22 +112,6 @@ public class TalentButton : MonoBehaviour
         if (msg) Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_need_previous_talent");
         return false;
     }
-    
-    // public static bool IsConnected(Dictionary<string, Image> lines, out Dictionary<string, Image> validatedLines, bool msg = true)
-    // {
-    //     validatedLines = new Dictionary<string, Image>();
-    //     foreach (var checkedButton in m_checkedTalents)
-    //     {
-    //         if (lines.TryGetValue(checkedButton.name, out Image line))
-    //         {
-    //             validatedLines[checkedButton.name] = line;
-    //         }
-    //     }
-    //
-    //     if (validatedLines.Count != 0) return true;
-    //     if (msg) Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_need_previous_talent");
-    //     return false;
-    // }
 
     private static bool CanBuyEndAbility(string button)
     {
@@ -148,7 +129,6 @@ public class TalentButton : MonoBehaviour
         talentButton.Select(ability);
         if (talentButton.IsChecked()) return;
         if (!IsEndAbility(talentButton.name)) return;
-        // if (!IsConnected(lines, out Dictionary<string, Image> validatedLines)) return;
         if (!IsConnected(lines)) return;
         if (!CheckCost(ability.GetCost())) return;
         LoadUI.PurchaseTalent(ability);
@@ -168,7 +148,6 @@ public class TalentButton : MonoBehaviour
         }
 
         talentButton.SetCheckmark(true);
-        // LoadUI.SetLines(validatedLines);
         FillLines.UpdateFillLines();
         TalentBook.ShowUI();
     }
@@ -188,8 +167,6 @@ public class TalentButton : MonoBehaviour
     public static void SetButton(Transform parent, string name, Dictionary<string, Image> lines, string key)
     {
         TalentButton talentButton = parent.Find(name).GetComponent<TalentButton>();
-        // m_fillLineMap[talentButton] = lines;
-        talentButton.m_fillLines = lines;
         talentButton.m_button.onClick.AddListener(() =>
         {
             ButtonEvent(talentButton, lines, key);

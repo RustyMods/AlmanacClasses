@@ -148,7 +148,7 @@ namespace AlmanacClasses
             return AssetBundle.LoadFromStream(stream);
         }
         
-        private void SetupWatcher()
+        public void SetupWatcher()
         {
             FileSystemWatcher watcher = new(Paths.ConfigPath, ConfigFileName);
             watcher.Changed += ReadConfigValues;

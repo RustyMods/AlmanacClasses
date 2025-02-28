@@ -22,7 +22,6 @@ public class FillLines
         if (!TalentButton.m_allButtons.TryGetValue(buttonKey, out TalentButton button)) return;
         if (m_buttons.Contains(button)) return;
         m_buttons.Add(button);
-        button.m_fillLine = this;
     }
 
     public bool AreChecked() => m_buttons.TrueForAll(button => button.IsChecked());

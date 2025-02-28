@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using AlmanacClasses.Classes.Abilities.Warrior;
 using AlmanacClasses.Managers;
 using AlmanacClasses.UI;
 using BepInEx.Configuration;
@@ -32,10 +33,11 @@ public static class AbilityManager
         {
             AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to get ability");
         }
-        
+        MonkeyWrench.CheckActivationKey();
     }
     private static void CheckSpellKeys()
     {
+        
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell1.Value))
         {
             if (!SpellBook.m_abilities.TryGetValue(0, out SpellBook.AbilityData ability)) return;

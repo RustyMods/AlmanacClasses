@@ -59,7 +59,6 @@ public static class BleedTrigger
             if (!hit.GetAttacker().IsPlayer()) return;
             if (hit.GetAttacker() != Player.m_localPlayer) return;
             if (!PlayerManager.m_playerTalents.TryGetValue("RogueBleed", out Talent ability)) return;
-            // if (!hit.GetAttacker().GetSEMan().HaveStatusEffect(ability.m_statusEffectHash)) return;
             if (ability.m_status is { } status && !hit.GetAttacker().GetSEMan().HaveStatusEffect(status.NameHash())) return;
 
             if (__instance.m_nview.IsValid()) __instance.m_nview.ClaimOwnership();

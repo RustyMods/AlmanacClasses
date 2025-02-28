@@ -38,6 +38,7 @@ public static class CommandsManager
                 SpellBook.ClearSpellBook();
                 SpellBook.m_abilities.Clear();
                 LoadUI.ResetTalents(true);
+                ExperienceBar.UpdateExperienceBar();
                 TalentManager.InitializeTalents();
                 AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo("Reset all classes data");
                 return true;
@@ -67,8 +68,8 @@ public static class CommandsManager
 
                 if (args.Length < 3) return false;
                 if (!int.TryParse(args[2], out int amount)) return false;
-                PlayerManager.m_tempPlayerData.m_experience += amount;
                 Player.m_localPlayer.Message(MessageHud.MessageType.Center, "Increased experience by " + amount);
+                ExperienceManager.RPC_AddExperience(0L, amount, Player.m_localPlayer.transform.position);
                 return true;
             });
             TalentCommand spawn = new TalentCommand("spawn", "[prefabName<string>] [level<int>] spawns a friendly creature, no cost must be enabled",

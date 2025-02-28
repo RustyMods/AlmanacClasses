@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AlmanacClasses.Managers;
+using UnityEngine;
 
 namespace AlmanacClasses.Classes.Abilities.Warrior;
 
@@ -38,8 +39,9 @@ public class SE_MonkeyWrench : StatusEffect
 public static class MonkeyWrench
 {
     private static bool m_modified;
-    private static readonly Dictionary<ItemDrop, TwoHandedData> TwoHandedWeapons = new();
-    public static bool IsMonkeyWrenchItem(string sharedName) => TwoHandedWeapons.Keys.ToList().Find(x => x.m_itemData.m_shared.m_name == sharedName) != null;
+    private static readonly Dictionary<ItemDrop, TwoHandedData> m_itemDrop_to_data = new();
+    private static readonly Dictionary<string, TwoHandedData> m_sharedName_to_data= new();
+    public static bool IsMonkeyWrenchItem(string sharedName) => m_sharedName_to_data.Keys.Contains(sharedName);
 
     private static readonly List<string> WarfareItems = new()
     {
@@ -75,46 +77,96 @@ public static class MonkeyWrench
             if (item.m_itemData.m_shared.m_itemType is ItemDrop.ItemData.ItemType.Tool) continue;
             if (IsDualItem(item.name.Replace("(Clone)",string.Empty))) continue;
             if (!IsCorrectSkillType(item.m_itemData.m_shared.m_skillType) && !IsAllowedStaff(item.m_itemData.m_shared.m_name)) continue;
-            TwoHandedData data = new()
-            {
-                m_type = item.m_itemData.m_shared.m_itemType,
-                m_attachOverride = item.m_itemData.m_shared.m_attachOverride,
-                m_animationState = item.m_itemData.m_shared.m_animationState,
-                m_attackType = item.m_itemData.m_shared.m_attack.m_attackType,
-                m_attackAnimation = item.m_itemData.m_shared.m_attack.m_attackAnimation,
-                m_secondaryAttackType = item.m_itemData.m_shared.m_secondaryAttack.m_attackType,
-                m_secondaryAttackAnimation = item.m_itemData.m_shared.m_secondaryAttack.m_attackAnimation
-            };
-            TwoHandedWeapons[item] = data;
+            TwoHandedData _ = new TwoHandedData(item);
         }
     }
     public static void ModifyTwoHandedWeapons()
     {
         if (m_modified) return;
-        foreach (KeyValuePair<ItemDrop, TwoHandedData> kvp in TwoHandedWeapons)
-        {
-            kvp.Key.m_itemData.m_shared.m_itemType = ItemDrop.ItemData.ItemType.OneHandedWeapon;
-            kvp.Key.m_itemData.m_shared.m_attachOverride = ItemDrop.ItemData.ItemType.OneHandedWeapon;
-            kvp.Key.m_itemData.m_shared.m_animationState = ItemDrop.ItemData.AnimationState.OneHanded;
-
-            switch (kvp.Key.m_itemData.m_shared.m_skillType)
-            {
-                case Skills.SkillType.Axes:
-                    ChangeToOneHandedAxe(kvp.Key.m_itemData);
-                    break;
-                case Skills.SkillType.Swords or Skills.SkillType.Polearms:
-                    ChangeToOneHandedSword(kvp.Key.m_itemData);
-                    break;
-            }
-            
-            AddEquipStatusEffect(kvp.Key.m_itemData);
-        }
-
+        foreach(var data in m_itemDrop_to_data.Values) data.Modify();
         if (!Player.m_localPlayer) return;
         Inventory? inventory = Player.m_localPlayer.GetInventory();
         foreach (ItemDrop.ItemData? item in inventory.m_inventory)
         {
             if (!IsMonkeyWrenchItem(item.m_shared.m_name)) continue;
+            TwoHandedData.Modify(item);
+        }
+
+        m_modified = true;
+    }
+    public static void ResetTwoHandedWeapons()
+    {
+        foreach(var data in m_itemDrop_to_data.Values) data.Reset();
+        if (!Player.m_localPlayer) return;
+        Inventory? inventory = Player.m_localPlayer.GetInventory();
+        foreach (ItemDrop.ItemData? item in inventory.m_inventory)
+        {
+            if (!m_sharedName_to_data.TryGetValue(item.m_shared.m_name, out TwoHandedData data)) continue;
+            data.Reset(item);
+        }
+
+        m_modified = false;
+    }
+
+    public static void CheckActivationKey()
+    {
+        if (!Player.m_localPlayer) return;
+        if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.H))
+        {
+            if (PlayerManager.m_playerTalents.TryGetValue("MonkeyWrench", out var talent))
+            {
+                var isActive = talent.m_passiveActive;
+                var weapon = Player.m_localPlayer.GetCurrentWeapon();
+        
+                if (weapon is not null && IsMonkeyWrenchItem(weapon.m_shared.m_name) && !Player.m_localPlayer.InAttack())
+                {
+                    if (isActive)
+                        ResetTwoHandedWeapons();
+                    else
+                        ModifyTwoHandedWeapons();
+            
+                    Player.m_localPlayer.UnequipItem(weapon);
+                    Player.m_localPlayer.EquipItem(weapon);
+                    talent.m_passiveActive = !isActive;
+                    DisplayText.ShowText(Color.yellow, Player.m_localPlayer.GetTopPoint(), $"MonkeyWrench was {(talent.m_passiveActive ? "activated" : "deactivated")}");
+                }
+            }
+        }
+    }
+    private class TwoHandedData
+    {
+        private readonly ItemDrop m_item;
+        private readonly ItemDrop.ItemData.ItemType m_type;
+        private readonly ItemDrop.ItemData.ItemType m_attachOverride;
+        private readonly ItemDrop.ItemData.AnimationState m_animationState;
+
+        private readonly Attack.AttackType m_attackType;
+        private readonly string m_attackAnimation;
+        private readonly Attack.AttackType m_secondaryAttackType;
+        private readonly string m_secondaryAttackAnimation;
+
+        public void Reset() => Reset(m_item.m_itemData);
+        
+        public void Reset(ItemDrop.ItemData item)
+        {
+            item.m_shared.m_itemType = m_type;
+            item.m_shared.m_attachOverride = m_attachOverride;
+            item.m_shared.m_animationState = m_animationState;
+
+            item.m_shared.m_attack.m_attackType = m_attackType;
+            item.m_shared.m_attack.m_attackAnimation = m_attackAnimation;
+            item.m_shared.m_secondaryAttack.m_attackType = m_secondaryAttackType;
+            item.m_shared.m_secondaryAttack.m_attackAnimation = m_secondaryAttackAnimation;
+            if (item.m_shared.m_equipStatusEffect && item.m_shared.m_equipStatusEffect.name == "SE_MonkeyWrench")
+            {
+                item.m_shared.m_equipStatusEffect = null;
+            }
+        }
+
+        public void Modify() => Modify(m_item.m_itemData);
+        
+        public static void Modify(ItemDrop.ItemData item)
+        {
             item.m_shared.m_itemType = ItemDrop.ItemData.ItemType.OneHandedWeapon;
             item.m_shared.m_attachOverride = ItemDrop.ItemData.ItemType.OneHandedWeapon;
             item.m_shared.m_animationState = ItemDrop.ItemData.AnimationState.OneHanded;
@@ -128,82 +180,36 @@ public static class MonkeyWrench
                     ChangeToOneHandedSword(item);
                     break;
             }
-            
-            AddEquipStatusEffect(item);
         }
-
-        m_modified = true;
-    }
-    private static void ChangeToOneHandedAxe(ItemDrop.ItemData item)
-    {
-        item.m_shared.m_attack.m_attackType = Attack.AttackType.Horizontal;
-        item.m_shared.m_attack.m_attackAnimation = "swing_axe";
-        item.m_shared.m_secondaryAttack.m_attackType = Attack.AttackType.Vertical;
-        item.m_shared.m_secondaryAttack.m_attackAnimation = "axe_secondary";
-    }
-    private static void ChangeToOneHandedSword(ItemDrop.ItemData item)
-    {
-        item.m_shared.m_attack.m_attackType = Attack.AttackType.Horizontal;
-        item.m_shared.m_attack.m_attackAnimation = "swing_longsword";
-        item.m_shared.m_secondaryAttack.m_attackType = Attack.AttackType.Horizontal;
-        item.m_shared.m_secondaryAttack.m_attackAnimation = "sword_secondary";
-    }
-    private static void AddEquipStatusEffect(ItemDrop.ItemData item)
-    {
-        return;
-        if (item.m_shared.m_equipStatusEffect) return;
-        item.m_shared.m_equipStatusEffect = ObjectDB.instance.GetStatusEffect("SE_MonkeyWrench".GetStableHashCode());
-    }
-    public static void ResetTwoHandedWeapons()
-    {
-        foreach (KeyValuePair<ItemDrop, TwoHandedData> kvp in TwoHandedWeapons)
+        
+        private static void ChangeToOneHandedAxe(ItemDrop.ItemData item)
         {
-            kvp.Key.m_itemData.m_shared.m_itemType = kvp.Value.m_type;
-            kvp.Key.m_itemData.m_shared.m_attachOverride = kvp.Value.m_attachOverride;
-            kvp.Key.m_itemData.m_shared.m_animationState = kvp.Value.m_animationState;
-            kvp.Key.m_itemData.m_shared.m_attack.m_attackType = kvp.Value.m_attackType;
-            kvp.Key.m_itemData.m_shared.m_attack.m_attackAnimation = kvp.Value.m_attackAnimation;
-            kvp.Key.m_itemData.m_shared.m_secondaryAttack.m_attackType = kvp.Value.m_secondaryAttackType;
-            kvp.Key.m_itemData.m_shared.m_secondaryAttack.m_attackAnimation = kvp.Value.m_secondaryAttackAnimation;
-            if (kvp.Key.m_itemData.m_shared.m_equipStatusEffect && kvp.Key.m_itemData.m_shared.m_equipStatusEffect.name == "SE_MonkeyWrench")
-            {
-                kvp.Key.m_itemData.m_shared.m_equipStatusEffect = null;
-            }
+            item.m_shared.m_attack.m_attackType = Attack.AttackType.Horizontal;
+            item.m_shared.m_attack.m_attackAnimation = "swing_axe";
+            item.m_shared.m_secondaryAttack.m_attackType = Attack.AttackType.Vertical;
+            item.m_shared.m_secondaryAttack.m_attackAnimation = "axe_secondary";
         }
-
-        if (!Player.m_localPlayer) return;
-        Inventory? inventory = Player.m_localPlayer.GetInventory();
-        foreach (ItemDrop.ItemData? item in inventory.m_inventory)
+        private static void ChangeToOneHandedSword(ItemDrop.ItemData item)
         {
-            ItemDrop itemDrop = TwoHandedWeapons.Keys.ToList().Find(x => x.m_itemData.m_shared.m_name == item.m_shared.m_name);
-            if (itemDrop == null) continue;
-            if (!TwoHandedWeapons.TryGetValue(itemDrop, out TwoHandedData data)) continue;
-            
-            item.m_shared.m_itemType = data.m_type;
-            item.m_shared.m_attachOverride = data.m_attachOverride;
-            item.m_shared.m_animationState = data.m_animationState;
-
-            item.m_shared.m_attack.m_attackType = data.m_attackType;
-            item.m_shared.m_attack.m_attackAnimation = data.m_attackAnimation;
-            item.m_shared.m_secondaryAttack.m_attackType = data.m_secondaryAttackType;
-            item.m_shared.m_secondaryAttack.m_attackAnimation = data.m_secondaryAttackAnimation;
-            if (item.m_shared.m_equipStatusEffect && item.m_shared.m_equipStatusEffect.name == "SE_MonkeyWrench")
-            {
-                item.m_shared.m_equipStatusEffect = null;
-            }
+            item.m_shared.m_attack.m_attackType = Attack.AttackType.Horizontal;
+            item.m_shared.m_attack.m_attackAnimation = "swing_longsword";
+            item.m_shared.m_secondaryAttack.m_attackType = Attack.AttackType.Horizontal;
+            item.m_shared.m_secondaryAttack.m_attackAnimation = "sword_secondary";
         }
 
-        m_modified = false;
-    }
-    private class TwoHandedData
-    {
-        public ItemDrop.ItemData.ItemType m_type = ItemDrop.ItemData.ItemType.TwoHandedWeapon;
-        public ItemDrop.ItemData.ItemType m_attachOverride;
-        public ItemDrop.ItemData.AnimationState m_animationState;
+        public TwoHandedData(ItemDrop item)
+        {
+            m_item = item;
+            m_type = item.m_itemData.m_shared.m_itemType;
+            m_attachOverride = item.m_itemData.m_shared.m_attachOverride;
+            m_animationState = item.m_itemData.m_shared.m_animationState;
+            m_attackType = item.m_itemData.m_shared.m_attack.m_attackType;
+            m_attackAnimation = item.m_itemData.m_shared.m_attack.m_attackAnimation;
+            m_secondaryAttackType = item.m_itemData.m_shared.m_secondaryAttack.m_attackType;
+            m_secondaryAttackAnimation = item.m_itemData.m_shared.m_secondaryAttack.m_attackAnimation;
 
-        public Attack.AttackType m_attackType;
-        public string m_attackAnimation = "";
-        public Attack.AttackType m_secondaryAttackType;
-        public string m_secondaryAttackAnimation = "";
+            m_itemDrop_to_data[item] = this;
+            m_sharedName_to_data[item.m_itemData.m_shared.m_name] = this;
+        }
     }
 }
