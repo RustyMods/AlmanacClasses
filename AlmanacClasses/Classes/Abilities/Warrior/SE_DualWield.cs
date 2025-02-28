@@ -68,9 +68,8 @@ public static class DualWield
             if (!Player.m_localPlayer || !m_changeAttach) return;
             if (!PlayerManager.m_playerTalents.ContainsKey("DualWield")) return;
             if (joint != __instance.m_backMelee) return;
-            GameObject itemPrefab = ObjectDB.instance.GetItemPrefab(itemHash);
-            if (!itemPrefab) return;
-            if (!itemPrefab.TryGetComponent(out ItemDrop component)) return;
+            if (ObjectDB.instance.GetItemPrefab(itemHash) is not { } item ||
+                !item.TryGetComponent(out ItemDrop component)) return;
             if (component.m_itemData.m_shared.m_name != m_lastLeftItem) return;
             joint = __instance.m_backTool;
             m_lastLeftItem = "";

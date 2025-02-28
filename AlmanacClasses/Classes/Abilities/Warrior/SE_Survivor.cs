@@ -37,7 +37,6 @@ public static class Survivor
             {
                 if (talent.m_status is not { } status) return;
                 if (__instance.GetSEMan().HaveStatusEffect(status.NameHash())) return;
-                // if (__instance.GetSEMan().HaveStatusEffect(talent.m_statusEffectHash)) return;
                 float chance = talent.GetChance(talent.GetLevel());
                 float random = Random.Range(0, 101f);
                 if (random < chance)
@@ -46,7 +45,6 @@ public static class Survivor
                     __instance.Heal(quarter);
                     __result = quarter;
                     __instance.GetSEMan().AddStatusEffect(status.NameHash());
-                    // __instance.GetSEMan().AddStatusEffect(talent.m_statusEffectHash);
                 }
             }
         }

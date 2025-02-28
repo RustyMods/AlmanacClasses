@@ -48,11 +48,10 @@ public static class SpriteManager
     
     public static Sprite Wishbone_Icon = null!;
 
-    public static Dictionary<string, Sprite> m_backgrounds = new ();
+    public static readonly Dictionary<string, Sprite> m_backgrounds = new ();
     public static void LoadSpriteResources()
     {
-        ZNetScene scene = ZNetScene.instance;
-        GameObject wishbone = scene.GetPrefab("Wishbone");
+        GameObject wishbone = ZNetScene.instance.GetPrefab("Wishbone");
         if (wishbone.TryGetComponent(out ItemDrop wishboneItem))
         {
             Wishbone_Icon = wishboneItem.m_itemData.GetIcon();

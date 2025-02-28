@@ -14,6 +14,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 using ServerSync;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace AlmanacClasses
 {
@@ -80,6 +81,8 @@ namespace AlmanacClasses
         public static ConfigEntry<Toggle> _UseExperienceLevelCap = null!;
 
         public static ConfigEntry<string> _CustomBackground = null!;
+
+        public bool m_headless = SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null;
         public void Awake()
         {
             Localizer.Load(); 
@@ -109,6 +112,7 @@ namespace AlmanacClasses
         
         public void Update()
         {
+            if (m_headless) return;
             float dt = Time.deltaTime;
 
             TalentBook.UpdateTalentBookUI();
