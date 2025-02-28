@@ -215,8 +215,7 @@ public static class AbilityManager
                 is KeyCode.Alpha1 
                 or KeyCode.Alpha2 
                 or KeyCode.Alpha3
-                or KeyCode.Alpha4 
-                or KeyCode.Alpha4 
+                or KeyCode.Alpha4
                 or KeyCode.Alpha5 
                 or KeyCode.Alpha6
                 or KeyCode.Alpha7 
