@@ -152,6 +152,10 @@ public static class PlayerManager
             if (match == null) continue;
             match.SetLevel(kvp.Value);
             m_playerTalents[kvp.Key] = match;
+            if (match.m_type is TalentType.Passive && match.m_addToPassiveBar)
+            {
+                PassiveBar.m_instance.Add(match);
+            }
             if (match.m_type is not TalentType.Characteristic) continue;
             if (match.m_characteristic == null) continue;
             CharacteristicManager.AddCharacteristic(match.GetCharacteristicType(), match.GetCharacteristic(match.GetLevel()));

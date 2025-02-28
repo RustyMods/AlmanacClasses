@@ -77,11 +77,11 @@ namespace AlmanacClasses
         public static ConfigEntry<KeyCode> _Spell6 = null!;
         public static ConfigEntry<KeyCode> _Spell7 = null!;
         public static ConfigEntry<KeyCode> _Spell8 = null!;
-        public static ConfigEntry<KeyCode> _MonkeyWrenchToggle = null!;
+        // public static ConfigEntry<KeyCode> _MonkeyWrenchToggle = null!;
         public static ConfigEntry<float> _DisplayTextFontSizeModifier = null!;
         public static ConfigEntry<Toggle> _UseExperienceLevelCap = null!;
-
         public static ConfigEntry<string> _CustomBackground = null!;
+        public static ConfigEntry<Vector2> _PassiveBarPos = null!;
 
         public bool m_headless = SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null;
         public void Awake()
@@ -228,10 +228,14 @@ namespace AlmanacClasses
             _SpellBookPos = config("2 - Settings", "Spell Bar Position", new Vector2(1500f, 100f),
                 "Set the location of the spellbar", false);
             _SpellBookPos.SettingChanged += SpellBook.OnSpellBarPosChange;
+
+            _PassiveBarPos = config("2 - Settings", "Passive Bar Position", new Vector2(1500f, 150f),
+                "Set the location of the passive bar", false);
+            _PassiveBarPos.SettingChanged += PassiveBar.OnPassiveBarPosChange;
             
             _PanelBackground = config("2 - Settings", "UI Background", Toggle.On,
                 "If on, panel is visible, else transparent", false);
-            _PanelBackground.SettingChanged += (sender, args) => LoadUI.PanelBackground.color = _PanelBackground.Value is Toggle.On ? Color.white : Color.clear;
+            _PanelBackground.SettingChanged += (_, _) => LoadUI.PanelBackground.color = _PanelBackground.Value is Toggle.On ? Color.white : Color.clear;
 
             _ExperienceMultiplier = config("2 - Settings", "Experience Multiplier", 1f,
                 new ConfigDescription("Set experience multiplier to easily increase experience gains",
@@ -282,7 +286,7 @@ namespace AlmanacClasses
             _Spell6 = config("3 - Spell Keys", "Spell 6", KeyCode.Alpha6, "Set the key code for spell 6", false);
             _Spell7 = config("3 - Spell Keys", "Spell 7", KeyCode.Alpha7, "Set the key code for spell 7", false);
             _Spell8 = config("3 - Spell Keys", "Spell 8", KeyCode.Alpha8, "Set the key code for spell 8", false);
-            _MonkeyWrenchToggle = config("3 - Spell Keys", "Monkey Wrench Toggle", KeyCode.H, "Set the key code for toggling Monkey Wrench on/off", false);
+            // _MonkeyWrenchToggle = config("3 - Spell Keys", "Monkey Wrench Toggle", KeyCode.H, "Set the key code for toggling Monkey Wrench on/off", false);
         }
         public ConfigEntry<T> config<T>(string group, string name, T value, ConfigDescription description,
             bool synchronizedSetting = true)

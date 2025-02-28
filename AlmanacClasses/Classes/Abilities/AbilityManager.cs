@@ -85,24 +85,24 @@ public static class AbilityManager
             CastTalent(ability.m_data);
         }
 
-        if (Input.GetKeyDown(AlmanacClassesPlugin._MonkeyWrenchToggle.Value))
-        {
-            if (PlayerManager.m_playerTalents.TryGetValue("MonkeyWrench", out var talent) is false) return;
-            ToggleMonkeyWrench(talent);
-        }
+        // if (Input.GetKeyDown(AlmanacClassesPlugin._MonkeyWrenchToggle.Value))
+        // {
+        //     if (PlayerManager.m_playerTalents.TryGetValue("MonkeyWrench", out var talent) is false) return;
+        //     ToggleMonkeyWrench(talent);
+        // }
     }
-    private static void ToggleMonkeyWrench(Talent talent)
-    {
-        var passiveIsActive = talent.m_passiveActive;
-        if (passiveIsActive)
-            MonkeyWrench.ResetTwoHandedWeapons();
-        else
-            MonkeyWrench.ModifyTwoHandedWeapons();
-                    
-        PlayerManager.RefreshCurrentWeapon();
-        talent.m_passiveActive = !passiveIsActive;
-        Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"MonkeyWrench was {((talent.m_passiveActive) ? "activated" : "deactivated")}");
-    }
+    // public static void ToggleMonkeyWrench(Talent talent)
+    // {
+    //     var passiveIsActive = talent.m_passiveActive;
+    //     if (passiveIsActive)
+    //         MonkeyWrench.ResetTwoHandedWeapons();
+    //     else
+    //         MonkeyWrench.ModifyTwoHandedWeapons();
+    //                 
+    //     PlayerManager.RefreshCurrentWeapon();
+    //     talent.m_passiveActive = !passiveIsActive;
+    //     Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"MonkeyWrench was {((talent.m_passiveActive) ? "activated" : "deactivated")}");
+    // }
     private static void CastTalent(Talent ability)
     {
         if (!CheckCooldown(ability)) return;

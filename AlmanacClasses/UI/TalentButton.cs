@@ -137,6 +137,7 @@ public class TalentButton : MonoBehaviour
         {
             case TalentType.Passive:
                 LoadUI.AddStatusEffect(ability);
+                if (ability.m_addToPassiveBar) PassiveBar.m_instance.Add(ability);
                 break;
             case TalentType.Ability or TalentType.StatusEffect:
                 if (!SpellBook.AddToSpellBook(ability)) return;

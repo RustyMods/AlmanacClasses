@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using AlmanacClasses.Classes.Abilities;
 using AlmanacClasses.Classes.Abilities.Bard;
 using AlmanacClasses.Classes.Abilities.Core;
 using AlmanacClasses.Classes.Abilities.Ranger;
@@ -50,6 +51,8 @@ public class Talent
     public ConfigEntry<string>? m_forageItems;
     public ConfigEntry<Toggle>? m_useAnimation;
     public bool m_passiveActive = true;
+    public Func<bool>? m_onClickPassive;
+    public bool m_addToPassiveBar;
     public string GetAnimation() => m_useAnimation?.Value is Toggle.On ? m_animation : "";
     public List<string> GetCustomForageItems()
     {
@@ -683,12 +686,14 @@ public static class TalentManager
     public static void InitializeTalents()
     {
         if (m_initiated) return;
+        _Plugin.Config.SaveOnConfigSet = false;
         AlmanacClassesLogger.LogDebug("Initializing talents");
         FilePaths.CreateFolders();
         m_talents.Clear();
         m_talentsByButton.Clear();
         LoadTalents();
         LoadAltTalents();
+        _Plugin.Config.SaveOnConfigSet = true;
         m_initiated = true;
     }
 
@@ -727,6 +732,7 @@ public static class TalentManager
         };
 
         Talent Berzerk = new Talent("Berzerk", "$button_rain", TalentType.Passive, true);
+        Berzerk.m_sprite = SpriteManager.WarriorIcon;
         Berzerk.m_cost = _Plugin.config("Core - Berzerk", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock ability", new AcceptableValueRange<int>(1, 10)));
         Berzerk.m_values = new Talent.TalentValues()
         {
@@ -759,6 +765,7 @@ public static class TalentManager
         };
 
         Talent AirBenderAlt = new Talent("AirBenderAlt", "$button_lumberjack", TalentType.Passive, true);
+        AirBenderAlt.m_sprite = SpriteManager.MedalIcon;
         AirBenderAlt.m_cost = _Plugin.config("Core - AirBender Alt", "Purchase Cost", 3, new ConfigDescription("Set cost to unlock ability", new AcceptableValueRange<int>(1, 10)));
         AirBenderAlt.m_alt = _Plugin.config("Core - AirBender Alt", "Enable", Toggle.Off, "If on, replaces the airbender talent");
         AirBenderAlt.m_cap = _Plugin.config("Core - AirBender Alt", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 10)));
@@ -885,6 +892,7 @@ public static class TalentManager
         };
         wise.m_cap = _Plugin.config("Core - Wise", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         Talent Airbender = new Talent("AirBender", "$button_lumberjack", TalentType.Passive);
+        Airbender.m_sprite = SpriteManager.MedalIcon;
         Airbender.m_cost = _Plugin.config("Core - Air Bender", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         Airbender.m_eitrCost = _Plugin.config("Core - Air Bender", "Eitr Cost", 10f, new ConfigDescription("Set the eitr cost to jump in the air", new AcceptableValueRange<float>(0f, 1000f)));
         Airbender.m_cap = _Plugin.config("Core - Air Bender", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
@@ -1753,6 +1761,7 @@ public static class TalentManager
         warriorVitality.m_cap = _Plugin.config("Warrior - Vitality", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         warriorVitality.m_effectsEnabled = _Plugin.config("Warrior - Vitality", "Effects Enabled", Toggle.On, "If on, start effects are enabled");
         Talent monkeyWrench = new Talent("MonkeyWrench", "$button_warrior_talent_4", TalentType.Passive);
+        monkeyWrench.m_sprite = SpriteManager.WarriorIcon;
         monkeyWrench.AddStatusEffect(ScriptableObject.CreateInstance<SE_MonkeyWrench>(), "SE_MonkeyWrench");
         monkeyWrench.m_cost = _Plugin.config("Warrior - Monkey Wrench", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         monkeyWrench.m_values = new Talent.TalentValues()
@@ -1762,6 +1771,20 @@ public static class TalentManager
         };
         monkeyWrench.m_cap = _Plugin.config("Warrior - Monkey Wrench", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         monkeyWrench.m_passiveActive = true;
+        monkeyWrench.m_onClickPassive = () =>
+        {
+            var passiveIsActive = monkeyWrench.m_passiveActive;
+            if (passiveIsActive)
+                MonkeyWrench.ResetTwoHandedWeapons();
+            else
+                MonkeyWrench.ModifyTwoHandedWeapons();
+                    
+            PlayerManager.RefreshCurrentWeapon();
+            monkeyWrench.m_passiveActive = !passiveIsActive;
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"MonkeyWrench was {(monkeyWrench.m_passiveActive ? "activated" : "deactivated")}");
+            return true;
+        };
+        monkeyWrench.m_addToPassiveBar = true;
 
         Talent warriorResistance = new Talent("WarriorResistance", "$button_warrior_talent_3", TalentType.StatusEffect);
         warriorResistance.AddStatusEffect(ScriptableObject.CreateInstance<SE_WarriorResistance>(), "SE_WarriorResistance");
@@ -1785,6 +1808,7 @@ public static class TalentManager
         warriorResistance.m_effectsEnabled = _Plugin.config("Warrior - Fortification", "Effects Enabled", Toggle.On, "If on, start effects are enabled");
 
         Talent dualWield = new Talent("DualWield", "$button_warrior_talent_5", TalentType.Passive);
+        dualWield.m_sprite = SpriteManager.WarriorIcon;
         dualWield.AddStatusEffect(ScriptableObject.CreateInstance<SE_DualWield>(), "SE_DualWield");
         dualWield.m_cost = _Plugin.config("Warrior - Dual Wield", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         dualWield.m_values = new Talent.TalentValues()
@@ -1793,6 +1817,7 @@ public static class TalentManager
         };
         dualWield.m_cap = _Plugin.config("Warrior - Dual Wield", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         dualWield.m_passiveActive = false;
+        dualWield.m_addToPassiveBar = true;
     }
     #endregion
 

@@ -209,19 +209,22 @@ public static class LoadUI
         var SpellBar = Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_UI"), Hud.instance.transform, false);
         SpellBar.AddComponent<SpellBook>().Init();
         SpellBar.AddComponent<SpellBarMove>();
+        var PassiveBar = Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("PassiveBar_UI"), Hud.instance.transform, false);
+        PassiveBar.AddComponent<PassiveBar>().Init();
         
-        Font? NorseBold = GetFont(AlmanacClassesPlugin._Font.Value);
-        AddFonts(ExperienceBar.m_instance.m_texts, NorseBold);
-        AddFonts(SpellBook.m_instance.m_elementTexts, NorseBold);
+        Font? font = GetFont(AlmanacClassesPlugin._Font.Value);
+        AddFonts(ExperienceBar.m_instance.m_texts, font);
+        AddFonts(SpellBook.m_instance.m_elementTexts, font);
+        AddFonts(UI.PassiveBar.m_element.GetComponentsInChildren<Text>(), font);
         SpellBook.m_instance.UpdateFontSize();
         
         Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("ElementHover_UI"), instance.transform, false).AddComponent<SpellInfo>().Init();
-        AddFonts(SpellInfo.m_instance.m_texts, NorseBold);
+        AddFonts(SpellInfo.m_instance.m_texts, font);
         
         GameObject HoverName = new GameObject("title");
         HoverName.AddComponent<RectTransform>();
         Text text = HoverName.AddComponent<Text>();
-        text.font = NorseBold;
+        text.font = font;
         text.fontSize = 20;
         text.alignment = TextAnchor.MiddleCenter;
         text.supportRichText = true;
@@ -544,6 +547,7 @@ public static class LoadUI
         TalentManager.ResetTalentLevels();
         Prestige.SelectedTalent = null;
         TalentButton.SetAllButtonColors(Color.white);
+        PassiveBar.m_instance.Clear();
         UnEquipWeapons();
         if (!command) TalentBook.ShowUI();
     }
@@ -895,6 +899,7 @@ public static class LoadUI
         var font = GetFont(AlmanacClassesPlugin._Font.Value);
         foreach (var text in AllTexts) text.font = font;
         SpellElement.UpdateFont(font);
+        PassiveButton.OnFontChange(font);
     }
     
     public enum FontOptions

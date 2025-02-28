@@ -45,6 +45,11 @@ public static class SpriteManager
     public static readonly Sprite ShieldIcon = _AssetBundle.LoadAsset<Sprite>("shield_basic_metal");
     public static readonly Sprite CrownIcon = _AssetBundle.LoadAsset<Sprite>("crown_gold");
     public static readonly Sprite WarriorIcon = _AssetBundle.LoadAsset<Sprite>("warrior_icon");
+    public static readonly Sprite BardIcon = _AssetBundle.LoadAsset<Sprite>("bard_icon");
+    public static readonly Sprite RangerIcon = _AssetBundle.LoadAsset<Sprite>("ranger_icon");
+    public static readonly Sprite RogueIcon = _AssetBundle.LoadAsset<Sprite>("rogue_icon");
+    public static readonly Sprite ShamanIcon = _AssetBundle.LoadAsset<Sprite>("shaman_icon");
+    public static readonly Sprite MedalIcon = _AssetBundle.LoadAsset<Sprite>("medal");
     
     public static Sprite Wishbone_Icon = null!;
 

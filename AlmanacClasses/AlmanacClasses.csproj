@@ -218,6 +218,8 @@
         <Compile Include="UI\ExperienceBarMove.cs" />
         <Compile Include="UI\FillLines.cs" />
         <Compile Include="UI\LoadUI.cs" />
+        <Compile Include="UI\PassiveBar.cs" />
+        <Compile Include="UI\PassiveButton.cs" />
         <Compile Include="UI\Prestige.cs" />
         <Compile Include="UI\SpellElement.cs" />
         <Compile Include="UI\SpellInfo.cs" />
