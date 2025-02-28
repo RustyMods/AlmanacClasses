@@ -97,6 +97,18 @@ public static class PlayerManager
         AddPassiveStatusEffects(Player.m_localPlayer);
     }
 
+    public static bool IsPlayerValid() => (Player.m_localPlayer is not null);
+    public static bool CanPerformAction() => (!Player.m_localPlayer.IsDead() && !Player.m_localPlayer.InAttack());
+    public static bool CanRegisterInput() => (IsPlayerValid() && CanPerformAction());
+    public static void RefreshCurrentWeapon()
+    {
+        if (IsPlayerValid() is false || CanPerformAction() is false) return;
+        var weapon = Player.m_localPlayer.GetCurrentWeapon();
+        if (weapon is null || !MonkeyWrench.IsMonkeyWrenchItem(weapon.m_shared.m_name)) return;
+        Player.m_localPlayer.UnequipItem(weapon);
+        Player.m_localPlayer.EquipItem(weapon);
+    }
+
     private static void AddPassiveStatusEffects(Player instance)
     {
         var seMan = instance.GetSEMan();
