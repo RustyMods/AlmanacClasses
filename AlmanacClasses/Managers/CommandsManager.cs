@@ -32,6 +32,7 @@ public static class CommandsManager
             TalentCommand reset = new TalentCommand("reset", "resets all player almanac class talent data", _ =>
             {
                 PlayerManager.m_tempPlayerData.m_experience = 0;
+                ExperienceBar.UpdateExperienceBar();
                 PlayerManager.m_tempPlayerData.m_boughtTalents.Clear();
                 PlayerManager.m_playerTalents.Clear();
                 CharacteristicManager.ResetCharacteristics();
