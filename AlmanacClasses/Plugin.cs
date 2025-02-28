@@ -76,6 +76,7 @@ namespace AlmanacClasses
         public static ConfigEntry<KeyCode> _Spell6 = null!;
         public static ConfigEntry<KeyCode> _Spell7 = null!;
         public static ConfigEntry<KeyCode> _Spell8 = null!;
+        public static ConfigEntry<KeyCode> _MonkeyWrenchToggle = null!;
         public static ConfigEntry<float> _DisplayTextFontSizeModifier = null!;
         public static ConfigEntry<Toggle> _UseExperienceLevelCap = null!;
 
@@ -277,6 +278,7 @@ namespace AlmanacClasses
             _Spell6 = config("3 - Spell Keys", "Spell 6", KeyCode.Alpha6, "Set the key code for spell 6", false);
             _Spell7 = config("3 - Spell Keys", "Spell 7", KeyCode.Alpha7, "Set the key code for spell 7", false);
             _Spell8 = config("3 - Spell Keys", "Spell 8", KeyCode.Alpha8, "Set the key code for spell 8", false);
+            _MonkeyWrenchToggle = config("3 - Spell Keys", "Monkey Wrench Toggle", KeyCode.H, "Set the key code for toggling Monkey Wrench on/off", false);
         }
         public ConfigEntry<T> config<T>(string group, string name, T value, ConfigDescription description,
             bool synchronizedSetting = true)
