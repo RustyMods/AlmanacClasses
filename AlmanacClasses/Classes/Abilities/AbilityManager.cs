@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using AlmanacClasses.Classes.Abilities.Warrior;
 using AlmanacClasses.Managers;
 using AlmanacClasses.UI;
 using BepInEx.Configuration;
@@ -83,6 +84,24 @@ public static class AbilityManager
             if (!SpellBook.m_abilities.TryGetValue(7, out SpellBook.AbilityData ability)) return;
             CastTalent(ability.m_data);
         }
+
+        if (Input.GetKeyDown(AlmanacClassesPlugin._MonkeyWrenchToggle.Value))
+        {
+            if (PlayerManager.m_playerTalents.TryGetValue("MonkeyWrench", out var talent) is false) return;
+            ToggleMonkeyWrench(talent);
+        }
+    }
+    private static void ToggleMonkeyWrench(Talent talent)
+    {
+        var passiveIsActive = talent.m_passiveActive;
+        if (passiveIsActive)
+            MonkeyWrench.ResetTwoHandedWeapons();
+        else
+            MonkeyWrench.ModifyTwoHandedWeapons();
+                    
+        PlayerManager.RefreshCurrentWeapon();
+        talent.m_passiveActive = !passiveIsActive;
+        Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"MonkeyWrench was {((talent.m_passiveActive) ? "activated" : "deactivated")}");
     }
     private static void CastTalent(Talent ability)
     {
