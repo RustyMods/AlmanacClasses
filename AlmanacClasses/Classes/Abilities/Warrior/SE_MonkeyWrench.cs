@@ -107,32 +107,6 @@ public static class MonkeyWrench
 
         m_modified = false;
     }
-
-    public static void CheckActivationKey()
-    {
-        if (!Player.m_localPlayer) return;
-        if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.H))
-        {
-            if (PlayerManager.m_playerTalents.TryGetValue("MonkeyWrench", out var talent))
-            {
-                var isActive = talent.m_passiveActive;
-                var weapon = Player.m_localPlayer.GetCurrentWeapon();
-        
-                if (weapon is not null && IsMonkeyWrenchItem(weapon.m_shared.m_name) && !Player.m_localPlayer.InAttack())
-                {
-                    if (isActive)
-                        ResetTwoHandedWeapons();
-                    else
-                        ModifyTwoHandedWeapons();
-            
-                    Player.m_localPlayer.UnequipItem(weapon);
-                    Player.m_localPlayer.EquipItem(weapon);
-                    talent.m_passiveActive = !isActive;
-                    DisplayText.ShowText(Color.yellow, Player.m_localPlayer.GetTopPoint(), $"MonkeyWrench was {(talent.m_passiveActive ? "activated" : "deactivated")}");
-                }
-            }
-        }
-    }
     private class TwoHandedData
     {
         private readonly ItemDrop m_item;

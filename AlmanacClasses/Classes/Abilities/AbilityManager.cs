@@ -33,7 +33,6 @@ public static class AbilityManager
         {
             AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to get ability");
         }
-        MonkeyWrench.CheckActivationKey();
     }
     private static void CheckSpellKeys()
     {

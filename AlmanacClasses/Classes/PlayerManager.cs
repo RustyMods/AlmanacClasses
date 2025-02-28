@@ -102,7 +102,7 @@ public static class PlayerManager
     public static bool CanRegisterInput() => (IsPlayerValid() && CanPerformAction());
     public static void RefreshCurrentWeapon()
     {
-        if (IsPlayerValid() is false || CanPerformAction() is false) return;
+        if (!IsPlayerValid() || !CanPerformAction()) return;
         var weapon = Player.m_localPlayer.GetCurrentWeapon();
         if (weapon is null || !MonkeyWrench.IsMonkeyWrenchItem(weapon.m_shared.m_name)) return;
         Player.m_localPlayer.UnequipItem(weapon);
