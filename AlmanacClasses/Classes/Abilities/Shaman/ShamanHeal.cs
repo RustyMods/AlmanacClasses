@@ -14,7 +14,7 @@ public static class ShamanHeal
             if (!Player.m_localPlayer || Player.m_localPlayer.IsDead()) return false;
             Player.m_localPlayer.Heal(amount);
             Transform transform = Player.m_localPlayer.transform;
-            LoadedAssets.FX_Heal.Create(transform.position, transform.rotation, transform);
+            VFX.FX_Heal.Create(transform.position, transform.rotation, transform);
         }
         else
         {
@@ -22,7 +22,7 @@ public static class ShamanHeal
             if (character is not Player) return false;
             character.Heal(amount);
             Transform transform = character.transform;
-            LoadedAssets.FX_Heal.Create(transform.position, transform.rotation, transform);
+            VFX.FX_Heal.Create(transform.position, transform.rotation, transform);
         }
         
         return true;

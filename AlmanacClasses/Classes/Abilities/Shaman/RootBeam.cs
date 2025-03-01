@@ -25,7 +25,7 @@ public static class RootBeam
             Vector3 position = transform.position;
             Vector3 forward = Player.m_localPlayer.GetLookDir() * 5f;
             Vector3 target = position + forward + transform.up * 1.4f;
-            GameObject beam = Object.Instantiate(LoadedAssets.GDKingRoots, target, Quaternion.identity);
+            GameObject beam = Object.Instantiate(VFX.GDKingRoots, target, Quaternion.identity);
             if (beam.TryGetComponent(out Projectile projectile))
             {
                 projectile.name = "RootBeam";

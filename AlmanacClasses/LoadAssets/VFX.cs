@@ -4,7 +4,7 @@ using Object = UnityEngine.Object;
 
 namespace AlmanacClasses.LoadAssets;
 
-public static class LoadedAssets
+public static class VFX
 {
     private static GameObject VFX_BardNotes = null!;
     private static GameObject VFX_MagicRunes = null!;
@@ -52,7 +52,7 @@ public static class LoadedAssets
     
     private static readonly int EmissionColor = Shader.PropertyToID("_EmissionColor");
 
-    public static void InitVFX()
+    public static void Init()
     {
         ZNetScene instance = ZNetScene.instance;
 

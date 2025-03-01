@@ -10,7 +10,7 @@ public static class RavenTutorialManager
     private static readonly int Flyin = Animator.StringToHash("flyin");
     private static readonly int Teleportin = Animator.StringToHash("teleportin");
 
-    public static void InitCustomTutorials()
+    public static void Init()
     {
         GameObject altar = ZNetScene.instance.GetPrefab("AlmanacClassAltar");
         AddCustomTutorials(

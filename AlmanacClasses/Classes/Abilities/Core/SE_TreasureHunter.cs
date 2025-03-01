@@ -23,11 +23,11 @@ public class SE_TreasureHunter : StatusEffect
         m_talent = talent;
         m_ttl = talent.GetLength(talent.GetLevel());
         
-        if (LoadedAssets.SE_Finder != null)
+        if (VFX.SE_Finder != null)
         {
-          m_pingEffectNear = LoadedAssets.SE_Finder.m_pingEffectNear;
-          m_pingEffectMed = LoadedAssets.SE_Finder.m_pingEffectMed;
-          m_pingEffectFar = LoadedAssets.SE_Finder.m_pingEffectFar;
+          m_pingEffectNear = VFX.SE_Finder.m_pingEffectNear;
+          m_pingEffectMed = VFX.SE_Finder.m_pingEffectMed;
+          m_pingEffectFar = VFX.SE_Finder.m_pingEffectFar;
         }
         base.Setup(character);
     }

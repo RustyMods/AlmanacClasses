@@ -110,7 +110,7 @@ public static class AirBender
         Quaternion rotation = transform.rotation;
         Vector3 position = transform.position;
         instance.m_jumpEffects.Create(position, rotation, transform);
-        LoadedAssets.ShieldHitEffects.Create(position, rotation * Quaternion.Euler(90f, 0f, 0f), transform);
+        VFX.ShieldHitEffects.Create(position, rotation * Quaternion.Euler(90f, 0f, 0f), transform);
         instance.ResetCloth();
         instance.OnJump();
         instance.SetCrouch(false);

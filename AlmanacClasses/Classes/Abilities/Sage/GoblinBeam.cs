@@ -26,7 +26,7 @@ public static class GoblinBeam
             Vector3 position = transform.position;
             Vector3 forward = Player.m_localPlayer.GetLookDir() * 5f;
             Vector3 target = position + forward + transform.up * 1.4f;
-            GameObject beam = Object.Instantiate(LoadedAssets.GoblinBeam, target, Quaternion.identity);
+            GameObject beam = Object.Instantiate(VFX.GoblinBeam, target, Quaternion.identity);
             if (beam.TryGetComponent(out Projectile projectile))
             {
                 projectile.name = "SageBeam";

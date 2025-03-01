@@ -20,7 +20,7 @@ public static class SpawnSystem
             {
                 pos.y = height;
             }
-            LoadedAssets.StaffPreSpawnEffects.Create(pos, Quaternion.identity);
+            VFX.StaffPreSpawnEffects.Create(pos, Quaternion.identity);
             yield return new WaitForSeconds(0.5f);
             GameObject critter = Object.Instantiate(creature, pos, Quaternion.identity);
             
@@ -39,7 +39,7 @@ public static class SpawnSystem
     {
         yield return new WaitForSeconds(0.5f);
         Vector3 location = GetSpawnPosition();
-        LoadedAssets.StaffPreSpawnEffects.Create(location, Quaternion.identity);
+        VFX.StaffPreSpawnEffects.Create(location, Quaternion.identity);
         yield return new WaitForSeconds(2.5f);
         GameObject critter = Object.Instantiate(creature, location, Quaternion.identity);
         if (critter.TryGetComponent(out ZNetView component))
@@ -56,7 +56,7 @@ public static class SpawnSystem
     {
         if (Player.m_localPlayer.InEmote()) Player.m_localPlayer.StopEmote();
         Player.m_localPlayer.m_zanim.SetTrigger("staff_summon");
-        LoadedAssets.FX_SummonSkeleton.Create(Player.m_localPlayer.transform.position, Quaternion.identity);
+        VFX.FX_SummonSkeleton.Create(Player.m_localPlayer.transform.position, Quaternion.identity);
     }
     private static Vector3 GetSpawnPosition()
     {

@@ -186,12 +186,13 @@
         <Compile Include="Classes\ExperienceManager.cs" />
         <Compile Include="Classes\PlayerManager.cs" />
         <Compile Include="Classes\StaticExperience.cs" />
+        <Compile Include="Classes\TalentManager.cs" />
         <Compile Include="Classes\Talents.cs" />
         <Compile Include="FileSystem\FilePaths.cs" />
         <Compile Include="FileSystem\Watcher.cs" />
         <Compile Include="LoadAssets\AltarEffectFade.cs" />
         <Compile Include="LoadAssets\AnimationReplacer.cs" />
-        <Compile Include="LoadAssets\LoadEffects.cs" />
+        <Compile Include="LoadAssets\VFX.cs" />
         <Compile Include="LoadAssets\LoadPieces.cs" />
         <Compile Include="Managers\AnimationManager.cs" />
         <Compile Include="Managers\CommandsManager.cs" />

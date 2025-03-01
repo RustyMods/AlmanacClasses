@@ -3,9 +3,10 @@ Plugin adds a node based progression system that unlocks through experience gain
 
 Still in development, please report bugs and issues to me at OdinPlus while I keep balancing system.
 
-Update:
-0.4.15 - overhauled experience map. Please reconfigure new file. Old file is ignored. New file name: ExperienceMap.yml
-0.5.0 - improved experience gain from static objects (trees, rocks, plants) and visual feedback
+## Contributors
+- Dealman
+- JoshLaseter
+- Koreshx
 
 ## Highlights
 Unique talent abilities that are either passive or activated spells
@@ -68,11 +69,15 @@ AlmanacExperienceMap.yml is synced through server for admins to configure.
 - Get feedback from community to balance talents
 
 ## Commands
-- class_talents
-- talents_write
-- talents_test
-
-Each command has a help function that details the available tools
+```
+talents help - list of commands
+talents reset - reset almanac class data
+talents write - saves experience map to disk
+talents add [amount<int>] - add experience
+talents give [playerName<string>] [amount<int> - gives player experience, no cost must be enabled
+talents size - logs kilobyte size of class system data on player file
+talents save - saves class data
+```
 
 ## Changelog
 ```
@@ -116,6 +121,15 @@ Each command has a help function that details the available tools
 0.4.14 - Added check on RogueReflect if there is an attacker to reflect to - added config to cap characteristic talents
 0.4.15 - overhauled experience map, toggle to lose experience on death, min/max level to get experience from creature, added alternative airbender which only requires eitr to use
 0.5.0 - Added visual text effects and improved experience gain
+0.5.1 - Added static experience map file to configure
+0.5.1 - Fixed planting giving exp even if plant was not placed, added experience for fishing on hooked
+0.5.2 - something
+0.5.3 - Fixed EXP bar not updating, added Koreshx UI code to improve Spell bar
+0.5.4 - Added additional conditionals for ability cooldown to make sure player is active
+0.5.5 - Fixed not getting exp from veins and added method to get exp for foraging (add prefabs to static experience map)
+0.5.6 - Added ability to change background and changed Call of Lightning FX
+0.5.7 - Bog Witch update
+0.5.8 - Added PR from Dealman and JoshLaseter
 ```
 
 ![](https://i.imgur.com/F1w6ijU.png)

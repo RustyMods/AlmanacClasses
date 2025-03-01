@@ -68,7 +68,7 @@ public static class MonkeyWrench
     private static bool IsSkollAndHati(string name) => name is "KnifeSkollAndHati" or "$item_knife_skollandhati";
     private static bool IsAllowedStaff(string sharedName) => StaffItems.Contains(sharedName);
     private static bool IsCorrectSkillType(Skills.SkillType type) => type is Skills.SkillType.Swords or Skills.SkillType.Axes or Skills.SkillType.Polearms;
-    public static void InitTwoHandedWeapons()
+    public static void Init()
     {
         List<ItemDrop> items = ObjectDB.instance.GetAllItems(ItemDrop.ItemData.ItemType.TwoHandedWeapon, "");
         foreach (ItemDrop item in items)

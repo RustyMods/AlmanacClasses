@@ -56,14 +56,14 @@ public class SE_ShamanShield : StatusEffect
     {
         m_absorbDamage -= hit.GetTotalDamage();
         hit.ApplyModifier(0f);
-        LoadedAssets.ShieldHitEffects.Create(hit.m_point, Quaternion.LookRotation(-hit.m_dir), m_character.transform);
+        VFX.ShieldHitEffects.Create(hit.m_point, Quaternion.LookRotation(-hit.m_dir), m_character.transform);
     }
 
     public override bool IsDone()
     {
         if (m_absorbDamage > 0f) return m_ttl > 0.0 && m_time > m_ttl;
         Transform transform = m_character.transform;
-        LoadedAssets.ShieldBreakEffects.Create(m_character.GetCenterPoint(), transform.rotation, transform,
+        VFX.ShieldBreakEffects.Create(m_character.GetCenterPoint(), transform.rotation, transform,
             m_character.GetRadius() * 2f);
         
         return true;

@@ -17,7 +17,7 @@ public static class StatusEffectManager
     private static readonly Dictionary<string, StatusEffect> m_statusEffects = new();
     public static bool Loaded() => m_statusEffects.Count > 0;
     public static bool IsClassEffect(string name) => m_statusEffects.ContainsKey(name);
-    public static void InitStatusEffects(ObjectDB __instance)
+    public static void Init(ObjectDB __instance)
     {
         SE_Bleed Bleed = ScriptableObject.CreateInstance<SE_Bleed>();
         Bleed.name = "SE_Bleed";
@@ -25,7 +25,7 @@ public static class StatusEffectManager
         IceBreaker.name = "SE_IceBreaker";
         IceBreaker.m_ttl = 10f;
         IceBreaker.m_name = "Iced";
-        IceBreaker.m_startEffects = LoadedAssets.DragonBreathHit;
+        IceBreaker.m_startEffects = VFX.DragonBreathHit;
         SE_Characteristics characteristic = ScriptableObject.CreateInstance<SE_Characteristics>();
         characteristic.name = "SE_Characteristic";
         SE_SlowDown SlowDown = ScriptableObject.CreateInstance<SE_SlowDown>();

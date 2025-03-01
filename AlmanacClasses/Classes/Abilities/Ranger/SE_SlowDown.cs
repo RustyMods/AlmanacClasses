@@ -15,7 +15,7 @@ public class SE_SlowDown : StatusEffect
         if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
         m_talent = talent;
         m_ttl = 10f;
-        if (LoadedAssets.SE_Finder != null) m_startEffects = LoadedAssets.SE_Finder.m_pingEffectMed;
+        if (VFX.SE_Finder != null) m_startEffects = VFX.SE_Finder.m_pingEffectMed;
         base.Setup(character);
     }
 

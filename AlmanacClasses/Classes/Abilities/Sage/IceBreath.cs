@@ -15,7 +15,7 @@ public static class IceBreath
     {
         yield return new WaitForSeconds(0.1f);
         Transform transform = Player.m_localPlayer.transform;
-        LoadedAssets.DragonBreath.Create(Player.m_localPlayer.GetHeadPoint() + transform.forward * 3f, transform.rotation, transform);
+        VFX.DragonBreath.Create(Player.m_localPlayer.GetHeadPoint() + transform.forward * 3f, transform.rotation, transform);
         float timeout = 5f;
         float count = 0f;
         while (count < timeout)

@@ -16,7 +16,7 @@ public class SE_Bleed : StatusEffect
     {
         if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
         m_ttl = 5f;
-        m_startEffects = LoadedAssets.BleedEffects;
+        m_startEffects = VFX.BleedEffects;
         m_talent = talent;
         base.Setup(character);
     }

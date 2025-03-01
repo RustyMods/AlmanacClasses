@@ -30,7 +30,7 @@ public static class CallOfLightning
         Transform transform = Player.m_localPlayer.transform;
         if (talent.UseEffects())
         {
-            startEffects = LoadedAssets.FX_Electric.Create(transform.position, transform.rotation, transform, 1.5f);
+            startEffects = VFX.FX_Electric.Create(transform.position, transform.rotation, transform, 1.5f);
         }
         yield return new WaitForSeconds(delay);
         for (int index = 0; index < characters.Count; index++)
@@ -42,7 +42,7 @@ public static class CallOfLightning
             if (character.GetFaction() is Character.Faction.Players) continue;
             yield return new WaitForSeconds(1f);
 
-            LoadedAssets.FX_ChainLightning_Hit.Create(character.transform.position, character.transform.rotation, character.transform);
+            VFX.FX_ChainLightning_Hit.Create(character.transform.position, character.transform.rotation, character.transform);
 
             HitData hit = new HitData
             {

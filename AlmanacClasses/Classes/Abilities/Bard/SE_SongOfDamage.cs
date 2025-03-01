@@ -25,7 +25,7 @@ public class SE_SongOfDamage : StatusEffect
         }
         base.Setup(character);
         Transform transform = m_character.transform;
-        m_customEffects = LoadedAssets.SFX_Dverger_Shot.Create(transform.position, transform.rotation, transform);
+        m_customEffects = VFX.SFX_Dverger_Shot.Create(transform.position, transform.rotation, transform);
     }
 
     public override void UpdateStatusEffect(float dt)

@@ -18,7 +18,7 @@ public static class StoneThrow
         yield return new WaitForSeconds(delay);
         Transform transform = Player.m_localPlayer.transform;
         Vector3 pos = transform.position + transform.up * 5f + Player.m_localPlayer.GetLookDir();
-        GameObject spell = Object.Instantiate(LoadedAssets.TrollStone, pos, Quaternion.identity);
+        GameObject spell = Object.Instantiate(VFX.TrollStone, pos, Quaternion.identity);
         if (spell.TryGetComponent(out Projectile projectile))
         {
             projectile.name = "StoneThrow";

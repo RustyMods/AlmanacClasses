@@ -37,8 +37,8 @@ public class Friendly : MonoBehaviour
         m_tame.m_character.SetTamed(true);
         var owner = Player.GetPlayer(m_nview.GetZDO().GetLong(ZDOVars.s_owner)) ?? Player.m_localPlayer;
         if(owner) m_tame.Command(owner, false);
-        m_tame.m_sootheEffect = LoadedAssets.SoothEffects;
-        m_tame.m_unSummonEffect = LoadedAssets.UnSummonEffects;
+        m_tame.m_sootheEffect = VFX.SoothEffects;
+        m_tame.m_unSummonEffect = VFX.UnSummonEffects;
         m_tame.m_levelUpOwnerSkill = Skills.SkillType.BloodMagic;
         m_tame.m_commandable = true;
         m_tame.m_startsTamed = true;
@@ -61,8 +61,8 @@ public class Friendly : MonoBehaviour
         m_humanoid.m_boss = false;
         m_tame.m_character.SetTamed(true);
         m_tame.Command(Player.GetPlayer(m_nview.GetZDO().GetLong(ZDOVars.s_owner)) ?? Player.m_localPlayer, false);
-        m_tame.m_sootheEffect = LoadedAssets.SoothEffects;
-        m_tame.m_unSummonEffect = LoadedAssets.UnSummonEffects;
+        m_tame.m_sootheEffect = VFX.SoothEffects;
+        m_tame.m_unSummonEffect = VFX.UnSummonEffects;
         m_tame.m_levelUpOwnerSkill = Skills.SkillType.BloodMagic;
         m_tame.m_commandable = true;
         m_tame.m_startsTamed = true;

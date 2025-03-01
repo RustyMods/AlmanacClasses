@@ -14,11 +14,11 @@ public static class ObjectDBPatches
         {
             if (!__instance || !ZNetScene.instance) return;
             SpriteManager.LoadSpriteResources();
-            LoadedAssets.InitVFX();
-            RavenTutorialManager.InitCustomTutorials();
-            MonkeyWrench.InitTwoHandedWeapons();
-            TalentManager.InitializeTalents();
-            StatusEffectManager.InitStatusEffects(__instance);
+            VFX.Init();
+            RavenTutorialManager.Init();
+            MonkeyWrench.Init();
+            TalentManager.Init();
+            StatusEffectManager.Init(__instance);
             ExperienceManager.LoadExperienceOrbs();
         }
     }

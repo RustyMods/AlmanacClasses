@@ -40,7 +40,7 @@ public static class CommandsManager
                 SpellBook.m_abilities.Clear();
                 LoadUI.ResetTalents(true);
                 ExperienceBar.UpdateExperienceBar();
-                TalentManager.InitializeTalents();
+                TalentManager.Init();
                 AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo("Reset all classes data");
                 return true;
             });
@@ -59,7 +59,7 @@ public static class CommandsManager
                 ExperienceManager.WriteExperienceMap();
                 return true;
             });
-            TalentCommand add = new TalentCommand("add", "[amount<int>] adds experience to local player", args =>
+            TalentCommand add = new TalentCommand("add", "[amount<int>] adds experience to local player, no cost must be enabled", args =>
             {
                 if (!Player.m_localPlayer.NoCostCheat())
                 {
@@ -133,7 +133,7 @@ public static class CommandsManager
                     list.Sort();
                     return list;
                 });
-            TalentCommand give = new TalentCommand("give", "[playerName<string>] [amount<int>] gives player experience, admin only, no cost must be enabled",
+            TalentCommand give = new TalentCommand("give", "[playerName<string>] [amount<int>] gives player experience, no cost must be enabled",
                 args =>
                 {
                     if (!Player.m_localPlayer.NoCostCheat())
