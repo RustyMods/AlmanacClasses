@@ -17,7 +17,7 @@ public class PassiveButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public Talent m_talent = null!;
     public bool m_shouldUpdate = true;
     private float m_timer;
-    public void Awake()
+    public void Init()
     {
         m_button = GetComponent<Button>();
         m_border = transform.Find("$image_border").GetComponent<Image>();
@@ -48,7 +48,6 @@ public class PassiveButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public void OnClick(UnityAction action) => m_button.onClick.AddListener(action);
     public void OnPointerEnter(PointerEventData eventData) => m_name.gameObject.SetActive(true);
     public void OnPointerExit(PointerEventData eventData) => m_name.gameObject.SetActive(false);
-
     public static void OnFontChange(Font? font)
     {
         foreach (var instance in m_instances)

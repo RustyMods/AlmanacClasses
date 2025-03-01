@@ -43,6 +43,15 @@ public static class PlayerManager
     public const string m_playerDataKey = "AlmanacClassesPlayerData_New";
     public static PlayerData m_tempPlayerData = new();
     public static readonly Dictionary<string, Talent> m_playerTalents = new();
+    private static float m_updateTimer;
+    public static void UpdatePassiveEffects(float dt)
+    {
+        if (!Player.m_localPlayer || !StatusEffectManager.Loaded()) return;
+        m_updateTimer += dt;
+        if (m_updateTimer < 1f) return;
+        m_updateTimer = 0.0f;
+        AddPassiveStatusEffects(Player.m_localPlayer);
+    }
 
     public static void ResetPlayerData()
     {
@@ -85,16 +94,6 @@ public static class PlayerManager
         {
             // ignored
         }
-    }
-
-    private static float m_updateTimer;
-    public static void UpdatePassiveEffects(float dt)
-    {
-        if (!Player.m_localPlayer || !StatusEffectManager.Loaded()) return;
-        m_updateTimer += dt;
-        if (m_updateTimer < 1f) return;
-        m_updateTimer = 0.0f;
-        AddPassiveStatusEffects(Player.m_localPlayer);
     }
 
     public static bool IsPlayerValid() => (Player.m_localPlayer is not null);
@@ -140,7 +139,7 @@ public static class PlayerManager
         {
             if (!TalentManager.m_talents.TryGetValue(kvp.Value, out Talent match)) continue;
             if (match == null) continue;
-            SpellBook.m_abilities[kvp.Key] = new SpellBook.AbilityData() { m_data = match };
+            SpellBook.m_abilities[kvp.Key] = new SpellBook.AbilityData(match);
         }
     }
 
@@ -158,7 +157,7 @@ public static class PlayerManager
             }
             if (match.m_type is not TalentType.Characteristic) continue;
             if (match.m_characteristic == null) continue;
-            CharacteristicManager.AddCharacteristic(match.GetCharacteristicType(), match.GetCharacteristic(match.GetLevel()));
+            CharacteristicManager.Add(match.GetCharacteristicType(), match.GetCharacteristic(match.GetLevel()));
         }
         CheckAltTalents();
     }

@@ -21,13 +21,14 @@ public class SpellInfo : MonoBehaviour
         m_texts = GetComponentsInChildren<Text>();
         transform.SetAsFirstSibling();
         SetPosition(AlmanacClassesPlugin._SpellBookPos.Value + AlmanacClassesPlugin._MenuTooltipPosition.Value);
-        SetMenuVisible(false);
         m_name = Utils.FindChild(transform, "$text_name").GetComponent<Text>();
         m_description = Utils.FindChild(transform, "$text_description").GetComponent<Text>();
+        Hide();
     }
 
     public void SetPosition(Vector3 pos) => transform.position = pos;
-    public void SetMenuVisible(bool enable) => gameObject.SetActive(enable);
+    public void Show() => gameObject.SetActive(true);
+    public void Hide() => gameObject.SetActive(false);
     public bool IsVisible() => gameObject.activeInHierarchy;
     public void SetName(string text) => m_name.text = text;
     public void SetDescription(string text) => m_description.text = text;

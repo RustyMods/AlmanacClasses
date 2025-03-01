@@ -44,7 +44,7 @@ public static class Prestige
         AddLevel(SelectedTalent);
         CharacteristicManager.UpdateCharacteristics();
         Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_prestiged " + SelectedTalent.GetName() + " $almanac_to $text_lvl " + SelectedTalent.GetLevel());
-        TalentBook.ShowUI();
+        SkillTree.m_instance.Show();
         UpdateSelectedPrestigeTooltip();
     }
     
@@ -66,20 +66,18 @@ public static class Prestige
         if (SelectedTalent is null) return;
         if (SelectedTalent.GetLevel() >= SelectedTalent.GetPrestigeCap())
         {
-            LoadUI.TalentName.text = Localization.instance.Localize(string.Format("{0} $text_lvl {1}",
-                SelectedTalent.GetName(), SelectedTalent.GetLevel()));
-            LoadUI.TalentDescription.text = SelectedTalent.GetTooltip();
-            LoadUI.TalentCost.text = Localization.instance.Localize($"$almanac_cost: <color=orange>{SelectedTalent.GetCost()}</color>");
-            LoadUI.ActivePassive.text = Localization.instance.Localize(SelectedTalent.GetTalentType());
+            SkillTree.m_instance.SetSelectedName($"{SelectedTalent.GetName()} $text_lvl {SelectedTalent.GetLevel()}");
+            SkillTree.m_instance.SetSelectedDescription(SelectedTalent.GetTooltip());
+            SkillTree.m_instance.SetSelectedCost($"$almanac_cost: <color=orange>{SelectedTalent.GetCost()}</color>");
+            SkillTree.m_instance.SetSelectedType(SelectedTalent.GetTalentType());
         }
         else
         {
-            LoadUI.TalentName.text = Localization.instance.Localize(string.Format("{0} $text_lvl {1} --> <color=$FF5733>{2}</color>",
-                SelectedTalent.GetName(), SelectedTalent.GetLevel(),
-                SelectedTalent.GetLevel() + 1));
-            LoadUI.TalentDescription.text = SelectedTalent.GetPrestigeTooltip();
-            LoadUI.TalentCost.text = Localization.instance.Localize($"$almanac_cost: <color=orange>{SelectedTalent.GetCost()}</color>");
-            LoadUI.ActivePassive.text = Localization.instance.Localize(SelectedTalent.GetTalentType());
+            SkillTree.m_instance.SetSelectedName(
+                $"{SelectedTalent.GetName()} $text_lvl {SelectedTalent.GetLevel()} --> <color=$FF5733>{SelectedTalent.GetLevel() + 1}</color>");
+            SkillTree.m_instance.SetSelectedDescription(SelectedTalent.GetPrestigeTooltip());
+            SkillTree.m_instance.SetSelectedCost($"$almanac_cost: <color=orange>{SelectedTalent.GetCost()}</color>");
+            SkillTree.m_instance.SetSelectedType(SelectedTalent.GetTalentType());
         }
     }
     

@@ -2,11 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using AlmanacClasses.Classes;
-using AlmanacClasses.Classes.Abilities;
-using AlmanacClasses.Classes.Abilities.Warrior;
-using AlmanacClasses.Managers;
-using BepInEx;
-using BepInEx.Configuration;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -16,48 +11,11 @@ namespace AlmanacClasses.UI;
 public static class LoadUI
 {
     [Header("Assets")]
-    private static ButtonSfx sfx = null!;
-    private static Button buttonComponent = null!;
-    [Header("GameObjects")]
-    public static GameObject SkillTree_UI = null!;
-    public static GameObject SpellBarHoverName = null!;
-    [Header("Image Elements")]
-    public static Image ExperienceBarFill = null!;
-    public static Image PanelBackground = null!;
-    public static Image HeaderBackground = null!;
-    public static Image StatsBackground = null!;
-    public static Image TooltipBackground = null!;
-    [Header("Text Elements")]
-    public static Text PointsUsed = null!;
-    public static Text RequiredPoints = null!;
-    public static Text PrestigeText = null!;
-    public static Text LevelText = null!;
-    public static Text ExperienceTitleText = null!;
-    public static Text ExperienceText = null!;
-    public static Text TalentPointsText = null!;
-    public static Text TalentName = null!;
-    public static Text TalentDescription = null!;
-    public static Text TalentCost = null!;
-    public static Text ActivePassive = null!;
-    public static Text CharacteristicsTitleText = null!;
-    public static Text ConstitutionText = null!;
-    public static Text DexterityText = null!;
-    public static Text IntelligenceText = null!;
-    public static Text StrengthText = null!;
-    public static Text WisdomText = null!;
-    public static Text SpellBarHotKeyTooltip = null!;
-    public static Text ResetButtonText = null!;
-    public static Text ClassBardText = null!;
-    public static Text ClassShamanText = null!;
-    public static Text ClassSageText = null!;
-    public static Text ClassWarriorText = null!;
-    public static Text ClassRogueText = null!;
-    public static Text ClassRangerText = null!;
+    public static ButtonSfx m_vanillaButtonSFX = null!;
+    public static Button m_vanillaButton = null!;
     [Header("All Texts")] 
     public static readonly List<Text> AllTexts = new();
-    
     [Header("Fill Lines")]
-    private static bool m_initLineFillSet;
     #region All Fill Lines Images
     #region Line Up
     private static Image LineCoreUp = null!;
@@ -198,17 +156,13 @@ public static class LoadUI
         { "$button_rogue_talent_5", new(){"$button_rogue_1", "$button_rogue_2", "$button_rogue_talent_2"}},
         { "$button_warrior_talent_5", new(){"$button_warrior_1", "$button_warrior_2", "$button_warrior_talent_2"}},
     };
-
-    public static void OnLogout() => m_initLineFillSet = false;
     public static void InitHud(Hud instance)
     {
         AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Initializing HUD");
         var ExperienceBarHUD = Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("Experience_Bar"), instance.transform, false);
-        ExperienceBarHUD.AddComponent<ExperienceBarMove>();
         ExperienceBarHUD.AddComponent<ExperienceBar>().Init();
         var SpellBar = Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_UI"), Hud.instance.transform, false);
         SpellBar.AddComponent<SpellBook>().Init();
-        SpellBar.AddComponent<SpellBarMove>();
         var PassiveBar = Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("PassiveBar_UI"), Hud.instance.transform, false);
         PassiveBar.AddComponent<PassiveBar>().Init();
         
@@ -220,114 +174,26 @@ public static class LoadUI
         
         Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("ElementHover_UI"), instance.transform, false).AddComponent<SpellInfo>().Init();
         AddFonts(SpellInfo.m_instance.m_texts, font);
-        
-        GameObject HoverName = new GameObject("title");
-        HoverName.AddComponent<RectTransform>();
-        Text text = HoverName.AddComponent<Text>();
-        text.font = font;
-        text.fontSize = 20;
-        text.alignment = TextAnchor.MiddleCenter;
-        text.supportRichText = true;
-        text.horizontalOverflow = HorizontalWrapMode.Overflow;
-        text.verticalOverflow = VerticalWrapMode.Overflow;
-        text.raycastTarget = false;
-
-        SpellBarHoverName = HoverName;
-    }
-    public static void UpdateBackground()
-    {
-        if (AlmanacClassesPlugin._CustomBackground.Value.IsNullOrWhiteSpace()) return;
-        if (PanelBackground == null) return;
-        if (!SpriteManager.m_backgrounds.TryGetValue(AlmanacClassesPlugin._CustomBackground.Value, out Sprite background)) return;
-        PanelBackground.sprite = background;
-        HeaderBackground.sprite = background;
-        StatsBackground.sprite = background;
-        TooltipBackground.sprite = background;
     }
     public static void InitSkillTree(InventoryGui instance)
     {
         AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Initializing talent UI");
         Transform vanillaButton = Utils.FindChild(Utils.FindChild(instance.transform, "TrophiesFrame"), "Closebutton");
-        sfx = vanillaButton.GetComponent<ButtonSfx>();
-        buttonComponent = vanillaButton.GetComponent<Button>();
-
-        SkillTree_UI = Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("Almanac_SkillTree"), instance.transform, false);
-        SkillTree_UI.SetActive(false);
-
-        PanelBackground = SkillTree_UI.GetComponent<Image>();
-        HeaderBackground = SkillTree_UI.transform.Find("Panel/$part_header/$part_title/Background").GetComponent<Image>();
-        StatsBackground = SkillTree_UI.transform.Find("Panel/$part_header/$part_stats").GetComponent<Image>();
-        TooltipBackground = SkillTree_UI.transform.Find("Panel/$part_header/$part_tooltip").GetComponent<Image>();
-        UpdateBackground();
-        SetTextFont();
-
-        PrestigeText = Utils.FindChild(SkillTree_UI.transform, "$text_prestige").GetComponent<Text>();
-        LevelText = Utils.FindChild(SkillTree_UI.transform, "$text_level").GetComponent<Text>();
-        ExperienceTitleText = Utils.FindChild(SkillTree_UI.transform, "$text_experience_title").GetComponent<Text>();
-        ExperienceText = Utils.FindChild(SkillTree_UI.transform, "$text_experience").GetComponent<Text>();
-        TalentPointsText = Utils.FindChild(SkillTree_UI.transform, "$text_talent_points").GetComponent<Text>();
-        TalentName = Utils.FindChild(SkillTree_UI.transform, "$text_name").GetComponent<Text>();
-        TalentDescription = Utils.FindChild(SkillTree_UI.transform, "$text_description").GetComponent<Text>();
-        TalentCost = Utils.FindChild(SkillTree_UI.transform, "$text_cost").GetComponent<Text>();
-        ActivePassive = Utils.FindChild(SkillTree_UI.transform, "$text_active_passive").GetComponent<Text>();
-
-        CharacteristicsTitleText = Utils.FindChild(SkillTree_UI.transform, "$text_stats_title").GetComponent<Text>();
-        CharacteristicsTitleText.resizeTextForBestFit = true;
-        ConstitutionText = Utils.FindChild(SkillTree_UI.transform, "$text_constitution").GetComponent<Text>();
-        DexterityText = Utils.FindChild(SkillTree_UI.transform, "$text_dexterity").GetComponent<Text>();
-        IntelligenceText = Utils.FindChild(SkillTree_UI.transform, "$text_intelligence").GetComponent<Text>();
-        StrengthText = Utils.FindChild(SkillTree_UI.transform, "$text_strength").GetComponent<Text>();
-        WisdomText = Utils.FindChild(SkillTree_UI.transform, "$text_wisdom").GetComponent<Text>();
-        SpellBarHotKeyTooltip = Utils.FindChild(SkillTree_UI.transform, "$part_hotkey_tooltip").GetComponent<Text>();
-        SpellBarHotKeyTooltip.text = Localization.instance.Localize($"$info_spellbook_key: <color=orange>{AlmanacClassesPlugin._SpellAlt.Value}</color>");
-        ExperienceBarFill = Utils.FindChild(SkillTree_UI.transform, "$image_experience_fill").GetComponent<Image>();
-
-        PointsUsed = Utils.FindChild(SkillTree_UI.transform, "$text_used_points").GetComponent<Text>();
-        PointsUsed.resizeTextForBestFit = true;
-        RequiredPoints = Utils.FindChild(SkillTree_UI.transform, "$text_prestige_needed").GetComponent<Text>();
-        RequiredPoints.resizeTextForBestFit = true;
-
-        ClassBardText = Utils.FindChild(SkillTree_UI.transform, "$text_bard").GetComponent<Text>();
-        ClassShamanText = Utils.FindChild(SkillTree_UI.transform, "$text_shaman").GetComponent<Text>();
-        ClassSageText = Utils.FindChild(SkillTree_UI.transform, "$text_sage").GetComponent<Text>();
-        ClassWarriorText = Utils.FindChild(SkillTree_UI.transform, "$text_warrior").GetComponent<Text>();
-        ClassRogueText = Utils.FindChild(SkillTree_UI.transform, "$text_rogue").GetComponent<Text>();
-        ClassRangerText = Utils.FindChild(SkillTree_UI.transform, "$text_ranger").GetComponent<Text>();
-
-        // Static Elements
-        Utils.FindChild(SkillTree_UI.transform, "$text_title").GetComponent<Text>().text = "$title_talents";
-        Utils.FindChild(SkillTree_UI.transform, "$text_constitution_title").GetComponent<Text>().text = Localization.instance.Localize("$almanac_constitution");
-        Utils.FindChild(SkillTree_UI.transform, "$text_dexterity_title").GetComponent<Text>().text = Localization.instance.Localize("$almanac_dexterity");
-        Utils.FindChild(SkillTree_UI.transform, "$text_intelligence_title").GetComponent<Text>().text = Localization.instance.Localize("$almanac_intelligence");
-        Utils.FindChild(SkillTree_UI.transform, "$text_strength_title").GetComponent<Text>().text = Localization.instance.Localize("$almanac_strength");
-        Utils.FindChild(SkillTree_UI.transform, "$text_wisdom_title").GetComponent<Text>().text = Localization.instance.Localize("$almanac_wisdom");
-
-        LoadCloseButton();
-        LoadResetButton();
+        m_vanillaButtonSFX = vanillaButton.GetComponent<ButtonSfx>();
+        m_vanillaButton = vanillaButton.GetComponent<Button>();
+        var prefab = Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("Almanac_SkillTree"), instance.transform, false);
+        prefab.AddComponent<SkillTree>().Init();
+        Font? font = GetFont(AlmanacClassesPlugin._Font.Value);
+        AddFonts(SkillTree.m_instance.m_texts, font);
         RegisterButtons();
-        Utils.FindChild(SkillTree_UI.transform, "$button_center").GetComponent<Button>().onClick.AddListener(Prestige.OnClickPrestige);
         RegisterFillLines();
         SetAllButtonEvents();
     }
-
-    public static void SetInitialFillLines()
-    {
-        if (m_initLineFillSet) return;
-        TalentButton.ClearAll();
-        foreach (KeyValuePair<string, Talent> kvp in PlayerManager.m_playerTalents)
-        {
-            string buttonName = kvp.Value.m_button;
-            if (!TalentButton.m_allButtons.TryGetValue(buttonName, out TalentButton talentButton)) continue;
-            talentButton.SetCheckmark(true);
-        }
-
-        FillLines.UpdateFillLines();
-        m_initLineFillSet = true;
-    }
+    
     #region Set Line Methods
     private static void RegisterFillLines()
     {
-        Transform lines = Utils.FindChild(SkillTree_UI.transform, "$part_lines");
+        Transform lines = Utils.FindChild(SkillTree.m_instance.transform, "$part_lines");
         SetLineUp(lines);
         SetLineBard(lines);
         SetLineShaman(lines);
@@ -483,93 +349,17 @@ public static class LoadUI
         LineRadial8 = lineRadial.Find("$line_8/$part_line/LineFill").GetComponent<Image>();
     }
     #endregion
-    private static void LoadCloseButton()
-    {
-        Transform closeButton = Utils.FindChild(SkillTree_UI.transform, "$button_close");
-        if (closeButton.TryGetComponent(out Button component))
-        {
-            component.transition = Selectable.Transition.SpriteSwap;
-            component.spriteState = buttonComponent.spriteState;
-            component.onClick.AddListener(TalentBook.HideUI);
-        }
-
-        closeButton.gameObject.AddComponent<ButtonSfx>().m_sfxPrefab = sfx.m_sfxPrefab;
-    }
-    private static void LoadResetButton()
-    {
-        Transform resetButton = Utils.FindChild(SkillTree_UI.transform, "$button_reset");
-
-        ResetButtonText = resetButton.GetChild(0).GetComponent<Text>();
-        
-        if (resetButton.TryGetComponent(out Button component))
-        {
-            component.transition = Selectable.Transition.SpriteSwap;
-            component.spriteState = buttonComponent.spriteState;
-            component.onClick.AddListener(OnReset);
-        }
-
-        resetButton.gameObject.AddComponent<ButtonSfx>().m_sfxPrefab = sfx.m_sfxPrefab;
-    }
-    private static void OnReset()
-    {
-        if (Player.m_localPlayer.GetInventory().CountItems("$item_coins") < AlmanacClassesPlugin._ResetCost.Value)
-        {
-            Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"$text_cost {AlmanacClassesPlugin._ResetCost.Value} $item_coins $text_to_reset");
-            return;
-        }
-
-        if (AbilityManager.OnCooldown())
-        {
-            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_on_cooldown");
-            return;
-        }
-        Player.m_localPlayer.GetInventory().RemoveItem("$item_coins", AlmanacClassesPlugin._ResetCost.Value);
-        ResetTalents();
-        ExperienceBar.UpdateExperienceBar();
-    }
-    private static void RemoveStatusEffects()
-    {
-        List<StatusEffect> effects = Player.m_localPlayer.GetSEMan().GetStatusEffects().FindAll(x => StatusEffectManager.IsClassEffect(x.name));
-        foreach (StatusEffect effect in effects)
-        {
-            Player.m_localPlayer.GetSEMan().RemoveStatusEffect(effect);
-        }
-    }
-    public static void ResetTalents(bool command = false)
-    {
-        MonkeyWrench.ResetTwoHandedWeapons();
-        SpellBook.m_abilities.Clear();
-        RemoveStatusEffects();
-        TalentButton.ClearAll();
-        FillLines.Reset();
-        PlayerManager.ResetPlayerData();
-        CharacteristicManager.ResetCharacteristics();
-        TalentManager.ResetTalentLevels();
-        Prestige.SelectedTalent = null;
-        TalentButton.SetAllButtonColors(Color.white);
-        PassiveBar.m_instance.Clear();
-        UnEquipWeapons();
-        if (!command) TalentBook.ShowUI();
-    }
-    private static void UnEquipWeapons()
-    {
-        if (Player.m_localPlayer is not { } player) return;
-        ItemDrop.ItemData? right = player.GetRightItem();
-        ItemDrop.ItemData? left = player.GetLeftItem();
-        if (right != null) player.UnequipItem(right);
-        if (left != null) player.UnequipItem(left);
-    }
     private static void RegisterButtons()
     {
         TalentButton.m_allButtons.Clear();
-        Transform talents = Utils.FindChild(SkillTree_UI.transform, "$part_talents");
+        Transform talents = Utils.FindChild(SkillTree.m_instance.transform, "$part_talents");
         foreach (Button button in talents.GetComponentsInChildren<Button>())
         {
             button.gameObject.AddComponent<TalentButton>().Init();
             AddSFX(button);
         }
     }
-    private static void AddSFX(Button button) => button.gameObject.AddComponent<ButtonSfx>().m_sfxPrefab = sfx.m_sfxPrefab;
+    private static void AddSFX(Button button) => button.gameObject.AddComponent<ButtonSfx>().m_sfxPrefab = m_vanillaButtonSFX.m_sfxPrefab;
     private static void SetAllButtonEvents()
     {
         SetCoreButtonsEvents();
@@ -582,8 +372,8 @@ public static class LoadUI
     }
     private static void SetCoreButtonsEvents()
     {
-        Transform? CoreCharacteristics = Utils.FindChild(SkillTree_UI.transform, "$part_core_characteristics");
-        Transform? CoreTalents = Utils.FindChild(SkillTree_UI.transform, "$part_core_talents");
+        Transform? CoreCharacteristics = Utils.FindChild(SkillTree.m_instance.transform, "$part_core_characteristics");
+        Transform? CoreTalents = Utils.FindChild(SkillTree.m_instance.transform, "$part_core_talents");
         TalentButton.SetButton(CoreCharacteristics, "$button_core_1", new Dictionary<string, Image>
         {
             {"$button_center", LineCoreUp}, 
@@ -619,8 +409,9 @@ public static class LoadUI
     }
     private static void SetBardButtonEvents()
     {
-        Transform? BardTalents = Utils.FindChild(SkillTree_UI.transform, "$part_bard_talents");
-        Transform? BardCharacteristics = Utils.FindChild(SkillTree_UI.transform, "$part_bard_characteristics");
+        Transform? BardTalents = Utils.FindChild(SkillTree.m_instance.transform, "$part_bard_talents");
+        Transform? BardCharacteristics = Utils.FindChild(SkillTree.m_instance.transform, "$part_bard_characteristics");
+
         TalentButton.SetButton(BardCharacteristics, "$button_bard_1", new(){{"$button_center", LineCoreBard}, {"$button_bard_talent_1", LineBard1Right}, {"$button_shaman_talent_1", LineBard1Left}},  "Bard1");
         TalentButton.SetButton(BardCharacteristics, "$button_bard_2", new(){{"$button_bard_1", LineCoreBard2}},  "Bard2");
         TalentButton.SetButton(BardCharacteristics, "$button_bard_3", new(){{"$button_bard_2", LineBard2Right}},  "Bard3");
@@ -635,8 +426,8 @@ public static class LoadUI
     }
     private static void SetShamanButtonEvents()
     {
-        Transform ShamanTalents = Utils.FindChild(SkillTree_UI.transform, "$part_shaman_talents");
-        Transform ShamanCharacteristics = Utils.FindChild(SkillTree_UI.transform, "$part_shaman_characteristics");
+        Transform ShamanTalents = Utils.FindChild(SkillTree.m_instance.transform, "$part_shaman_talents");
+        Transform ShamanCharacteristics = Utils.FindChild(SkillTree.m_instance.transform, "$part_shaman_characteristics");
         TalentButton.SetButton(ShamanCharacteristics, "$button_shaman_1", new()
         {
             {"$button_center", LineCoreShaman}, {"$button_shaman_talent_1", LineShaman1Right}, {"$button_sage_talent_1", LineShaman1Left}
@@ -654,8 +445,8 @@ public static class LoadUI
     }
     private static void SetSageButtonEvents()
     {
-        Transform SageTalents = Utils.FindChild(SkillTree_UI.transform, "$part_sage_talents");
-        Transform SageCharacteristics = Utils.FindChild(SkillTree_UI.transform, "$part_sage_characteristics");
+        Transform SageTalents = Utils.FindChild(SkillTree.m_instance.transform, "$part_sage_talents");
+        Transform SageCharacteristics = Utils.FindChild(SkillTree.m_instance.transform, "$part_sage_characteristics");
         TalentButton.SetButton(SageCharacteristics, "$button_sage_1", new(){{"$button_center", LineCoreSage}, {"$button_sage_talent_1", LineSage1Right}, {"$button_sneak", LineSage1Left}},  "Sage1");
         TalentButton.SetButton(SageCharacteristics, "$button_sage_2", new(){{"$button_sage_1", LineCoreSage2}},  "Sage2");
         TalentButton.SetButton(SageCharacteristics, "$button_sage_3", new(){{"$button_sage_2", LineSage2Right}},  "Sage3");
@@ -670,8 +461,8 @@ public static class LoadUI
     }
     private static void SetRangerButtonEvents()
     {
-        Transform RangerTalents = Utils.FindChild(SkillTree_UI.transform, "$part_ranger_talents");
-        Transform RangerCharacteristics = Utils.FindChild(SkillTree_UI.transform, "$part_ranger_characteristics");
+        Transform RangerTalents = Utils.FindChild(SkillTree.m_instance.transform, "$part_ranger_talents");
+        Transform RangerCharacteristics = Utils.FindChild(SkillTree.m_instance.transform, "$part_ranger_characteristics");
         TalentButton.SetButton(RangerCharacteristics, "$button_ranger_1", new()
         {
             {"$button_center", LineCoreRanger},
@@ -709,8 +500,8 @@ public static class LoadUI
     }
     private static void SetRogueButtonEvents()
     {
-        Transform RogueTalents = Utils.FindChild(SkillTree_UI.transform, "$part_rogue_talents");
-        Transform RogueCharacteristics = Utils.FindChild(SkillTree_UI.transform, "$part_rogue_characteristics");
+        Transform RogueTalents = Utils.FindChild(SkillTree.m_instance.transform, "$part_rogue_talents");
+        Transform RogueCharacteristics = Utils.FindChild(SkillTree.m_instance.transform, "$part_rogue_characteristics");
         TalentButton.SetButton(RogueCharacteristics, "$button_rogue_1", new()
         {
             {"$button_center", LineCoreRogue},
@@ -747,8 +538,8 @@ public static class LoadUI
     }
     private static void SetWarriorButtonEvents()
     {
-        Transform WarriorTalents = Utils.FindChild(SkillTree_UI.transform, "$part_warrior_talents");
-        Transform WarriorCharacteristics = Utils.FindChild(SkillTree_UI.transform, "$part_warrior_characteristics");
+        Transform WarriorTalents = Utils.FindChild(SkillTree.m_instance.transform, "$part_warrior_talents");
+        Transform WarriorCharacteristics = Utils.FindChild(SkillTree.m_instance.transform, "$part_warrior_characteristics");
         TalentButton.SetButton(WarriorCharacteristics, "$button_warrior_1", new()
         {
             {"$button_center", LineCoreWarrior},
@@ -817,7 +608,7 @@ public static class LoadUI
             switch (talent.m_type)
             {
                 case TalentType.Ability or TalentType.StatusEffect:
-                    SpellBook.AddToSpellBook(alt);
+                    SpellBook.Add(alt);
                     break;
                 case TalentType.Passive:
                     if (talent.m_status is { } passiveStatus) Player.m_localPlayer.GetSEMan().AddStatusEffect(passiveStatus.NameHash());
@@ -837,7 +628,7 @@ public static class LoadUI
             switch (original.m_type)
             {
                 case TalentType.Ability or TalentType.StatusEffect:
-                    SpellBook.AddToSpellBook(original);
+                    SpellBook.Add(original);
                     break;
                 case TalentType.Passive:
                     if (talent.m_status is { } passiveStatus)
@@ -846,32 +637,6 @@ public static class LoadUI
             }
         }
     }
-    public static void PurchaseTalent(Talent ability)
-    {
-        PlayerManager.m_playerTalents[ability.m_key] = ability;
-        PlayerManager.m_tempPlayerData.m_boughtTalents[ability.m_key] = 1;
-        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_purchased");
-    }
-
-    public static void AddStatusEffect(Talent ability)
-    {
-        if (ability.m_status is not { } status) return;
-        Player.m_localPlayer.GetSEMan().AddStatusEffect(status.NameHash());
-    }
-
-    public static void CheckMonkeyWrench(Talent ability)
-    {
-        if (ability.m_key != "MonkeyWrench") return;
-        MonkeyWrench.ModifyTwoHandedWeapons();
-        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_two_handed");
-    }
-    private static void SetTextFont()
-    {
-        Font? font = GetFont(AlmanacClassesPlugin._Font.Value);
-        Text[] texts = SkillTree_UI.GetComponentsInChildren<Text>();
-        AddFonts(texts, font);
-    }
-
     private static void AddFonts(Text[] array, Font? font)
     {
         foreach (Text text in array)

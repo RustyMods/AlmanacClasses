@@ -23,21 +23,42 @@ public class SpellBook : MonoBehaviour
     // Root parent that contains instantiated elements
     private Transform m_contentList = null!;
     private float m_timer;
+    public static bool m_updatePosition;
     public void Init()
     {
         m_instance = this;
         m_rect = GetComponent<RectTransform>();
         m_rect.anchoredPosition = AlmanacClassesPlugin._SpellBookPos.Value;
         m_element = AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_element");
+        GameObject HoverName = new GameObject("$text_title");
+        var rect = HoverName.AddComponent<RectTransform>();
+        Text text = HoverName.AddComponent<Text>();
+        text.fontSize = 25;
+        text.alignment = TextAnchor.MiddleCenter;
+        text.supportRichText = true;
+        text.horizontalOverflow = HorizontalWrapMode.Overflow;
+        text.verticalOverflow = VerticalWrapMode.Overflow;
+        text.raycastTarget = false;
+        rect.SetParent(m_element.transform.Find("$part_image/$part_image_text"));
+        rect.anchoredPosition = new Vector2(0f, 60f);
         m_element.AddComponent<SpellElement>();
-        m_element.AddComponent<SpellElementChange>();
         m_elementTexts = m_element.GetComponentsInChildren<Text>();
         m_contentList = transform.Find("$part_content");
         UpdateFontSize();
     }
+    public void UpdatePosition()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape)) m_updatePosition = false;
 
+        if (!m_updatePosition) return;
+        AlmanacClassesPlugin._SpellBookPos.Value = Input.mousePosition;
+        SpellInfo.m_instance.SetPosition(AlmanacClassesPlugin._SpellBookPos.Value + AlmanacClassesPlugin._MenuTooltipPosition.Value);
+        if (SpellInfo.m_instance.IsVisible()) SpellInfo.m_instance.Hide();
+        if (Input.GetKeyDown(KeyCode.Mouse0)) m_updatePosition = false;
+    }
     public void Update()
     {
+        UpdatePosition();
         if (!m_instance || !Player.m_localPlayer || Minimap.IsOpen()) return;
         if (Player.m_localPlayer.IsTeleporting() || Player.m_localPlayer.IsDead() || Player.m_localPlayer.IsSleeping()) return;
         m_timer += Time.deltaTime;
@@ -46,7 +67,6 @@ public class SpellBook : MonoBehaviour
 
         UpdateAbilities();
     }
-
     public static void OnSpellBarPosChange(object sender, EventArgs e)
     {
         m_instance.m_rect.anchoredPosition = AlmanacClassesPlugin._SpellBookPos.Value;
@@ -107,8 +127,8 @@ public class SpellBook : MonoBehaviour
         Dictionary<int, GameObject> existingElements = new Dictionary<int, GameObject>();
         foreach (Transform child in m_instance.m_contentList)
         {
-            if (!child.TryGetComponent(out SpellElementChange component)) continue;
-            existingElements[component.index] = child.gameObject;
+            if (!child.TryGetComponent(out SpellElement component)) continue;
+            existingElements[component.m_index] = child.gameObject;
         }
 
         return existingElements;
@@ -116,32 +136,33 @@ public class SpellBook : MonoBehaviour
 
     public static void UpdateAbilities()
     {
-        if (!Player.m_localPlayer || Player.m_localPlayer.IsDead() || Minimap.IsOpen()) return;
+        if (!Player.m_localPlayer || Player.m_localPlayer.IsDead()) return;
 
         Dictionary<int, GameObject> existingElements = GetExistingElements();
 
         foreach (KeyValuePair<int, AbilityData> kvp in m_abilities)
         {
+            SpellElement component;
             if (existingElements.TryGetValue(kvp.Key, out GameObject element))
             {
-                if (!element.TryGetComponent(out SpellElementChange component)) continue;
-                component.data = kvp.Value;
-                component.index = kvp.Key;
+                if (!element.TryGetComponent(out component)) continue;
+                component.m_data = kvp.Value;
+                component.m_index = kvp.Key;
             }
             else
             {
                 element = Instantiate(m_element, m_instance.m_contentList);
-                if (!element.TryGetComponent(out SpellElementChange component)) continue;
-                component.data = kvp.Value;
-                component.index = kvp.Key;
+                if (!element.TryGetComponent(out component)) continue;
+                component.m_data = kvp.Value;
+                component.m_index = kvp.Key;
             }
 
             Sprite? icon = kvp.Value.m_data.GetSprite();
-            if (!element.TryGetComponent(out SpellElement spellElement)) return;
-            spellElement.SetIcon(icon);
-            spellElement.SetHotkey(GetKeyCode(kvp.Key));
+            component.SetIcon(icon);
+            component.SetName($"<color=orange>{Localization.instance.Localize(kvp.Value.m_data.GetName())}</color>");
+            component.SetHotkey(GetKeyCode(kvp.Key));
             kvp.Value.m_go = element;
-            UpdateCooldownDisplay(kvp.Value);
+            kvp.Value.Update();
         }
 
         foreach (int key in existingElements.Keys)
@@ -149,80 +170,6 @@ public class SpellBook : MonoBehaviour
             if (m_abilities.ContainsKey(key)) continue;
             Destroy(existingElements[key]);
         }
-    }
-
-    private static void UpdateCooldownDisplay(AbilityData abilityData)
-    {
-        // if (abilityData.m_go == null || !Player.m_localPlayer) return;
-        if (!Player.m_localPlayer) return;
-        try
-        {
-            if (!abilityData.m_go.TryGetComponent(out SpellElement component)) return;
-            if (AbilityManager.m_cooldownMap.TryGetValue(abilityData.m_data.m_key, out float ratio))
-            {
-                if (abilityData.m_data.m_status is not { } status)
-                {
-                    component.SetGrayAmount(0f);
-                }
-                else
-                {
-                    if (Player.m_localPlayer.GetSEMan().HaveStatusEffect(status.NameHash()))
-                    {
-                        StatusEffect? effect = Player.m_localPlayer.GetSEMan().GetStatusEffect(status.NameHash());
-                        float time = effect.GetRemaningTime();
-                        float normal = Mathf.Clamp01(time / effect.m_ttl);
-                        component.SetGrayAmount(time > 0 ? normal : 0f);
-                    }
-                    else
-                    {
-                        component.SetGrayAmount(0f);
-                    }
-                }
-                // if (abilityData.m_data.m_statusEffectHash == 0)
-                // {
-                //     component.SetGrayAmount(0f);
-                // }
-                // else
-                // {
-                //     if (Player.m_localPlayer.GetSEMan().HaveStatusEffect(abilityData.m_data.m_statusEffectHash))
-                //     {
-                //         StatusEffect? effect = Player.m_localPlayer.GetSEMan()
-                //             .GetStatusEffect(abilityData.m_data.m_statusEffectHash);
-                //         float time = effect.GetRemaningTime();
-                //         float normal = Mathf.Clamp01(time / effect.m_ttl);
-                //         component.SetGrayAmount(time > 0 ? normal : 0f);
-                //     }
-                //     else
-                //     {
-                //         component.SetGrayAmount(0f);
-                //     }
-                // }
-
-                component.SetFillAmount(ratio);
-                int cooldownTime = (int)(abilityData.m_data.GetCooldown(abilityData.m_data.GetLevel()) * ratio);
-                component.SetTimer(GetCooldownColored(cooldownTime));
-                if (cooldownTime <= 0)
-                {
-                    component.SetTimer(Localization.instance.Localize("$info_ready"));
-                }
-            }
-            else
-            {
-                component.SetGrayAmount(0f);
-                component.SetFillAmount(0f);
-                component.SetTimer(Localization.instance.Localize("$info_ready"));
-            }
-        }
-        catch
-        {
-            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to update ability cooldown");
-        }
-    }
-
-    public static void UpdateCooldownDisplayForAbility(Talent ability)
-    {
-        if (m_abilities.Values.FirstOrDefault(data => data.m_data == ability) is not { } abilityData) return;
-        UpdateCooldownDisplay(abilityData);
     }
 
     private static string GetKeyCode(int index)
@@ -258,7 +205,7 @@ public class SpellBook : MonoBehaviour
         };
     }
     
-    public static bool AddToSpellBook(Talent ability)
+    public static bool Add(Talent ability)
     {
         if (IsAbilityInBook(ability))
         {
@@ -271,19 +218,68 @@ public class SpellBook : MonoBehaviour
             return false;
         }
 
-        m_abilities.Add(m_abilities.Count, new AbilityData()
-        {
-            m_data = ability
-        });
+        m_abilities.Add(m_abilities.Count, new AbilityData(ability));
         Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_added_spell");
         UpdateAbilities();
         return true;
     }
-    
     public class AbilityData
     {
-        public Talent m_data = null!;
-        public GameObject m_go = null!;
+        public readonly Talent m_data;
+        public GameObject? m_go;
+
+        public void Update()
+        {
+            if (!Player.m_localPlayer) return;
+            try
+            {
+                if (m_go is null) return;
+                if (!m_go.TryGetComponent(out SpellElement component)) return;
+                if (AbilityManager.m_cooldownMap.TryGetValue(m_data.m_key, out float ratio))
+                {
+                    if (m_data.m_status is not { } status)
+                    {
+                        component.SetBorder(0f);
+                    }
+                    else
+                    {
+                        if (Player.m_localPlayer.GetSEMan().HaveStatusEffect(status.NameHash()))
+                        {
+                            StatusEffect? effect = Player.m_localPlayer.GetSEMan().GetStatusEffect(status.NameHash());
+                            float time = effect.GetRemaningTime();
+                            float normal = Mathf.Clamp01(time / effect.m_ttl);
+                            component.SetBorder(time > 0 ? normal : 0f);
+                        }
+                        else
+                        {
+                            component.SetBorder(0f);
+                        }
+                    }
+
+                    int cooldownTime = (int)(m_data.GetCooldown(m_data.GetLevel()) * ratio);
+                    component.SetTimer(GetCooldownColored(cooldownTime));
+                    if (cooldownTime <= 0)
+                    {
+                        component.SetTimer(Localization.instance.Localize("$info_ready"));
+                    }
+                }
+                else
+                {
+                    component.SetBorder(0f);
+                    component.SetFillAmount(0f);
+                    component.SetTimer(Localization.instance.Localize("$info_ready"));
+                }
+            }
+            catch
+            {
+                AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to update ability cooldown");
+            }
+        }
+        public AbilityData(Talent talent)
+        {
+            m_data = talent;
+            talent.m_abilityData = this;
+        }
     }
 }
 

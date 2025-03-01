@@ -24,12 +24,6 @@ public static class TalentManager
     public static readonly Dictionary<string, Talent> m_talentsByButton = new();
     public static readonly Dictionary<string, Talent> m_altTalentsByButton = new();
     public static readonly Dictionary<int, Talent> m_talentsByStatusEffect = new();
-
-    public static void ResetTalentLevels()
-    {
-        foreach (KeyValuePair<string, Talent> kvp in m_talents) kvp.Value.SetLevel(1);
-    }
-
     public static void Init()
     {
         if (m_initiated) return;
@@ -42,6 +36,60 @@ public static class TalentManager
         LoadAltTalents();
         _Plugin.Config.SaveOnConfigSet = true;
         m_initiated = true;
+    }
+    private static int GetTalentPoints()
+    {
+        int level = PlayerManager.GetPlayerLevel(PlayerManager.GetExperience());
+        int points = level * _TalentPointPerLevel.Value;
+        int pointsPerTen = (level / 10) * _TalentPointsPerTenLevel.Value;
+        return points + pointsPerTen;
+    }
+    public static int GetAvailableTalentPoints() => GetTalentPoints() - GetTotalBoughtTalentPoints();
+    public static int GetTotalBoughtTalentPoints() => PlayerManager.m_playerTalents.Values.Select(x => x.GetCost() * x.m_level).Sum();
+    public static void PurchaseTalent(Talent ability)
+    {
+        PlayerManager.m_playerTalents[ability.m_key] = ability;
+        PlayerManager.m_tempPlayerData.m_boughtTalents[ability.m_key] = 1;
+        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_purchased");
+    }
+    public static void ResetTalents(bool command = false)
+    {
+        MonkeyWrench.ResetTwoHandedWeapons();
+        SpellBook.m_abilities.Clear();
+        RemoveStatusEffects();
+        TalentButton.ClearAll();
+        FillLines.Reset();
+        PlayerManager.ResetPlayerData();
+        CharacteristicManager.ResetCharacteristics();
+        ResetTalentLevels();
+        Prestige.SelectedTalent = null;
+        TalentButton.SetAllButtonColors(Color.white);
+        PassiveBar.m_instance.Clear();
+        UnEquipWeapons();
+        if (!command) SkillTree.m_instance.Show();
+    }
+    
+    public static void ResetTalentLevels()
+    {
+        foreach (KeyValuePair<string, Talent> kvp in m_talents) kvp.Value.SetLevel(1);
+    }
+    
+    private static void RemoveStatusEffects()
+    {
+        List<StatusEffect> effects = Player.m_localPlayer.GetSEMan().GetStatusEffects().FindAll(x => StatusEffectManager.IsClassEffect(x.name));
+        foreach (StatusEffect effect in effects)
+        {
+            Player.m_localPlayer.GetSEMan().RemoveStatusEffect(effect);
+        }
+    }
+    
+    private static void UnEquipWeapons()
+    {
+        if (Player.m_localPlayer is not { } player) return;
+        ItemDrop.ItemData? right = player.GetRightItem();
+        ItemDrop.ItemData? left = player.GetLeftItem();
+        if (right != null) player.UnequipItem(right);
+        if (left != null) player.UnequipItem(left);
     }
 
     private static void LoadTalents()
@@ -64,8 +112,7 @@ public static class TalentManager
     #region Data
     private static void LoadAltCore()
     {
-        Talent TreasureHunter = new Talent("TreasureHunter", "$button_treasure", TalentType.StatusEffect, true);
-        TreasureHunter.AddStatusEffect(ScriptableObject.CreateInstance<SE_TreasureHunter>(), "SE_TreasureHunter");
+        Talent TreasureHunter = new Talent("TreasureHunter", "$button_treasure", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_TreasureHunter>(), "SE_TreasureHunter", true);
         TreasureHunter.m_sprite = SpriteManager.Wishbone_Icon;
         TreasureHunter.m_cost = _Plugin.config("Core - Treasure Hunter", "Purchase Cost", 3, new ConfigDescription("Set cost to unlock ability", new AcceptableValueRange<int>(1, 10)));
         TreasureHunter.m_cooldown = _Plugin.config("Core - Treasure Hunter", "Cooldown", 180f, new ConfigDescription("Set cooldown of ability", new AcceptableValueRange<float>(1f, 1000f)));
@@ -93,8 +140,7 @@ public static class TalentManager
             LoadUI.ChangeButton(Berzerk, Berzerk.m_alt.Value is Toggle.Off);
         };
 
-        Talent Sailor = new Talent("Sailor", "$button_sail", TalentType.StatusEffect, true);
-        Sailor.AddStatusEffect(ScriptableObject.CreateInstance<SE_Sailor>(), "SE_Sailor");
+        Talent Sailor = new Talent("Sailor", "$button_sail", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_Sailor>(), "SE_Sailor", true);
         Sailor.m_cost = _Plugin.config("Core - Sailor", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock ability", new AcceptableValueRange<int>(1, 10)));
         Sailor.m_alt = _Plugin.config("Core - Sailor", "Enable", Toggle.Off, "If on replaces the gypsy talent");
         Sailor.m_cap = _Plugin.config("Core - Sailor", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 10)));
@@ -125,8 +171,7 @@ public static class TalentManager
     }
     private static void LoadAltWarrior()
     {
-        Talent survivor = new Talent("Survivor", "$button_warrior_talent_5", TalentType.Passive, true);
-        survivor.AddStatusEffect(ScriptableObject.CreateInstance<SE_Survivor>(), "SE_Survivor");
+        Talent survivor = new Talent("Survivor", "$button_warrior_talent_5", TalentType.Passive, ScriptableObject.CreateInstance<SE_Survivor>(), "SE_Survivor", true);
         survivor.m_altButtonSprite = SpriteManager.CrownIcon;
         survivor.m_values = new Talent.TalentValues()
         {
@@ -141,8 +186,7 @@ public static class TalentManager
         {
             LoadUI.ChangeButton(survivor, survivor.m_alt.Value is Toggle.Off);
         };
-        Talent battleFury = new Talent("BattleFury", "$button_warrior_talent_4", TalentType.Passive, true);
-        battleFury.AddStatusEffect(ScriptableObject.CreateInstance<SE_BattleFury>(), "SE_BattleFury");
+        Talent battleFury = new Talent("BattleFury", "$button_warrior_talent_4", TalentType.Passive, ScriptableObject.CreateInstance<SE_BattleFury>(), "SE_BattleFury", true);
         battleFury.m_cost = _Plugin.config("Warrior - Battle Fury", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock talent", new AcceptableValueRange<int>(1, 10)));
         battleFury.m_alt = _Plugin.config("Warrior - Battle Fury", "Enable", Toggle.Off, "If on, replaces monkey wrench talent");
         battleFury.m_startEffects = VFX.FX_BattleFury;
@@ -159,85 +203,19 @@ public static class TalentManager
     }
     private static void LoadCore()
     {
-        Talent Core1 = new Talent("Core1", "$button_core_1", TalentType.Characteristic);
-        Core1.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Wisdom,
-            m_amount = 10
-        };
-
-        Talent Core2 = new Talent("Core2", "$button_core_2", TalentType.Characteristic);
-        Core2.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Constitution,
-            m_amount = 10
-        };
-        Talent Core3 = new Talent("Core3", "$button_core_3", TalentType.Characteristic);
-        Core3.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Strength,
-            m_amount = 10
-        };
-        Talent Core4 = new Talent("Core4", "$button_core_4", TalentType.Characteristic);
-        Core4.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Intelligence,
-            m_amount = 10
-        };
-        Talent Core5 = new Talent("Core5", "$button_core_5",TalentType.Characteristic);
-        Core5.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Strength,
-            m_amount = 10
-        };
-        Talent Core6 = new Talent("Core6", "$button_core_6", TalentType.Characteristic);
-        Core6.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Dexterity,
-            m_amount = 10
-        };
-        Talent Core7 = new Talent("Core7", "$button_core_7", TalentType.Characteristic);
-        Core7.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Wisdom,
-            m_amount = 10
-        };
-        Talent Core8 = new Talent("Core8", "$button_core_8", TalentType.Characteristic);
-        Core8.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Wisdom,
-            m_amount = 10
-        };
-    
-        Talent Core9 = new Talent("Core9", "$button_core_9", TalentType.Characteristic);
-        Core9.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Intelligence,
-            m_amount = 10
-        };
-    
-        Talent Core10 = new Talent("Core10", "$button_core_10", TalentType.Characteristic);
-        Core10.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Constitution,
-            m_amount = 10
-        };
-    
-        Talent Core11 = new Talent("Core11", "$button_core_11", TalentType.Characteristic);
-        Core11.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Constitution,
-            m_amount = 10
-        };
-    
-        Talent Core12 = new Talent("Core12", "$button_core_12", TalentType.Characteristic);
-        Core12.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Dexterity,
-            m_amount = 10
-        };
-        Talent wise = new Talent("Wise", "$button_sneak", TalentType.Passive);
-        wise.AddStatusEffect(ScriptableObject.CreateInstance<StatusEffect>(), "SE_Enlightened");
+        Talent Core1 = new Talent("Core1", "$button_core_1", Characteristic.Wisdom, 10);
+        Talent Core2 = new Talent("Core2", "$button_core_2", Characteristic.Constitution, 10);
+        Talent Core3 = new Talent("Core3", "$button_core_3", Characteristic.Strength, 10);
+        Talent Core4 = new Talent("Core4", "$button_core_4", Characteristic.Intelligence, 10);
+        Talent Core5 = new Talent("Core5", "$button_core_5",Characteristic.Strength, 10);
+        Talent Core6 = new Talent("Core6", "$button_core_6", Characteristic.Dexterity, 10);
+        Talent Core7 = new Talent("Core7", "$button_core_7", Characteristic.Wisdom, 10);
+        Talent Core8 = new Talent("Core8", "$button_core_8", Characteristic.Wisdom, 10);
+        Talent Core9 = new Talent("Core9", "$button_core_9", Characteristic.Intelligence, 10);
+        Talent Core10 = new Talent("Core10", "$button_core_10", Characteristic.Constitution, 10);
+        Talent Core11 = new Talent("Core11", "$button_core_11", Characteristic.Constitution, 10);
+        Talent Core12 = new Talent("Core12", "$button_core_12", Characteristic.Dexterity, 10);
+        Talent wise = new Talent("Wise", "$button_sneak", TalentType.Passive, ScriptableObject.CreateInstance<StatusEffect>(), "SE_Enlightened");
         wise.m_cost = _Plugin.config("Core - Wise", "Purchase Cost", 5, new ConfigDescription("Set the cost to purchase talent", new AcceptableValueRange<int>(1, 10)));
         wise.m_values = new Talent.TalentValues()
         {
@@ -257,9 +235,8 @@ public static class TalentManager
             m_comfort = _Plugin.config("Core - Relax", "Comfort", 1f, new ConfigDescription("Set comfort amount", new AcceptableValueRange<float>(0f, 10f)))
         };
         comfort.m_cap = _Plugin.config("Core - Relax", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
-        Talent resourceful = new Talent("Resourceful", "$button_comfort_1", TalentType.Passive);
+        Talent resourceful = new Talent("Resourceful", "$button_comfort_1", TalentType.Passive, ScriptableObject.CreateInstance<SE_Resourceful>(), "SE_Resourceful");
         resourceful.m_cost = _Plugin.config("Core - Resourceful", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
-        resourceful.AddStatusEffect(ScriptableObject.CreateInstance<SE_Resourceful>(), "SE_Resourceful");
         resourceful.m_damages = new Talent.TalentDamages()
         {
             m_chop = _Plugin.config("Core - Resourceful", "Chop Damage", 5f, new ConfigDescription("Set damages", new AcceptableValueRange<float>(0f, 101f))),
@@ -273,8 +250,7 @@ public static class TalentManager
             m_foodModifier = _Plugin.config("Core - Chef", "Modifier", 1.1f, new ConfigDescription("Set the modifier", new AcceptableValueRange<float>(1f, 2f)))
         };
         MasterChef.m_cap = _Plugin.config("Core - Chef", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
-        Talent packMule = new Talent("PackMule", "$button_shield", TalentType.Passive);
-        packMule.AddStatusEffect(ScriptableObject.CreateInstance<SE_PackMule>(), "SE_PackMule");
+        Talent packMule = new Talent("PackMule", "$button_shield", TalentType.Passive, ScriptableObject.CreateInstance<SE_PackMule>(), "SE_PackMule");
         packMule.m_cost = _Plugin.config("Core - Pack Mule", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         packMule.m_values = new Talent.TalentValues()
         {
@@ -310,47 +286,12 @@ public static class TalentManager
     }
     private static void LoadRanger()
     {
-        Talent ranger1 = new Talent("Ranger1", "$button_ranger_1", TalentType.Characteristic);
-        ranger1.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Wisdom,
-            m_amount = 10
-        };
-
-        Talent ranger2 = new Talent("Ranger2", "$button_ranger_2", TalentType.Characteristic);
-        ranger2.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Dexterity,
-            m_amount = 10
-        };
-
-        Talent ranger3 = new Talent("Ranger3", "$button_ranger_3", TalentType.Characteristic);
-        ranger3.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Dexterity,
-            m_amount = 10
-        };
-
-        Talent ranger4 = new Talent("Ranger4", "$button_ranger_4", TalentType.Characteristic);
-        ranger4.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Dexterity,
-            m_amount = 10
-        };
-
-        Talent ranger5 = new Talent("Ranger5", "$button_ranger_5", TalentType.Characteristic);
-        ranger5.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Constitution,
-            m_amount = 10
-        };
-
-        Talent ranger6 = new Talent("Ranger6", "$button_ranger_6", TalentType.Characteristic);
-        ranger6.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Strength,
-            m_amount = 10
-        };
+        Talent ranger1 = new Talent("Ranger1", "$button_ranger_1", Characteristic.Wisdom, 10);
+        Talent ranger2 = new Talent("Ranger2", "$button_ranger_2", Characteristic.Dexterity, 10);
+        Talent ranger3 = new Talent("Ranger3", "$button_ranger_3", Characteristic.Dexterity, 10);
+        Talent ranger4 = new Talent("Ranger4", "$button_ranger_4", Characteristic.Dexterity, 10);
+        Talent ranger5 = new Talent("Ranger5", "$button_ranger_5", Characteristic.Constitution, 10);
+        Talent ranger6 = new Talent("Ranger6", "$button_ranger_6", Characteristic.Strength, 10);
         Talent rangerTamer = new Talent("RangerTamer", "$button_ranger_talent_3", TalentType.Ability);
         rangerTamer.m_ability = () =>
         {
@@ -381,8 +322,7 @@ public static class TalentManager
         rangerTamer.m_eitrCost = _Plugin.config("Ranger - Summon", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f)));
         rangerTamer.m_cap = _Plugin.config("Ranger - Summon", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
 
-        Talent rangerHunter = new Talent("RangerHunter", "$button_ranger_talent_1", TalentType.StatusEffect);
-        rangerHunter.AddStatusEffect(ScriptableObject.CreateInstance<SE_Hunter>(), "SE_Hunter");
+        Talent rangerHunter = new Talent("RangerHunter", "$button_ranger_talent_1", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_Hunter>(), "SE_Hunter");
         rangerHunter.m_cooldown = _Plugin.config("Ranger - Hunter", "Cooldown", 110f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
         rangerHunter.m_cost = _Plugin.config("Ranger - Hunter", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         rangerHunter.m_values = new Talent.TalentValues()
@@ -398,19 +338,17 @@ public static class TalentManager
         rangerHunter.m_cap = _Plugin.config("Ranger - Hunter", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         rangerHunter.m_effectsEnabled = _Plugin.config("Ranger - Hunter", "Effects Enabled", Toggle.On, "If on, start effects are enabled");
 
-        Talent luckyShot = new Talent("LuckyShot", "$button_ranger_talent_2", TalentType.Passive);
+        Talent luckyShot = new Talent("LuckyShot", "$button_ranger_talent_2", TalentType.Passive, ScriptableObject.CreateInstance<SE_LuckyShot>(), "SE_LuckyShot");
         luckyShot.m_sprite = SpriteManager.LuckyShot_Icon;
         luckyShot.m_cost = _Plugin.config("Ranger - Lucky Shot", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         luckyShot.m_values = new Talent.TalentValues()
         {
             m_chance = _Plugin.config("Ranger - Lucky Shot", "Chance", 10f, new ConfigDescription("Set the chance to not consume projectile", new AcceptableValueRange<float>(0f, 100f)))
         };
-        luckyShot.AddStatusEffect(ScriptableObject.CreateInstance<SE_LuckyShot>(), "SE_LuckyShot");
         luckyShot.m_startEffects = VFX.SoothEffects;
         luckyShot.m_cap = _Plugin.config("Ranger - Lucky Shot", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
 
-        Talent quickShot = new Talent("QuickShot", "$button_ranger_talent_5", TalentType.StatusEffect);
-        quickShot.AddStatusEffect(ScriptableObject.CreateInstance<SE_QuickShot>(), "SE_QuickShot");
+        Talent quickShot = new Talent("QuickShot", "$button_ranger_talent_5", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_QuickShot>(), "SE_QuickShot");
         quickShot.m_cooldown = _Plugin.config("Ranger - Quick Shot", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
         quickShot.m_cost = _Plugin.config("Ranger - Quick Shot", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         quickShot.m_values = new Talent.TalentValues()
@@ -453,54 +391,13 @@ public static class TalentManager
     }
     private static void LoadSage()
     {
-        Talent sage1 = new Talent("Sage1", "$button_sage_1", TalentType.Characteristic);
-        sage1.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Wisdom,
-            m_amount = 10
-        };
-
-        Talent sage2 = new Talent("Sage2", "$button_sage_2", TalentType.Characteristic);
-        sage2.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Wisdom,
-            m_amount = 10
-        };
-
-        Talent sage3 = new Talent("Sage3", "$button_sage_3", TalentType.Characteristic);
-        sage3.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Intelligence,
-            m_amount = 10
-        };
-
-        Talent sage4 = new Talent("Sage4", "$button_sage_4", TalentType.Characteristic);
-        sage4.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Constitution,
-            m_amount = 10
-        };
-
-        Talent sage5 = new Talent("Sage5", "$button_sage_5", TalentType.Characteristic);
-        sage5.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Intelligence,
-            m_amount = 10
-        };
-
-        Talent sage6 = new Talent("Sage6", "$button_sage_6", TalentType.Characteristic);
-        sage6.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Intelligence,
-            m_amount = 10
-        };
-
-        Talent sage7 = new Talent("Sage7", "$button_sage_7", TalentType.Characteristic);
-        sage7.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Wisdom,
-            m_amount = 10
-        };
+        Talent sage1 = new Talent("Sage1", "$button_sage_1", Characteristic.Wisdom, 10);
+        Talent sage2 = new Talent("Sage2", "$button_sage_2", Characteristic.Wisdom, 10);
+        Talent sage3 = new Talent("Sage3", "$button_sage_3", Characteristic.Intelligence, 10);
+        Talent sage4 = new Talent("Sage4", "$button_sage_4", Characteristic.Constitution, 10);
+        Talent sage5 = new Talent("Sage5", "$button_sage_5", Characteristic.Intelligence, 10);
+        Talent sage6 = new Talent("Sage6", "$button_sage_6", Characteristic.Intelligence, 10);
+        Talent sage7 = new Talent("Sage7", "$button_sage_7", Characteristic.Wisdom, 10);
         Talent callOfLightning = new Talent("CallOfLightning", "$button_sage_talent_4", TalentType.Ability);
         callOfLightning.m_ability = () => CallOfLightning.TriggerLightningAOE(callOfLightning);
         callOfLightning.m_effectsEnabled = _Plugin.config("Sage - Lightning", "Start Effects", Toggle.On, "If on, electric effects will show up around player during spell");
@@ -609,47 +506,12 @@ public static class TalentManager
     }
     private static void LoadShaman()
     {
-        Talent shaman1 = new Talent("Shaman1", "$button_shaman_1", TalentType.Characteristic);
-        shaman1.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Wisdom,
-            m_amount = 10
-        };
-
-        Talent shaman2 = new Talent("Shaman2", "$button_shaman_2", TalentType.Characteristic);
-        shaman2.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Wisdom,
-            m_amount = 10
-        };
-
-        Talent shaman3 = new Talent("Shaman3", "$button_shaman_3", TalentType.Characteristic);
-        shaman3.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Intelligence,
-            m_amount = 10
-        };
-
-        Talent shaman4 = new Talent("Shaman4", "$button_shaman_4", TalentType.Characteristic);
-        shaman4.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Intelligence,
-            m_amount = 10
-        };
-
-        Talent shaman5 = new Talent("Shaman5", "$button_shaman_5", TalentType.Characteristic);
-        shaman5.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Dexterity,
-            m_amount = 10
-        };
-
-        Talent shaman6 = new Talent("Shaman6", "$button_shaman_6", TalentType.Characteristic);
-        shaman6.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Wisdom,
-            m_amount = 10
-        };
+        Talent shaman1 = new Talent("Shaman1", "$button_shaman_1", Characteristic.Wisdom, 10);
+        Talent shaman2 = new Talent("Shaman2", "$button_shaman_2", Characteristic.Wisdom, 10);
+        Talent shaman3 = new Talent("Shaman3", "$button_shaman_3", Characteristic.Intelligence, 10);
+        Talent shaman4 = new Talent("Shaman4", "$button_shaman_4", Characteristic.Intelligence, 10);
+        Talent shaman5 = new Talent("Shaman5", "$button_shaman_5", Characteristic.Dexterity, 10);
+        Talent shaman6 = new Talent("Shaman6", "$button_shaman_6", Characteristic.Wisdom, 10);
         Talent shamanHeal = new Talent("ShamanHeal", "$button_shaman_talent_1", TalentType.Ability);
         shamanHeal.m_ability = () => ShamanHeal.TriggerHeal(shamanHeal.GetHealAmount(shamanHeal.GetLevel()));
         shamanHeal.m_cooldown = _Plugin.config("Shaman - Heal", "Cooldown", 70f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
@@ -666,8 +528,7 @@ public static class TalentManager
         shamanHeal.m_eitrCost = _Plugin.config("Shaman - Heal", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f)));
         shamanHeal.m_cap = _Plugin.config("Shaman - Heal", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
 
-        Talent shamanShield = new Talent("ShamanShield", "$button_shaman_talent_5", TalentType.StatusEffect);
-        shamanShield.AddStatusEffect(ScriptableObject.CreateInstance<SE_ShamanShield>(), "SE_ShamanShield");
+        Talent shamanShield = new Talent("ShamanShield", "$button_shaman_talent_5", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_ShamanShield>(), "SE_ShamanShield");
         shamanShield.m_cooldown = _Plugin.config("Shaman - Shield", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
         shamanShield.m_cost = _Plugin.config("Shaman - Shield", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         shamanShield.m_values = new Talent.TalentValues()
@@ -684,8 +545,7 @@ public static class TalentManager
         shamanShield.m_eitrCost = _Plugin.config("Shaman - Shield", "Eitr Cost", 10f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f)));
         shamanShield.m_cap = _Plugin.config("Shaman - Shield", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         shamanShield.m_effectsEnabled = _Plugin.config("Shaman - Shield", "Effects Enabled", Toggle.On, "If on, start effects are enabled");
-        Talent shamanRegeneration = new Talent("ShamanRegeneration", "$button_shaman_talent_4", TalentType.StatusEffect);
-        shamanRegeneration.AddStatusEffect(ScriptableObject.CreateInstance<SE_ShamanRegeneration>(), "SE_ShamanRegeneration");
+        Talent shamanRegeneration = new Talent("ShamanRegeneration", "$button_shaman_talent_4", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_ShamanRegeneration>(), "SE_ShamanRegeneration");
         shamanRegeneration.m_cooldown = _Plugin.config("Shaman - Regeneration", "Cooldown", 90f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
         shamanRegeneration.m_cost = _Plugin.config("Shaman - Regeneration", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         shamanRegeneration.m_values = new Talent.TalentValues()
@@ -753,49 +613,13 @@ public static class TalentManager
     }
     private static void LoadBard()
     {
-        Talent bard1 = new Talent("Bard1", "$button_bard_1", TalentType.Characteristic);
-        bard1.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Wisdom,
-            m_amount = 10
-        };
-
-        Talent bard2 = new Talent("Bard2", "$button_bard_2", TalentType.Characteristic);
-        bard2.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Constitution,
-            m_amount = 10
-        };
-
-        Talent bard3 = new Talent("Bard3", "$button_bard_3", TalentType.Characteristic);
-        bard3.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Intelligence,
-            m_amount = 10
-        };
-
-        Talent bard4 = new Talent("Bard4", "$button_bard_4", TalentType.Characteristic);
-        bard4.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Dexterity,
-            m_amount = 10
-        };
-
-        Talent bard5 = new Talent("Bard5", "$button_bard_5", TalentType.Characteristic);
-        bard5.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Wisdom,
-            m_amount = 10
-        };
-
-        Talent bard6 = new Talent("Bard6", "$button_bard_6", TalentType.Characteristic);
-        bard6.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Wisdom,
-            m_amount = 10
-        };
-        Talent songOfDamage = new Talent("SongOfDamage", "$button_bard_talent_3", TalentType.StatusEffect);
-        songOfDamage.AddStatusEffect(ScriptableObject.CreateInstance<SE_SongOfDamage>(), "SE_SongOfDamage");
+        Talent bard1 = new Talent("Bard1", "$button_bard_1", Characteristic.Wisdom, 10);
+        Talent bard2 = new Talent("Bard2", "$button_bard_2", Characteristic.Constitution, 10);
+        Talent bard3 = new Talent("Bard3", "$button_bard_3", Characteristic.Intelligence, 10);
+        Talent bard4 = new Talent("Bard4", "$button_bard_4", Characteristic.Dexterity, 10);
+        Talent bard5 = new Talent("Bard5", "$button_bard_5", Characteristic.Wisdom, 10);
+        Talent bard6 = new Talent("Bard6", "$button_bard_6", Characteristic.Wisdom, 10);
+        Talent songOfDamage = new Talent("SongOfDamage", "$button_bard_talent_3", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_SongOfDamage>(), "SE_SongOfDamage");
         songOfDamage.m_cooldown = _Plugin.config("Bard - Song of Damage", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
         songOfDamage.m_cost = _Plugin.config("Bard - Song of Damage", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         songOfDamage.m_values = new Talent.TalentValues()
@@ -813,8 +637,7 @@ public static class TalentManager
         songOfDamage.m_cap = _Plugin.config("Bard - Song of Damage", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         songOfDamage.m_effectsEnabled = _Plugin.config("Bard - Song of Damage", "Effects Enabled", Toggle.On, "If on, start effects are enabled");
 
-        Talent songOfHealing = new Talent("SongOfHealing", "$button_bard_talent_4", TalentType.StatusEffect);
-        songOfHealing.AddStatusEffect(ScriptableObject.CreateInstance<SE_SongOfHealing>(), "SE_SongOfHealing");
+        Talent songOfHealing = new Talent("SongOfHealing", "$button_bard_talent_4", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_SongOfHealing>(), "SE_SongOfHealing");
         songOfHealing.m_cooldown = _Plugin.config("Bard - Song of Healing", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
         songOfHealing.m_cost = _Plugin.config("Bard - Song of Healing", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         songOfHealing.m_values = new Talent.TalentValues()
@@ -831,8 +654,7 @@ public static class TalentManager
         songOfHealing.m_eitrCost = _Plugin.config("Bard - Song of Healing", "Eitr Cost", 15f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f)));
         songOfHealing.m_cap = _Plugin.config("Bard - Song of Healing", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         songOfHealing.m_effectsEnabled = _Plugin.config("Bard - Song of Healing", "Effects Enabled", Toggle.On, "If on, start effects are enabled");
-        Talent songOfVitality = new Talent("SongOfVitality", "$button_bard_talent_2", TalentType.StatusEffect);
-        songOfVitality.AddStatusEffect(ScriptableObject.CreateInstance<SE_SongOfVitality>(), "SE_SongOfVitality");
+        Talent songOfVitality = new Talent("SongOfVitality", "$button_bard_talent_2", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_SongOfVitality>(), "SE_SongOfVitality");
         songOfVitality.m_cooldown = _Plugin.config("Bard - Song of Vitality", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
         songOfVitality.m_cost = _Plugin.config("Bard - Song of Vitality", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         songOfVitality.m_values = new Talent.TalentValues()
@@ -850,8 +672,7 @@ public static class TalentManager
         songOfVitality.m_cap = _Plugin.config("Bard - Song of Vitality", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         songOfVitality.m_effectsEnabled = _Plugin.config("Bard - Song of Vitality", "Effects Enabled", Toggle.On, "If on, start effects are enabled");
 
-        Talent songOfSpeed = new Talent("SongOfSpeed", "$button_bard_talent_1", TalentType.StatusEffect);
-        songOfSpeed.AddStatusEffect(ScriptableObject.CreateInstance<SE_SongOfSpeed>(), "SE_SongOfSpeed");
+        Talent songOfSpeed = new Talent("SongOfSpeed", "$button_bard_talent_1", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_SongOfSpeed>(), "SE_SongOfSpeed");
         songOfSpeed.m_cooldown = _Plugin.config("Bard - Song of Speed", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
         songOfSpeed.m_cost = _Plugin.config("Bard - Song of Speed", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         songOfSpeed.m_values = new Talent.TalentValues()
@@ -869,8 +690,7 @@ public static class TalentManager
         songOfSpeed.m_cap = _Plugin.config("Bard - Song of Speed", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         songOfSpeed.m_effectsEnabled = _Plugin.config("Bard - Song of Speed", "Effects Enabled", Toggle.On, "If on, start effects are enabled");
 
-        Talent songOfAttrition = new Talent("SongOfAttrition", "$button_bard_talent_5", TalentType.StatusEffect);
-        songOfAttrition.AddStatusEffect(ScriptableObject.CreateInstance<SE_SongOfAttrition>(), "SE_SongOfAttrition");
+        Talent songOfAttrition = new Talent("SongOfAttrition", "$button_bard_talent_5", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_SongOfAttrition>(), "SE_SongOfAttrition");
         songOfAttrition.m_cooldown = _Plugin.config("Bard - Song of Attrition", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
         songOfAttrition.m_cost = _Plugin.config("Bard - Song of Attrition", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         songOfAttrition.m_damages = new Talent.TalentDamages()
@@ -892,49 +712,13 @@ public static class TalentManager
 
     private static void LoadRogue()
     {
-        Talent rogue1 = new Talent("Rogue1", "$button_rogue_1", TalentType.Characteristic);
-        rogue1.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Wisdom,
-            m_amount = 10
-        };
-
-        Talent rogue2 = new Talent("Rogue2", "$button_rogue_2", TalentType.Characteristic);
-        rogue2.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Dexterity,
-            m_amount = 10
-        };
-
-        Talent rogue3 = new Talent("Rogue3", "$button_rogue_3", TalentType.Characteristic);
-        rogue3.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Strength,
-            m_amount = 10
-        };
-
-        Talent rogue4 = new Talent("Rogue4", "$button_rogue_4", TalentType.Characteristic);
-        rogue4.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Constitution,
-            m_amount = 10
-        };
-
-        Talent rogue5 = new Talent("Rogue5", "$button_rogue_5", TalentType.Characteristic);
-        rogue5.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Dexterity,
-            m_amount = 10
-        };
-
-        Talent rogue6 = new Talent("Rogue6", "$button_rogue_6", TalentType.Characteristic);
-        rogue6.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Dexterity,
-            m_amount = 10
-        };
-        Talent rogueSpeed = new Talent("RogueSpeed", "$button_rogue_talent_1", TalentType.StatusEffect);
-        rogueSpeed.AddStatusEffect(ScriptableObject.CreateInstance<SE_RogueSpeed>(), "SE_RogueSpeed");
+        Talent rogue1 = new Talent("Rogue1", "$button_rogue_1", Characteristic.Wisdom, 10);
+        Talent rogue2 = new Talent("Rogue2", "$button_rogue_2", Characteristic.Dexterity, 10);
+        Talent rogue3 = new Talent("Rogue3", "$button_rogue_3", Characteristic.Strength, 10);
+        Talent rogue4 = new Talent("Rogue4", "$button_rogue_4", Characteristic.Constitution, 10);
+        Talent rogue5 = new Talent("Rogue5", "$button_rogue_5", Characteristic.Dexterity, 10);
+        Talent rogue6 = new Talent("Rogue6", "$button_rogue_6", Characteristic.Dexterity, 10);
+        Talent rogueSpeed = new Talent("RogueSpeed", "$button_rogue_talent_1", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_RogueSpeed>(), "SE_RogueSpeed");
         rogueSpeed.m_cooldown = _Plugin.config("Rogue - Quick Step", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
         rogueSpeed.m_cost = _Plugin.config("Rogue - Quick Step", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         rogueSpeed.m_values = new Talent.TalentValues()
@@ -953,8 +737,7 @@ public static class TalentManager
         rogueSpeed.m_cap = _Plugin.config("Rogue - Quick Step", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         rogueSpeed.m_effectsEnabled = _Plugin.config("Rogue - Quick Step", "Effects Enabled", Toggle.On, "If on, start effects are enabled");
 
-        Talent rogueStamina = new Talent("RogueStamina", "$button_rogue_talent_4", TalentType.StatusEffect);
-        rogueStamina.AddStatusEffect(ScriptableObject.CreateInstance<SE_RogueStamina>(), "SE_RogueStamina");
+        Talent rogueStamina = new Talent("RogueStamina", "$button_rogue_talent_4", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_RogueStamina>(), "SE_RogueStamina");
         rogueStamina.m_cooldown = _Plugin.config("Rogue - Swift", "Cooldown", 135f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
         rogueStamina.m_cost = _Plugin.config("Rogue - Swift", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         rogueStamina.m_values = new Talent.TalentValues()
@@ -974,8 +757,7 @@ public static class TalentManager
         rogueStamina.m_eitrCost = _Plugin.config("Rogue - Swift", "Eitr Cost", 5f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f)));
         rogueStamina.m_cap = _Plugin.config("Rogue - Swift", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         rogueStamina.m_effectsEnabled = _Plugin.config("Rogue - Swift", "Effects Enabled", Toggle.On, "If on, start effects are enabled");
-        Talent rogueReflect = new Talent("RogueReflect", "$button_rogue_talent_2", TalentType.StatusEffect);
-        rogueReflect.AddStatusEffect(ScriptableObject.CreateInstance<SE_RogueReflect>(), "SE_RogueReflect");
+        Talent rogueReflect = new Talent("RogueReflect", "$button_rogue_talent_2", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_RogueReflect>(), "SE_RogueReflect");
         rogueReflect.m_cooldown = _Plugin.config("Rogue - Retaliation", "Cooldown", 155f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
         rogueReflect.m_cost = _Plugin.config("Rogue - Retaliation", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         rogueReflect.m_values = new Talent.TalentValues()
@@ -993,8 +775,7 @@ public static class TalentManager
         rogueReflect.m_cap = _Plugin.config("Rogue - Retaliation", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         rogueReflect.m_effectsEnabled = _Plugin.config("Rogue - Retaliation", "Effects Enabled", Toggle.On, "If on, start effects are enabled");
 
-        Talent rogueBackstab = new Talent("RogueBackstab", "$button_rogue_talent_3", TalentType.StatusEffect);
-        rogueBackstab.AddStatusEffect(ScriptableObject.CreateInstance<SE_RogueBackstab>(), "SE_RogueBackstab");
+        Talent rogueBackstab = new Talent("RogueBackstab", "$button_rogue_talent_3", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_RogueBackstab>(), "SE_RogueBackstab");
         rogueBackstab.m_cooldown = _Plugin.config("Rogue - Backstab", "Cooldown", 135f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
         rogueBackstab.m_cost = _Plugin.config("Rogue - Backstab", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         rogueBackstab.m_values = new Talent.TalentValues()
@@ -1012,8 +793,7 @@ public static class TalentManager
         rogueBackstab.m_cap = _Plugin.config("Rogue - Backstab", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         rogueBackstab.m_effectsEnabled = _Plugin.config("Rogue - Backstab", "Effects Enabled", Toggle.On, "If on, start effects are enabled");
 
-        Talent rogueBleed = new Talent("RogueBleed", "$button_rogue_talent_5", TalentType.StatusEffect);
-        rogueBleed.AddStatusEffect(ScriptableObject.CreateInstance<SE_RogueBleed>(), "SE_RogueBleed");
+        Talent rogueBleed = new Talent("RogueBleed", "$button_rogue_talent_5", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_RogueBleed>(), "SE_RogueBleed");
         rogueBleed.m_cooldown = _Plugin.config("Rogue - Bleed", "Cooldown", 135f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
         rogueBleed.m_cost = _Plugin.config("Rogue - Bleed", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         rogueBleed.m_values = new Talent.TalentValues()
@@ -1034,49 +814,14 @@ public static class TalentManager
 
     private static void LoadWarrior()
     {
-        Talent warrior1 = new Talent("Warrior1", "$button_warrior_1", TalentType.Characteristic);
-        warrior1.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Strength,
-            m_amount = 10,
-        };
-
-        Talent warrior2 = new Talent("Warrior2", "$button_warrior_2", TalentType.Characteristic);
-        warrior2.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Strength,
-            m_amount = 10,
-        };
-
-        Talent warrior3 = new Talent("Warrior3", "$button_warrior_3", TalentType.Characteristic);
-        warrior3.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Dexterity,
-            m_amount = 10,
-        };
-
-        Talent warrior4 = new Talent("Warrior4", "$button_warrior_4", TalentType.Characteristic);
-        warrior4.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Constitution,
-            m_amount = 10,
-        };
-
-        Talent warrior5 = new Talent("Warrior5", "$button_warrior_5", TalentType.Characteristic);
-        warrior5.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Strength,
-            m_amount = 10,
-        };
-
-        Talent warrior6 = new Talent("Warrior6", "$button_warrior_6", TalentType.Characteristic);
-        warrior6.m_characteristic = new Talent.TalentCharacteristics()
-        {
-            m_type = Characteristic.Constitution,
-            m_amount = 10,
-        };
-        Talent warriorStrength = new Talent("WarriorStrength", "$button_warrior_talent_1", TalentType.StatusEffect);
-        warriorStrength.AddStatusEffect(ScriptableObject.CreateInstance<SE_WarriorStrength>(), "SE_WarriorStrength");
+        Talent warrior1 = new Talent("Warrior1", "$button_warrior_1", Characteristic.Strength, 10);
+        Talent warrior2 = new Talent("Warrior2", "$button_warrior_2", Characteristic.Strength, 10);
+        Talent warrior3 = new Talent("Warrior3", "$button_warrior_3", Characteristic.Dexterity, 10);
+        Talent warrior4 = new Talent("Warrior4", "$button_warrior_4", Characteristic.Constitution, 10);
+        Talent warrior5 = new Talent("Warrior5", "$button_warrior_5", Characteristic.Strength, 10);
+        Talent warrior6 = new Talent("Warrior6", "$button_warrior_6", Characteristic.Constitution, 10);
+        
+        Talent warriorStrength = new Talent("WarriorStrength", "$button_warrior_talent_1", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_WarriorStrength>(), "SE_WarriorStrength");
         warriorStrength.m_cooldown = _Plugin.config("Warrior - Power", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
         warriorStrength.m_cost = _Plugin.config("Warrior - Power", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         warriorStrength.m_values = new Talent.TalentValues()
@@ -1094,8 +839,7 @@ public static class TalentManager
         warriorStrength.m_cap = _Plugin.config("Warrior - Power", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         warriorStrength.m_effectsEnabled = _Plugin.config("Warrior - Power", "Effects Enabled", Toggle.On, "If on, start effects are enabled");
 
-        Talent warriorVitality = new Talent("WarriorVitality", "$button_warrior_talent_2", TalentType.StatusEffect);
-        warriorVitality.AddStatusEffect(ScriptableObject.CreateInstance<SE_WarriorVitality>(), "SE_WarriorVitality");
+        Talent warriorVitality = new Talent("WarriorVitality", "$button_warrior_talent_2", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_WarriorVitality>(), "SE_WarriorVitality");
         warriorVitality.m_cooldown = _Plugin.config("Warrior - Vitality", "Cooldown", 120f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
         warriorVitality.m_cost = _Plugin.config("Warrior - Vitality", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         warriorVitality.m_values = new Talent.TalentValues()
@@ -1113,9 +857,8 @@ public static class TalentManager
         warriorVitality.m_eitrCost = _Plugin.config("Warrior - Vitality", "Eitr Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f)));
         warriorVitality.m_cap = _Plugin.config("Warrior - Vitality", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         warriorVitality.m_effectsEnabled = _Plugin.config("Warrior - Vitality", "Effects Enabled", Toggle.On, "If on, start effects are enabled");
-        Talent monkeyWrench = new Talent("MonkeyWrench", "$button_warrior_talent_4", TalentType.Passive);
+        Talent monkeyWrench = new Talent("MonkeyWrench", "$button_warrior_talent_4", TalentType.Passive, ScriptableObject.CreateInstance<SE_MonkeyWrench>(), "SE_MonkeyWrench");
         monkeyWrench.m_sprite = SpriteManager.WarriorIcon;
-        monkeyWrench.AddStatusEffect(ScriptableObject.CreateInstance<SE_MonkeyWrench>(), "SE_MonkeyWrench");
         monkeyWrench.m_cost = _Plugin.config("Warrior - Monkey Wrench", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         monkeyWrench.m_values = new Talent.TalentValues()
         {
@@ -1138,9 +881,13 @@ public static class TalentManager
             return true;
         };
         monkeyWrench.m_addToPassiveBar = true;
+        monkeyWrench.m_onPurchase = () =>
+        {
+            MonkeyWrench.ModifyTwoHandedWeapons();
+            Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, "$msg_two_handed");
+        };
 
-        Talent warriorResistance = new Talent("WarriorResistance", "$button_warrior_talent_3", TalentType.StatusEffect);
-        warriorResistance.AddStatusEffect(ScriptableObject.CreateInstance<SE_WarriorResistance>(), "SE_WarriorResistance");
+        Talent warriorResistance = new Talent("WarriorResistance", "$button_warrior_talent_3", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_WarriorResistance>(), "SE_WarriorResistance");
         warriorResistance.m_cooldown = _Plugin.config("Warrior - Fortification", "Cooldown", 180f, new ConfigDescription("Set the cooldown", new AcceptableValueRange<float>(0f, 1000f)));
         warriorResistance.m_cost = _Plugin.config("Warrior - Fortification", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         warriorResistance.m_resistances = new Talent.ResistancePercentages()
@@ -1160,9 +907,8 @@ public static class TalentManager
         warriorResistance.m_cap = _Plugin.config("Warrior - Fortification", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         warriorResistance.m_effectsEnabled = _Plugin.config("Warrior - Fortification", "Effects Enabled", Toggle.On, "If on, start effects are enabled");
 
-        Talent dualWield = new Talent("DualWield", "$button_warrior_talent_5", TalentType.Passive);
+        Talent dualWield = new Talent("DualWield", "$button_warrior_talent_5", TalentType.Passive, ScriptableObject.CreateInstance<SE_DualWield>(), "SE_DualWield");
         dualWield.m_sprite = SpriteManager.WarriorIcon;
-        dualWield.AddStatusEffect(ScriptableObject.CreateInstance<SE_DualWield>(), "SE_DualWield");
         dualWield.m_cost = _Plugin.config("Warrior - Dual Wield", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         dualWield.m_values = new Talent.TalentValues()
         {
@@ -1172,21 +918,5 @@ public static class TalentManager
         dualWield.m_passiveActive = false;
         dualWield.m_addToPassiveBar = true;
     }
-    #endregion
-
-    #region Methods
-    private static int GetTalentPoints()
-    {
-        int level = PlayerManager.GetPlayerLevel(PlayerManager.GetExperience());
-        int points = level * _TalentPointPerLevel.Value;
-        int pointsPerTen = (level / 10) * _TalentPointsPerTenLevel.Value;
-        return points + pointsPerTen;
-    }
-    
-    public static int GetAvailableTalentPoints() => GetTalentPoints() - GetTotalBoughtTalentPoints();
-
-    public static int GetTotalBoughtTalentPoints() => PlayerManager.m_playerTalents.Values.Select(x => x.GetCost() * x.m_level).Sum();
-    
-
     #endregion
 }

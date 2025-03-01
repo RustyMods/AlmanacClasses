@@ -1,6 +1,7 @@
 ﻿using System;
 using AlmanacClasses.Classes;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace AlmanacClasses.UI;
@@ -8,9 +9,10 @@ namespace AlmanacClasses.UI;
 /// <summary>
 /// Container which controls the experience bar
 /// </summary>
-public class ExperienceBar : MonoBehaviour
+public class ExperienceBar : MonoBehaviour, IPointerClickHandler
 {
     public static ExperienceBar m_instance = null!;
+    public static bool m_updatePosition;
 
     public RectTransform m_rect = null!;
     public Image m_fillBar = null!;
@@ -18,6 +20,17 @@ public class ExperienceBar : MonoBehaviour
 
     public Text[] m_texts = null!;
 
+    public void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape)) m_updatePosition = false;
+        if (!m_updatePosition) return;
+        AlmanacClassesPlugin._ExperienceBarPos.Value = Input.mousePosition;
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        m_updatePosition = !m_updatePosition;
+    }
     public void Init()
     {
         m_instance = this;

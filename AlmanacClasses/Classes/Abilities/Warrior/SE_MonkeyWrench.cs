@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using AlmanacClasses.Managers;
-using UnityEngine;
 
 namespace AlmanacClasses.Classes.Abilities.Warrior;
 
@@ -62,7 +60,7 @@ public static class MonkeyWrench
         "$item_staffgreenroots",
         "$item_staffredtroll"
     };
-
+    
     public static bool IsDualItem(string name) => name.StartsWith("Dual") || IsBerzekr(name) || IsSkollAndHati(name);
     private static bool IsBerzekr(string name) => name.StartsWith("AxeBerzerkr") || name.StartsWith("$item_axe_berzerkr") ||  name is "AxeBerzerkr";
     private static bool IsSkollAndHati(string name) => name is "KnifeSkollAndHati" or "$item_knife_skollandhati";

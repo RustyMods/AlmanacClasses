@@ -39,32 +39,17 @@ public static class ButtonPatches
                 }
                 else
                 {
-                    SetDefault();
+                    SkillTree.m_instance.SetDefaultTooltip();
                 }
             }
         }
     }
 
-    private static void SetDefault()
-    {
-        LoadUI.TalentName.text = Localization.instance.Localize("$info_hover");
-        string desc = 
-            "[<color=orange>L.Alt</color>] + [<color=orange>Mouse0</color>] - $info_move_spellbar" 
-            + "\n"
-            + "[<color=orange>Mouse0</color>] - $info_swap_ability"
-            + "\n"
-            + "[<color=orange>Mouse0</color>] - $info_move_xp_bar";
-        LoadUI.TalentDescription.text = Localization.instance.Localize(desc);
-        LoadUI.TalentCost.text = "";
-        LoadUI.ActivePassive.text = "";
-    }
-
     private static void UpdateInfo(Talent talent)
     {
-        LoadUI.TalentName.text = Localization.instance.Localize(talent.GetName() + " $text_lvl " + talent.m_level);
-        LoadUI.TalentDescription.text = Localization.instance.Localize(talent.GetTooltip());
-        LoadUI.TalentCost.text = Localization.instance.Localize($"$almanac_cost: <color=orange>{talent.GetCost()}</color>");
-        LoadUI.ActivePassive.text = Localization.instance.Localize(talent.GetTalentType());
+        SkillTree.m_instance.SetSelectedName(talent.GetName() + " $text_lvl " + talent.m_level);
+        SkillTree.m_instance.SetSelectedDescription(talent.GetTooltip());
+        SkillTree.m_instance.SetSelectedCost($"$almanac_cost: <color=orange>{talent.GetCost()}</color>");
     }
 
     [HarmonyPatch(typeof(Selectable), nameof(Selectable.OnPointerExit))]
@@ -73,16 +58,7 @@ public static class ButtonPatches
         private static void Postfix(Selectable __instance)
         {
             if (!TalentButton.IsTalentButton(__instance)) return;
-            LoadUI.TalentName.text = Localization.instance.Localize("$info_hover");
-            string desc = 
-                "[<color=orange>L.Alt</color>] + [<color=orange>Mouse0</color>] - $info_move_spellbar" 
-                + "\n"
-                + "[<color=orange>Mouse0</color>] - $info_swap_ability"
-                + "\n"
-                + "[<color=orange>Mouse0</color>] - $info_move_xp_bar";
-            LoadUI.TalentDescription.text = Localization.instance.Localize(desc);
-            LoadUI.TalentCost.text = "";
-            LoadUI.ActivePassive.text = "";
+            SkillTree.m_instance.SetDefaultTooltip();
         }
     }
 

@@ -131,26 +131,26 @@ public class TalentButton : MonoBehaviour
         if (!IsEndAbility(talentButton.name)) return;
         if (!IsConnected(lines)) return;
         if (!CheckCost(ability.GetCost())) return;
-        LoadUI.PurchaseTalent(ability);
-        LoadUI.CheckMonkeyWrench(ability);
+        ability.m_onPurchase?.Invoke();
+        TalentManager.PurchaseTalent(ability);
         switch (ability.m_type)
         {
             case TalentType.Passive:
-                LoadUI.AddStatusEffect(ability);
+                if (ability.m_status is { } status) Player.m_localPlayer.GetSEMan().AddStatusEffect(status.NameHash());
                 if (ability.m_addToPassiveBar) PassiveBar.m_instance.Add(ability);
                 break;
             case TalentType.Ability or TalentType.StatusEffect:
-                if (!SpellBook.AddToSpellBook(ability)) return;
+                if (!SpellBook.Add(ability)) return;
                 break;
             case TalentType.Characteristic:
-                CharacteristicManager.AddCharacteristic(ability.GetCharacteristicType(),
+                CharacteristicManager.Add(ability.GetCharacteristicType(),
                     ability.GetCharacteristic(ability.GetLevel()));
                 break;
         }
 
         talentButton.SetCheckmark(true);
-        FillLines.UpdateFillLines();
-        TalentBook.ShowUI();
+        FillLines.Update();
+        SkillTree.m_instance.Show();
     }
     
     public static void RemapButton(string name, Dictionary<string, Image> lines, string key)

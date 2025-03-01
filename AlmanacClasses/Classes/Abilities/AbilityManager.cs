@@ -130,7 +130,7 @@ public static class AbilityManager
         while (count < cooldown)
         {
             m_cooldownMap[ability.m_key] -= 1f / cooldown;
-            SpellBook.UpdateCooldownDisplayForAbility(ability);
+            ability.m_abilityData?.Update();
             yield return new WaitForSeconds(1f);
             ++count;
         }

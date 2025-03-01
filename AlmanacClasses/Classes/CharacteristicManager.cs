@@ -22,13 +22,13 @@ public static class CharacteristicManager
         ResetCharacteristics();
     }
     public static void ResetCharacteristics() => m_tempCharacteristics = new Dictionary<Characteristic, int>(m_defaults);
-    public static void AddCharacteristic(Characteristic type, int value) => m_tempCharacteristics[type] += value;
+    public static void Add(Characteristic type, int value) => m_tempCharacteristics[type] += value;
     public static void UpdateCharacteristics()
     {
         ResetCharacteristics();
         foreach (KeyValuePair<string, Talent> kvp in PlayerManager.m_playerTalents.Where(kvp => kvp.Value.m_type is TalentType.Characteristic))
         {
-            AddCharacteristic(kvp.Value.GetCharacteristicType(), kvp.Value.GetCharacteristic(kvp.Value.GetLevel()));
+            Add(kvp.Value.GetCharacteristicType(), kvp.Value.GetCharacteristic(kvp.Value.GetLevel()));
         }
     }
     public static string GetTooltip()

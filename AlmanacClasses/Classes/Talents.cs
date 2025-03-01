@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using AlmanacClasses.UI;
 using BepInEx.Configuration;
 using UnityEngine;
 using static AlmanacClasses.AlmanacClassesPlugin;
@@ -12,7 +13,7 @@ public class Talent
     private const string m_prestigeColor = "#FF5733";
     public readonly string m_key;
     public readonly string m_button;
-    public StatusEffect? m_status;
+    public readonly StatusEffect? m_status;
     public Func<bool>? m_ability;
     public string m_animation = "";
     public int m_level = 1;
@@ -40,8 +41,9 @@ public class Talent
     public bool m_passiveActive = true;
     public Func<bool>? m_onClickPassive;
     public bool m_addToPassiveBar;
-    public TalentCharacteristics? m_characteristic;
-
+    public readonly TalentCharacteristics? m_characteristic;
+    public SpellBook.AbilityData? m_abilityData;
+    public Action? m_onPurchase;
     public string GetAnimation() => m_useAnimation?.Value is Toggle.On ? m_animation : "";
     public List<string> GetCustomForageItems()
     {
@@ -617,10 +619,14 @@ public class Talent
     }
     public class TalentCharacteristics
     {
-        public Characteristic m_type;
-        public int m_amount;
+        public readonly Characteristic m_type;
+        public readonly int m_amount;
+        public TalentCharacteristics(Characteristic type, int amount)
+        {
+            m_type = type;
+            m_amount = amount;
+        }
     }
-
     public Talent(string key, string buttonName, TalentType type, bool alt = false)
     {
         m_key = key;
@@ -631,7 +637,12 @@ public class Talent
         else TalentManager.m_talentsByButton[m_button] = this;
     }
 
-    public void AddStatusEffect(StatusEffect effect, string name)
+    public Talent(string key, string buttonName, Characteristic type, int amount, bool alt = false) : this(key, buttonName, TalentType.Characteristic, alt)
+    {
+        m_characteristic = new TalentCharacteristics(type, amount);
+    }
+
+    public Talent(string key, string buttonName, TalentType type, StatusEffect effect, string name, bool alt = false) : this(key, buttonName, type, alt)
     {
         m_status = effect;
         m_status.name = name;

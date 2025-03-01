@@ -11,10 +11,20 @@ public static class MenuPatches
     {
         private static void Postfix()
         {
-            ExperienceBarMove.updateElement = false;
-            SpellBarMove.updateElement = false;
-            SpellInfo.m_instance.SetMenuVisible(false);
-            if (SpellElementChange.title) Object.Destroy(SpellElementChange.title);
+            ExperienceBar.m_updatePosition = false;
+            SpellBook.m_updatePosition = false;
+            PassiveBar.m_updatePosition = false;
+            SpellInfo.m_instance.Hide();
+            PassiveBar.m_instance.Hide();
+        }
+    }
+
+    [HarmonyPatch(typeof(Menu), nameof(Menu.Show))]
+    private static class Menu_Show_Patch
+    {
+        private static void Postfix()
+        {
+            PassiveBar.m_instance.Show();
         }
     }
 }

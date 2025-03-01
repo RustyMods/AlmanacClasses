@@ -53,8 +53,8 @@ namespace AlmanacClasses
         public static ConfigEntry<Vector2> _MenuTooltipPosition = null!;
         public static ConfigEntry<int> _ChanceForOrb = null!;
         public static ConfigEntry<int> _MaxLevel = null!;
-        private static ConfigEntry<Toggle> _ShowUIEnabled = null!;
-        private static ConfigEntry<KeyCode> _ShowUIKey = null!;
+        public static ConfigEntry<Toggle> _ShowUIEnabled = null!;
+        public static ConfigEntry<KeyCode> _ShowUIKey = null!;
         public static ConfigEntry<Toggle> _EnableRaven = null!;
         public static ConfigEntry<int> _characteristicCap = null!;
         public static ConfigEntry<float> _experienceFactor = null!;
@@ -116,13 +116,9 @@ namespace AlmanacClasses
             if (m_headless) return;
             float dt = Time.deltaTime;
 
-            TalentBook.UpdateTalentBookUI();
             AbilityManager.CheckInput();
             PlayerManager.UpdatePassiveEffects(dt);
-            if (_ShowUIEnabled.Value is Toggle.On)
-            {
-                if (Input.GetKeyDown(_ShowUIKey.Value)) TalentBook.ShowUI();
-            }
+            SkillTree.UpdateUI();
         }
         
         private void AddAttackSpeedModifiers()
@@ -186,7 +182,11 @@ namespace AlmanacClasses
             _Font = config("1 - General", "Font", LoadUI.FontOptions.NorseBold, "Set UI font");
             _Font.SettingChanged += LoadUI.OnFontChange;
             _CustomBackground = config("1 - General", "Custom Background", "", "Set name of png file to use as background");
-            _CustomBackground.SettingChanged += (_, _) => LoadUI.UpdateBackground();
+            _CustomBackground.SettingChanged += (_, _) =>
+            {
+                if (SkillTree.m_instance) SkillTree.m_instance.UpdateBackground();
+            };
+
             InitSettingsConfigs();
             InitKeyCodeConfigs();
 
@@ -235,7 +235,12 @@ namespace AlmanacClasses
             
             _PanelBackground = config("2 - Settings", "UI Background", Toggle.On,
                 "If on, panel is visible, else transparent", false);
-            _PanelBackground.SettingChanged += (_, _) => LoadUI.PanelBackground.color = _PanelBackground.Value is Toggle.On ? Color.white : Color.clear;
+            _PanelBackground.SettingChanged += (_, _) =>
+            {
+                if (!SkillTree.m_instance) return;
+                SkillTree.m_instance.PanelBackground.color =
+                    _PanelBackground.Value is Toggle.On ? Color.white : Color.clear;
+            };
 
             _ExperienceMultiplier = config("2 - Settings", "Experience Multiplier", 1f,
                 new ConfigDescription("Set experience multiplier to easily increase experience gains",
@@ -275,8 +280,8 @@ namespace AlmanacClasses
             _SpellAlt = config("3 - Spell Keys", "Alt Key", KeyCode.LeftAlt, "Set the alt key code, If None, then it ignores", false);
             _SpellAlt.SettingChanged += (_, _) =>
             {
-                if (Localization.instance == null) return;
-                LoadUI.SpellBarHotKeyTooltip.text = Localization.instance.Localize($"$info_spellbook_key: <color=orange>{_SpellAlt.Value}</color>");
+                if (Localization.instance == null || !SkillTree.m_instance) return;
+                SkillTree.m_instance.SetHotkeyTooltip($"$info_spellbook_key: <color=orange>{_SpellAlt.Value}</color>");
             };
             _Spell1 = config("3 - Spell Keys", "Spell 1", KeyCode.Alpha1, "Set the key code for spell 1", false);
             _Spell2 = config("3 - Spell Keys", "Spell 2", KeyCode.Alpha2, "Set the key code for spell 2", false);

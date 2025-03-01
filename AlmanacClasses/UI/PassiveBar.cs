@@ -31,6 +31,7 @@ public class PassiveBar : MonoBehaviour
         text.horizontalOverflow = HorizontalWrapMode.Overflow;
         text.verticalOverflow = VerticalWrapMode.Overflow;
         m_rect.anchoredPosition = AlmanacClassesPlugin._PassiveBarPos.Value;
+        Hide();
     }
     public void Update()
     {
@@ -40,7 +41,9 @@ public class PassiveBar : MonoBehaviour
         AlmanacClassesPlugin._PassiveBarPos.Value = Input.mousePosition;
         if (Input.GetKeyDown(KeyCode.Mouse0)) m_updatePosition = false;
     }
-    
+
+    public void Show() => gameObject.SetActive(true);
+    public void Hide() => gameObject.SetActive(false);
     public static void OnPassiveBarPosChange(object sender, EventArgs e)
     {
         if (!m_instance) return;
@@ -58,6 +61,7 @@ public class PassiveBar : MonoBehaviour
     public void Add(Talent talent)
     {
         var component = Instantiate(m_element, m_contentList).GetComponent<PassiveButton>();
+        component.Init();
         component.m_talent = talent;
         component.SetIcon(talent.m_sprite);
         component.SetBorder(talent.m_passiveActive);

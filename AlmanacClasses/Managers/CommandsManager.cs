@@ -38,7 +38,7 @@ public static class CommandsManager
                 CharacteristicManager.ResetCharacteristics();
                 SpellBook.ClearSpellBook();
                 SpellBook.m_abilities.Clear();
-                LoadUI.ResetTalents(true);
+                TalentManager.ResetTalents(true);
                 ExperienceBar.UpdateExperienceBar();
                 TalentManager.Init();
                 AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo("Reset all classes data");
