@@ -37,7 +37,8 @@ public class ExperienceBar : MonoBehaviour, IPointerClickHandler
         SetHUDVisibility(false);
         m_rect = GetComponent<RectTransform>();
         m_rect.SetAsLastSibling();
-        m_rect.anchoredPosition = AlmanacClassesPlugin._ExperienceBarPos.Value;
+        m_rect.position = AlmanacClassesPlugin._ExperienceBarPos.Value;
+
         SetScale(AlmanacClassesPlugin._ExperienceBarScale.Value / 100f);
         m_fillBar = transform.Find("FillBar").GetComponent<Image>();
         m_text = transform.Find("$text_experience").GetComponent<Text>();
@@ -69,6 +70,7 @@ public class ExperienceBar : MonoBehaviour, IPointerClickHandler
         float percentage = current / difference;
         m_instance.SetText($"{experience} / {nxtLvlExp}");
         m_instance.SetFill(percentage);
+        SkillTree.m_instance.ExperienceBarFill.fillAmount = percentage;
     }
     
     public static void OnChangeExperienceBarVisibility(object sender, EventArgs e)
@@ -79,7 +81,7 @@ public class ExperienceBar : MonoBehaviour, IPointerClickHandler
     public static void OnChangeExperienceBarPosition(object sender, EventArgs e)
     {
         if (m_instance == null) return;
-        m_instance.m_rect.anchoredPosition = AlmanacClassesPlugin._ExperienceBarPos.Value;
+        m_instance.m_rect.position = AlmanacClassesPlugin._ExperienceBarPos.Value;
     }
     
     public static void OnExperienceBarScaleChange(object sender, EventArgs e)

@@ -238,8 +238,7 @@ namespace AlmanacClasses
             _PanelBackground.SettingChanged += (_, _) =>
             {
                 if (!SkillTree.m_instance) return;
-                SkillTree.m_instance.PanelBackground.color =
-                    _PanelBackground.Value is Toggle.On ? Color.white : Color.clear;
+                SkillTree.m_instance.SetBackgroundColor(_PanelBackground.Value is Toggle.On ? Color.white : Color.clear);
             };
 
             _ExperienceMultiplier = config("2 - Settings", "Experience Multiplier", 1f,

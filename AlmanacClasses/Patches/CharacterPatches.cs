@@ -1,5 +1,6 @@
 ﻿using AlmanacClasses.Classes;
 using AlmanacClasses.Classes.Abilities.Core;
+using AlmanacClasses.Classes.Abilities.Ranger;
 using AlmanacClasses.Classes.Abilities.Warrior;
 using HarmonyLib;
 

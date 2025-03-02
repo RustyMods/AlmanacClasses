@@ -15,6 +15,7 @@ public class PlayerData
     public int m_experience;
     public Dictionary<string, int> m_boughtTalents = new();
     public Dictionary<int, string> m_spellBook = new();
+    public Dictionary<Characteristic, int> m_boughtCharacteristics = new(CharacteristicManager.m_defaults);
 }
 
 [Serializable]
@@ -86,6 +87,7 @@ public static class PlayerManager
             else
             {
                 m_tempPlayerData = deserializer.Deserialize<PlayerData>(data);
+                CharacteristicManager.m_tempCharacteristics = m_tempPlayerData.m_boughtCharacteristics;
                 AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Loaded player data");
             }
             m_initiatedPlayerData = true;
@@ -155,9 +157,9 @@ public static class PlayerManager
             {
                 PassiveBar.m_instance.Add(match);
             }
-            if (match.m_type is not TalentType.Characteristic) continue;
-            if (match.m_characteristic == null) continue;
-            CharacteristicManager.Add(match.GetCharacteristicType(), match.GetCharacteristic(match.GetLevel()));
+            // if (match.m_type is not TalentType.Characteristic) continue;
+            // if (match.m_characteristic == null) continue;
+            // CharacteristicManager.Add(match.GetCharacteristicType(), match.GetCharacteristic(match.GetLevel()));
         }
         CheckAltTalents();
     }
@@ -179,10 +181,16 @@ public static class PlayerManager
         }
     }
 
+    private static void SaveCharacteristics()
+    {
+        m_tempPlayerData.m_boughtCharacteristics = CharacteristicManager.m_tempCharacteristics;
+    }
+
     public static void SavePlayerData()
     {
         if (!Player.m_localPlayer) return;
         SaveSpellBook();
+        SaveCharacteristics();
         ISerializer serializer = new SerializerBuilder().Build();
         string data = serializer.Serialize(m_tempPlayerData);
         Player.m_localPlayer.m_customData[m_playerDataKey] = data;

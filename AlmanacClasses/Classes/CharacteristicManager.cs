@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using AlmanacClasses.UI;
 
 namespace AlmanacClasses.Classes;
 
 public static class CharacteristicManager
 {
-    private static readonly Dictionary<Characteristic, int> m_defaults = new()
+    public static readonly Dictionary<Characteristic, int> m_defaults = new()
     {
         [Characteristic.None] = 0,
         [Characteristic.Constitution] = 0,
@@ -16,21 +17,58 @@ public static class CharacteristicManager
         [Characteristic.Wisdom] = 0,
     };
 
-    private static Dictionary<Characteristic, int> m_tempCharacteristics = new(m_defaults);
+    public static Dictionary<Characteristic, int> m_tempCharacteristics = new(m_defaults);
     public static void OnLogout()
     {
         ResetCharacteristics();
     }
     public static void ResetCharacteristics() => m_tempCharacteristics = new Dictionary<Characteristic, int>(m_defaults);
-    public static void Add(Characteristic type, int value) => m_tempCharacteristics[type] += value;
-    public static void UpdateCharacteristics()
+
+    public static void Add(Characteristic type, int value)
     {
-        ResetCharacteristics();
-        foreach (KeyValuePair<string, Talent> kvp in PlayerManager.m_playerTalents.Where(kvp => kvp.Value.m_type is TalentType.Characteristic))
-        {
-            Add(kvp.Value.GetCharacteristicType(), kvp.Value.GetCharacteristic(kvp.Value.GetLevel()));
-        }
+        if (m_tempCharacteristics.ContainsKey(type)) m_tempCharacteristics[type] += value;
+        else m_tempCharacteristics[type] = value;
+        Update();
     }
+
+    public static void Remove(Characteristic type, int value)
+    {
+        if (m_tempCharacteristics.ContainsKey(type)) m_tempCharacteristics[type] -= value;
+        else m_tempCharacteristics[type] = 0;
+        Update();
+    }
+
+    public static int GetRemainingPoints()
+    {
+        return GetTotalPoints() - GetUsedPoints();
+    }
+
+    public static int GetUsedPoints()
+    {
+        return m_tempCharacteristics.Values.Sum();
+    }
+
+    public static int GetTotalPoints()
+    {
+        List<Talent> talents = PlayerManager.m_playerTalents.Where(kvp => kvp.Value.m_type is TalentType.Characteristic).Select(kvp => kvp.Value).ToList();
+        int sum = 0;
+        foreach (var talent in talents)
+        {
+            sum += talent.GetCharacteristic(talent.GetLevel());
+        }
+
+        return sum;
+    }
+
+    public static void Update()
+    {
+        UpdateCharacteristicPoints();
+        CharacteristicButtons.UpdateAllButtons();
+        SkillTree.m_instance.UpdateStatsBonus();
+    }
+
+    public static void UpdateCharacteristicPoints() => SkillTree.m_instance.CharacteristicAmount.text =
+        $"<color=orange>{GetRemainingPoints()}</color>";
     public static string GetTooltip()
     {
         StringBuilder stringBuilder = new StringBuilder();
@@ -64,9 +102,9 @@ public static class CharacteristicManager
     }
     private static int FormatPercentage(float value) => (int)(value * 100 - 100);
     public static int GetCharacteristic(Characteristic type) => m_tempCharacteristics.TryGetValue(type, out int value) ? value : 0;
-    private static float GetHealthRatio() => GetCharacteristic(Characteristic.Constitution) / AlmanacClassesPlugin._HealthRatio.Value;
-    private static float GetStaminaRatio() => GetCharacteristic(Characteristic.Dexterity) / AlmanacClassesPlugin._StaminaRatio.Value;
-    private static float GetEitrRatio() => GetCharacteristic(Characteristic.Wisdom) / AlmanacClassesPlugin._EitrRatio.Value;
+    public static float GetHealthRatio() => GetCharacteristic(Characteristic.Constitution) / AlmanacClassesPlugin._HealthRatio.Value;
+    public static float GetStaminaRatio() => GetCharacteristic(Characteristic.Dexterity) / AlmanacClassesPlugin._StaminaRatio.Value;
+    public static float GetEitrRatio() => GetCharacteristic(Characteristic.Wisdom) / AlmanacClassesPlugin._EitrRatio.Value;
     public static float GetStrengthModifier()
     {
         int characteristic = GetCharacteristic(Characteristic.Strength);

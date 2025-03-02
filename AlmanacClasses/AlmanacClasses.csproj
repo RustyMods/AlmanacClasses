@@ -154,6 +154,7 @@
         <Compile Include="Classes\Abilities\Friendly.cs" />
         <Compile Include="Classes\Abilities\Ranger\RangerSpawn.cs" />
         <Compile Include="Classes\Abilities\Ranger\RangerTrap.cs" />
+        <Compile Include="Classes\Abilities\Ranger\SE_ChainShot.cs" />
         <Compile Include="Classes\Abilities\Ranger\SE_Hunter.cs" />
         <Compile Include="Classes\Abilities\Ranger\SE_LuckyShot.cs" />
         <Compile Include="Classes\Abilities\Ranger\SE_QuickShot.cs" />
@@ -215,8 +216,11 @@
         <Compile Include="Patches\TextsDialoguePatches.cs" />
         <Compile Include="Plugin.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="UI\CharacteristicButtons.cs" />
+        <Compile Include="UI\CharacteristicPanel.cs" />
         <Compile Include="UI\ExperienceBar.cs" />
         <Compile Include="UI\FillLines.cs" />
+        <Compile Include="UI\HoverCharacteristic.cs" />
         <Compile Include="UI\LoadUI.cs" />
         <Compile Include="UI\PassiveBar.cs" />
         <Compile Include="UI\PassiveButton.cs" />

@@ -47,7 +47,7 @@ public class PassiveBar : MonoBehaviour
     public static void OnPassiveBarPosChange(object sender, EventArgs e)
     {
         if (!m_instance) return;
-        m_instance.m_rect.anchoredPosition = AlmanacClassesPlugin._PassiveBarPos.Value;
+        m_instance.m_rect.position = AlmanacClassesPlugin._PassiveBarPos.Value;
     }
     
     public void Clear()

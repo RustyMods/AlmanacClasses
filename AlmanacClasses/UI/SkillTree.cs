@@ -12,28 +12,33 @@ public class SkillTree : MonoBehaviour
     public static SkillTree m_instance = null!;
     [Header("Image Elements")]
     public Image ExperienceBarFill = null!;
+    [Header("Backgrounds")]
     public Image PanelBackground = null!;
     public Image HeaderBackground = null!;
     public Image StatsBackground = null!;
     public Image TooltipBackground = null!;
+    public Image CharacteristicBackground = null!;
+    public Image StatsTooltipBackground = null!;
+    public Image ExtraInfoBackground = null!;
+    public Image BonusBackground = null!;
     [Header("Text Elements")]
     public Text PointsUsed = null!;
     public Text RequiredPoints = null!;
-    public Text PrestigeText = null!;
     public Text LevelText = null!;
-    public Text ExperienceTitleText = null!;
+    public Text LevelAmount = null!;
     public Text ExperienceText = null!;
     public Text TalentPointsText = null!;
+    public Text TalentsPointsAmount = null!;
+    public Text CharacteristicText = null!;
+    public Text CharacteristicAmount = null!;
+    public Text StatsTooltip = null!;
+    public Text BonusTooltip = null!;
+    
     public Text TalentName = null!;
     public Text TalentDescription = null!;
     public Text TalentCost = null!;
     public Text ActivePassive = null!;
-    public Text CharacteristicsTitleText = null!;
-    public Text ConstitutionText = null!;
-    public Text DexterityText = null!;
-    public Text IntelligenceText = null!;
-    public Text StrengthText = null!;
-    public Text WisdomText = null!;
+
     public Text SpellBarHotKeyTooltip = null!;
     public Text ResetButtonText = null!;
     public Text ClassBardText = null!;
@@ -58,53 +63,45 @@ public class SkillTree : MonoBehaviour
     public void Init()
     {
         m_instance = this;
-        PanelBackground = GetComponent<Image>();
         m_texts = GetComponentsInChildren<Text>();
+        PanelBackground = GetComponent<Image>();
         HeaderBackground = transform.Find("Panel/$part_header/$part_title/Background").GetComponent<Image>();
         StatsBackground = transform.Find("Panel/$part_header/$part_stats").GetComponent<Image>();
+        CharacteristicBackground = transform.Find("Panel/$part_header/$part_characteristics").GetComponent<Image>();
+        StatsTooltipBackground = transform.Find("Panel/$part_header/$part_stats_tooltip").GetComponent<Image>();
         TooltipBackground = transform.Find("Panel/$part_header/$part_tooltip").GetComponent<Image>();
-        ExperienceBarFill = Utils.FindChild(transform, "$image_experience_fill").GetComponent<Image>();
-        PrestigeText = Utils.FindChild(transform, "$text_prestige").GetComponent<Text>();
-        LevelText = Utils.FindChild(transform, "$text_level").GetComponent<Text>();
-        ExperienceTitleText = Utils.FindChild(transform, "$text_experience_title").GetComponent<Text>();
-        ExperienceText = Utils.FindChild(transform, "$text_experience").GetComponent<Text>();
-        TalentPointsText = Utils.FindChild(transform, "$text_talent_points").GetComponent<Text>();
+        ExtraInfoBackground = transform.Find("Panel/$part_header/$part_prestige").GetComponent<Image>();
+        BonusBackground = transform.Find("Panel/$part_header/$part_stats_bonus").GetComponent<Image>();
+        ExperienceBarFill = transform.Find("Panel/$part_header/$part_stats/$part_experience_bar/$image_experience_fill").GetComponent<Image>();
+        ExperienceText = transform.Find("Panel/$part_header/$part_stats/$part_experience_bar/$text_experience").GetComponent<Text>();
+        LevelText = transform.Find("Panel/$part_header/$part_stats/$part_level/$text_title").GetComponent<Text>();
+        LevelAmount = transform.Find("Panel/$part_header/$part_stats/$part_level/$text_count").GetComponent<Text>();
+        TalentPointsText = transform.Find("Panel/$part_header/$part_stats/$part_talent_points/$text_title").GetComponent<Text>();
+        TalentsPointsAmount = transform.Find("Panel/$part_header/$part_stats/$part_talent_points/$text_count").GetComponent<Text>();
+        CharacteristicText = transform.Find("Panel/$part_header/$part_stats/$part_characteristic_points/$text_title").GetComponent<Text>();
+        CharacteristicAmount = transform.Find("Panel/$part_header/$part_stats/$part_characteristic_points/$text_count").GetComponent<Text>();
+        StatsTooltip = transform.Find("Panel/$part_header/$part_stats_tooltip/$text").GetComponent<Text>();
+        BonusTooltip = transform.Find("Panel/$part_header/$part_stats_bonus/$text").GetComponent<Text>();
         TalentName = Utils.FindChild(transform, "$text_name").GetComponent<Text>();
         TalentDescription = Utils.FindChild(transform, "$text_description").GetComponent<Text>();
         TalentCost = Utils.FindChild(transform, "$text_cost").GetComponent<Text>();
         ActivePassive = Utils.FindChild(transform, "$text_active_passive").GetComponent<Text>();
-
-        CharacteristicsTitleText = Utils.FindChild(transform, "$text_stats_title").GetComponent<Text>();
-        CharacteristicsTitleText.resizeTextForBestFit = true;
-        ConstitutionText = Utils.FindChild(transform, "$text_constitution").GetComponent<Text>();
-        DexterityText = Utils.FindChild(transform, "$text_dexterity").GetComponent<Text>();
-        IntelligenceText = Utils.FindChild(transform, "$text_intelligence").GetComponent<Text>();
-        StrengthText = Utils.FindChild(transform, "$text_strength").GetComponent<Text>();
-        WisdomText = Utils.FindChild(transform, "$text_wisdom").GetComponent<Text>();
         SpellBarHotKeyTooltip = Utils.FindChild(transform, "$part_hotkey_tooltip").GetComponent<Text>();
         SpellBarHotKeyTooltip.text = Localization.instance.Localize($"$info_spellbook_key: <color=orange>{AlmanacClassesPlugin._SpellAlt.Value}</color>");
-
         PointsUsed = Utils.FindChild(transform, "$text_used_points").GetComponent<Text>();
-        PointsUsed.resizeTextForBestFit = true;
         RequiredPoints = Utils.FindChild(transform, "$text_prestige_needed").GetComponent<Text>();
-        RequiredPoints.resizeTextForBestFit = true;
-
         ClassBardText = Utils.FindChild(transform, "$text_bard").GetComponent<Text>();
         ClassShamanText = Utils.FindChild(transform, "$text_shaman").GetComponent<Text>();
         ClassSageText = Utils.FindChild(transform, "$text_sage").GetComponent<Text>();
         ClassWarriorText = Utils.FindChild(transform, "$text_warrior").GetComponent<Text>();
         ClassRogueText = Utils.FindChild(transform, "$text_rogue").GetComponent<Text>();
         ClassRangerText = Utils.FindChild(transform, "$text_ranger").GetComponent<Text>();
-        
-        Utils.FindChild(transform, "$text_title").GetComponent<Text>().text = "$title_talents";
-        Utils.FindChild(transform, "$text_constitution_title").GetComponent<Text>().text = Localization.instance.Localize("$almanac_constitution");
-        Utils.FindChild(transform, "$text_dexterity_title").GetComponent<Text>().text = Localization.instance.Localize("$almanac_dexterity");
-        Utils.FindChild(transform, "$text_intelligence_title").GetComponent<Text>().text = Localization.instance.Localize("$almanac_intelligence");
-        Utils.FindChild(transform, "$text_strength_title").GetComponent<Text>().text = Localization.instance.Localize("$almanac_strength");
-        Utils.FindChild(transform, "$text_wisdom_title").GetComponent<Text>().text = Localization.instance.Localize("$almanac_wisdom");
+        transform.Find("Panel/$part_header/$part_title").gameObject.SetActive(false);
         LoadCloseButton();
         LoadResetButton();
+        UpdateBackground();
         Utils.FindChild(transform, "$button_center").GetComponent<Button>().onClick.AddListener(Prestige.OnClickPrestige);
+        transform.Find("Panel/$part_header/$part_characteristics").gameObject.AddComponent<CharacteristicPanel>().Init();
         gameObject.SetActive(false);
     }
 
@@ -133,41 +130,21 @@ public class SkillTree : MonoBehaviour
             TalentManager.ResetTalents();
             Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_cfg_changed");
         }
-        
-        int constitution = CharacteristicManager.GetCharacteristic(Characteristic.Constitution);
-        int dexterity = CharacteristicManager.GetCharacteristic(Characteristic.Dexterity);
-        int intelligence = CharacteristicManager.GetCharacteristic(Characteristic.Intelligence);
-        int strength = CharacteristicManager.GetCharacteristic(Characteristic.Strength);
-        int wisdom = CharacteristicManager.GetCharacteristic(Characteristic.Wisdom);
-
-        PrestigeText.text = "";
-        ExperienceTitleText.text = Localization.instance.Localize("$text_experience");
-        LevelText.text = $"{Localization.instance.Localize("$text_level")}: <color=orange>{level}</color>";
-        ExperienceText.text = $"<color=orange>{experience}</color>" + " / " + $"<color=orange>{nextXP}</color>";
-        
-        ExperienceBarFill.fillAmount = (float)experience / (float)nextXP;
-        TalentPointsText.text = Localization.instance.Localize("$text_talent_points") + ": " + $"<color=orange>{availableTalents}</color>";
-        CharacteristicsTitleText.text = Localization.instance.Localize("$almanac_characteristic");
-        
-        ConstitutionText.text = $"<color=orange>{constitution}</color>";
-        DexterityText.text = $"<color=orange>{dexterity}</color>";
-        IntelligenceText.text = $"<color=orange>{intelligence}</color>";
-        StrengthText.text = $"<color=orange>{strength}</color>";
-        WisdomText.text = $"<color=orange>{wisdom}</color>";
-        
-        ClassBardText.text = Localization.instance.Localize("$class_bard");
-        ClassShamanText.text = Localization.instance.Localize("$class_shaman");
-        ClassSageText.text = Localization.instance.Localize("$class_sage");
-        ClassWarriorText.text = Localization.instance.Localize("$class_warrior");
-        ClassRogueText.text = Localization.instance.Localize("$class_rogue");
-        ClassRangerText.text = Localization.instance.Localize("$class_ranger");
-
-        ResetButtonText.text = Localization.instance.Localize("$info_reset_talents");
-        
+        SetLevel(level);
+        SetExperience(experience, nextXP);
+        SetTitles();
+        SetTalentPoint(availableTalents);
         int usedPoints = TalentManager.GetTotalBoughtTalentPoints();
-        
-        PointsUsed.text = Localization.instance.Localize($"$text_talent_points_used: <color=orange>{usedPoints}</color>");
-        
+        SetUsedTalentPoints(usedPoints);
+        SetRequiredTalentPointsThreshold(usedPoints);
+        CharacteristicPanel.m_instance.UpdateTexts();
+        CharacteristicManager.UpdateCharacteristicPoints();
+        CharacteristicButtons.UpdateAllButtons();
+        UpdateStatsBonus();
+    }
+
+    public void SetRequiredTalentPointsThreshold(int usedPoints)
+    {
         if (usedPoints < AlmanacClassesPlugin._PrestigeThreshold.Value)
         {
             int requiredPoints = AlmanacClassesPlugin._PrestigeThreshold.Value - usedPoints;
@@ -178,13 +155,41 @@ public class SkillTree : MonoBehaviour
             RequiredPoints.text = Localization.instance.Localize("$text_required_points_to_prestige: <color=orange>0</color>");
         }
     }
+    
+    public void SetTalentPoint(int amount) => TalentsPointsAmount.text = $"<color=orange>{amount}</color>";
+    public void SetUsedTalentPoints(int amount) => PointsUsed.text = Localization.instance.Localize($"$text_talent_points_used: <color=orange>{amount}</color>");
+
+    public void SetTitles()
+    {
+        CharacteristicText.text = Localization.instance.Localize("$almanac_characteristic $text_points");
+        TalentPointsText.text = Localization.instance.Localize("$text_talent_points");
+        ClassBardText.text = Localization.instance.Localize("$class_bard");
+        ClassShamanText.text = Localization.instance.Localize("$class_shaman");
+        ClassSageText.text = Localization.instance.Localize("$class_sage");
+        ClassWarriorText.text = Localization.instance.Localize("$class_warrior");
+        ClassRogueText.text = Localization.instance.Localize("$class_rogue");
+        ClassRangerText.text = Localization.instance.Localize("$class_ranger");
+        ResetButtonText.text = Localization.instance.Localize("$info_reset_talents");
+    }
+
+    public void SetLevel(int level)
+    {
+        LevelText.text = $"{Localization.instance.Localize("$text_level")}";
+        LevelAmount.text = $"<color=orange>{level}</color>";
+    }
+
+    public void SetExperience(int current, int next)
+    {
+        ExperienceText.text = Localization.instance.Localize($"<color=orange>{current}</color>" + " / " + $"<color=orange>{next}</color> $text_xp");
+    }
+    
+    public void UpdateStatsBonus() => BonusTooltip.text = Localization.instance.Localize(CharacteristicManager.GetTooltip());
     public void SetSelectedName(string text) => TalentName.text = Localization.instance.Localize(text);
     public void SetSelectedDescription(string text) => TalentDescription.text = Localization.instance.Localize(text);
     public void SetSelectedCost(string text) => TalentCost.text = Localization.instance.Localize(text);
     public void SetSelectedType(string text) => ActivePassive.text = Localization.instance.Localize(text);
     public void SetHotkeyTooltip(string text) => SpellBarHotKeyTooltip.text = Localization.instance.Localize(text);
     public bool IsVisible() => gameObject.activeInHierarchy;
-
     public void SetDefaultTooltip()
     {
         SetSelectedName("$info_hover");
@@ -198,7 +203,6 @@ public class SkillTree : MonoBehaviour
         SetSelectedCost("");
         SetSelectedType("");
     }
-    
     public void UpdateBackground()
     {
         if (!m_instance) return;
@@ -208,10 +212,12 @@ public class SkillTree : MonoBehaviour
         HeaderBackground.sprite = background;
         StatsBackground.sprite = background;
         TooltipBackground.sprite = background;
+        CharacteristicBackground.sprite = background;
+        StatsTooltipBackground.sprite = background;
+        ExtraInfoBackground.sprite = background;
+        BonusBackground.sprite = background;
     }
-
     public void SetBackgroundColor(Color color) => PanelBackground.color = color;
-    
     private void LoadCloseButton()
     {
         Transform closeButton = Utils.FindChild(transform, "$button_close");

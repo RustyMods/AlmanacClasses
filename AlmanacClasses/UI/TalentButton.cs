@@ -143,8 +143,10 @@ public class TalentButton : MonoBehaviour
                 if (!SpellBook.Add(ability)) return;
                 break;
             case TalentType.Characteristic:
-                CharacteristicManager.Add(ability.GetCharacteristicType(),
-                    ability.GetCharacteristic(ability.GetLevel()));
+                CharacteristicManager.UpdateCharacteristicPoints();
+                CharacteristicButtons.UpdateAllButtons();
+                // CharacteristicManager.Add(ability.GetCharacteristicType(),
+                //     ability.GetCharacteristic(ability.GetLevel()));
                 break;
         }
 

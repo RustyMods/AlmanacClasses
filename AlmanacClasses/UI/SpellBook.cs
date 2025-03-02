@@ -28,7 +28,7 @@ public class SpellBook : MonoBehaviour
     {
         m_instance = this;
         m_rect = GetComponent<RectTransform>();
-        m_rect.anchoredPosition = AlmanacClassesPlugin._SpellBookPos.Value;
+        m_rect.position = AlmanacClassesPlugin._SpellBookPos.Value;
         m_element = AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_element");
         GameObject HoverName = new GameObject("$text_title");
         var rect = HoverName.AddComponent<RectTransform>();
@@ -69,7 +69,7 @@ public class SpellBook : MonoBehaviour
     }
     public static void OnSpellBarPosChange(object sender, EventArgs e)
     {
-        m_instance.m_rect.anchoredPosition = AlmanacClassesPlugin._SpellBookPos.Value;
+        m_instance.m_rect.position = AlmanacClassesPlugin._SpellBookPos.Value;
         SpellInfo.m_instance.SetPosition(AlmanacClassesPlugin._SpellBookPos.Value + new Vector2(0f, 150f));
     }
 
