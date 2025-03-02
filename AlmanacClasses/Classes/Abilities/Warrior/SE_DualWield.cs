@@ -104,9 +104,12 @@ public static class DualWield
                 return false;
             }
             
-            if (__instance.GetLeftItem() != null)
+            var leftItem = __instance.GetLeftItem();
+            if (leftItem != null)
             {
-                __instance.UnequipItem(__instance.GetLeftItem(), false);
+                var isShield = leftItem.m_shared.m_itemType == ItemDrop.ItemData.ItemType.Shield;
+                if (isShield) return true;
+                __instance.UnequipItem(leftItem, false);
             }
 
             __instance.m_leftItem = item;
