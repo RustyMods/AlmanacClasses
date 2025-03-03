@@ -24,8 +24,20 @@ public class CharacteristicButtons : MonoBehaviour
         addHover.m_type = m_type;
         m_add.onClick.AddListener(() =>
         {
-            if (CharacteristicManager.GetRemainingPoints() <= 0) return;
-            CharacteristicManager.Add(m_type, 1);
+            var points = CharacteristicManager.GetRemainingPoints();
+            if (points <= 0) return;
+            if (Input.GetKey(KeyCode.LeftControl) && points >= 10)
+            {
+                CharacteristicManager.Add(m_type, 10);
+            }
+            else if (Input.GetKey(KeyCode.LeftAlt) && points >= 5)
+            {
+                CharacteristicManager.Add(m_type, 5);
+            }
+            else
+            {
+                CharacteristicManager.Add(m_type, 1);
+            }
             SetAmount(CharacteristicManager.GetCharacteristic(m_type));
             addHover.UpdateText();
         });
@@ -33,8 +45,20 @@ public class CharacteristicButtons : MonoBehaviour
         removeHover.m_type = m_type;
         m_remove.onClick.AddListener(() =>
         {
-            if (CharacteristicManager.GetCharacteristic(m_type) <= 0) return;
-            CharacteristicManager.Remove(m_type, 1);
+            var points = CharacteristicManager.GetCharacteristic(m_type);
+            if (points <= 0) return;
+            if (Input.GetKey(KeyCode.LeftControl) && points >= 10)
+            {
+                CharacteristicManager.Remove(m_type, 10);
+            }
+            else if (Input.GetKey(KeyCode.LeftAlt) && points >= 5)
+            {
+                CharacteristicManager.Remove(m_type, 5);
+            }
+            else
+            {
+                CharacteristicManager.Remove(m_type, 1);
+            }
             SetAmount(CharacteristicManager.GetCharacteristic(m_type));
             removeHover.UpdateText();
         });

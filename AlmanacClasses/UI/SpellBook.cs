@@ -258,6 +258,7 @@ public class SpellBook : MonoBehaviour
 
                     int cooldownTime = (int)(m_data.GetCooldown(m_data.GetLevel()) * ratio);
                     component.SetTimer(GetCooldownColored(cooldownTime));
+                    component.SetFillAmount(ratio);
                     if (cooldownTime <= 0)
                     {
                         component.SetTimer(Localization.instance.Localize("$info_ready"));

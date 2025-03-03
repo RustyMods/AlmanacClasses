@@ -31,6 +31,7 @@ public class PassiveBar : MonoBehaviour
         text.horizontalOverflow = HorizontalWrapMode.Overflow;
         text.verticalOverflow = VerticalWrapMode.Overflow;
         m_rect.anchoredPosition = AlmanacClassesPlugin._PassiveBarPos.Value;
+        m_element.AddComponent<ButtonSfx>().m_sfxPrefab = LoadUI.m_vanillaButtonSFX.m_sfxPrefab;
         Hide();
     }
     public void Update()

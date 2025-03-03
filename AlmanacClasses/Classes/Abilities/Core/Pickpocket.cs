@@ -8,6 +8,7 @@ public static class Pickpocket
     {
         if (instance.m_lastHit == null || !instance.m_localPlayerHasHit) return;
         if (!PlayerManager.m_playerTalents.TryGetValue("DoubleLoot", out Talent ability)) return;
+        if (!ability.m_passiveActive) return;
         if (instance.m_lastHit.GetAttacker() is not { } attacker) return;
         if (instance.m_baseAI == null) return;
         if (instance.m_baseAI.CanSeeTarget(attacker)) return;

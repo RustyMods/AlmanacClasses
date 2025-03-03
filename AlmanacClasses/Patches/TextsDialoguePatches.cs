@@ -35,7 +35,7 @@ public static class TextsDialoguePatches
                 if (kvp.Value.m_type is not TalentType.Passive) continue;
                 var data = kvp.Value;
                 // if (!data.m_passiveActive) continue;
-                stringBuilder.Append($"<color=orange>{data.GetName()}</color>\n");
+                stringBuilder.Append($"<color=orange>{data.GetName()}</color> [{(data.m_passiveActive ? "$text_on" : "$text_off")}]\n");
                 stringBuilder.Append(data.GetTooltip());
                 stringBuilder.Append("\n");
             }

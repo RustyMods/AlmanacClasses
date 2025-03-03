@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using AlmanacClasses.Classes;
 using UnityEngine;
@@ -145,8 +146,6 @@ public class TalentButton : MonoBehaviour
             case TalentType.Characteristic:
                 CharacteristicManager.UpdateCharacteristicPoints();
                 CharacteristicButtons.UpdateAllButtons();
-                // CharacteristicManager.Add(ability.GetCharacteristicType(),
-                //     ability.GetCharacteristic(ability.GetLevel()));
                 break;
         }
 
@@ -167,6 +166,7 @@ public class TalentButton : MonoBehaviour
         component.Start();
     }
     
+    [Description("Map a button to the Skill Tree UI")]
     public static void SetButton(Transform parent, string name, Dictionary<string, Image> lines, string key)
     {
         TalentButton talentButton = parent.Find(name).GetComponent<TalentButton>();

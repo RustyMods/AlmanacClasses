@@ -11,6 +11,7 @@ public static class MasterChef
         private static void Prefix(Player __instance)
         {
             if (!PlayerManager.m_playerTalents.TryGetValue("MasterChef", out Talent ability)) return;
+            if (!ability.m_passiveActive) return;
             float modifier = ability.GetFoodModifier(ability.GetLevel());
 
             // Runs during UpdateFood which resets all the food to item values before getting total
@@ -33,6 +34,7 @@ public static class MasterChef
         private static bool Prefix(ItemDrop.ItemData item, int qualityLevel, bool crafting, ref string __result)
         {
             if (!PlayerManager.m_playerTalents.TryGetValue("MasterChef", out Talent ability)) return true;
+            if (!ability.m_passiveActive) return true;
             if (item.m_shared.m_itemType is not ItemDrop.ItemData.ItemType.Consumable) return true;
             float modifier = ability.GetFoodModifier(ability.GetLevel());
             Player localPlayer = Player.m_localPlayer;

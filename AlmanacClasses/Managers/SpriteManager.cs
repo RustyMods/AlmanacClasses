@@ -50,6 +50,12 @@ public static class SpriteManager
     public static readonly Sprite RogueIcon = _AssetBundle.LoadAsset<Sprite>("rogue_icon");
     public static readonly Sprite ShamanIcon = _AssetBundle.LoadAsset<Sprite>("shaman_icon");
     public static readonly Sprite MedalIcon = _AssetBundle.LoadAsset<Sprite>("medal");
+    public static readonly Sprite Fireball_Icon = _AssetBundle.LoadAsset<Sprite>("FireMage_27");
+    public static readonly Sprite ChainShot_Icon = _AssetBundle.LoadAsset<Sprite>("Monk_20");
+    public static readonly Sprite? MonkeyWrench_Icon = RegisterSprite("monkeywrench_icon.png");
+    public static readonly Sprite DualWield_Icon = _AssetBundle.LoadAsset<Sprite>("ability_sword_double");
+    public static readonly Sprite Looter_Icon = _AssetBundle.LoadAsset<Sprite>("mapicon_trader");
+    public static readonly Sprite MasterChef_Icon = _AssetBundle.LoadAsset<Sprite>("food_icon");
     
     public static Sprite Wishbone_Icon = null!;
 

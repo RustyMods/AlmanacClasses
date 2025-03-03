@@ -39,13 +39,14 @@ public class CharacteristicPanel : MonoBehaviour
     }
 
     public void SetTitle(string text) => m_title.text = Localization.m_instance.Localize(text);
-
     public void SetTooltip(string text) =>
         SkillTree.m_instance.StatsTooltip.text = Localization.m_instance.Localize(text);
-
     public void SetDefaultTooltip()
     {
-        SkillTree.m_instance.StatsTooltip.text = Localization.m_instance.Localize("Welcome to the new layout! Here we have characteristic points to add");
+        SkillTree.m_instance.StatsTooltip.text = Localization.m_instance.Localize(
+            "$almanac_characteristic_desc \n" 
+            + "[<color=orange>L.Alt</color>] $text_add_or_remove 5\n"
+            + "[<color=orange>L.Ctr</color>] $text_add_or_remove 10");
     }
 
     public void UpdateTexts()

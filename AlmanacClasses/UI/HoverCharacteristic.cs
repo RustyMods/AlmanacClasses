@@ -2,12 +2,23 @@
 using AlmanacClasses.Classes;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace AlmanacClasses.UI;
 
 public class HoverCharacteristic : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     public Characteristic m_type = Characteristic.None;
+    private Image? button;
+    private Image? m_button
+    {
+        get
+        {
+            if (button) return button;
+            button = GetComponent<Image>();
+            return button;
+        }
+    }
 
     public void UpdateText()
     {
@@ -44,10 +55,18 @@ public class HoverCharacteristic : MonoBehaviour, IPointerEnterHandler, IPointer
         }
         CharacteristicPanel.m_instance.SetTooltip(stringBuilder.ToString());
     }
-    
-    public void OnPointerEnter(PointerEventData eventData) => UpdateText();
-    
-    public void OnPointerExit(PointerEventData eventData) => CharacteristicPanel.m_instance.SetDefaultTooltip();
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        UpdateText();
+        if (m_button != null) m_button.color = new Color(1f, 0.5f, 0f, 1f);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        CharacteristicPanel.m_instance.SetDefaultTooltip();
+        if (m_button != null) m_button.color = Color.white;
+    }
 
     private float FormatPercentage(float value) => value * 100 - 100;
 

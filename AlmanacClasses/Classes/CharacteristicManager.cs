@@ -79,21 +79,21 @@ public static class CharacteristicManager
             switch (kvp.Key)
             {
                 case Characteristic.Constitution:
-                    stringBuilder.Append($"$se_health: <color=orange>+{(int)GetHealthRatio()}</color>\n");
+                    stringBuilder.Append($"$se_health: <color=orange>+{(int)GetHealthRatio()}</color> <color=yellow>({Player.m_localPlayer.GetHealth()})</color>\n");
                     break;
                 case Characteristic.Strength:
-                    stringBuilder.Append($"$se_max_carryweight: <color=orange>+{(int)GetCarryWeightRatio()}</color>\n");
+                    stringBuilder.Append($"$se_max_carryweight: <color=orange>+{(int)GetCarryWeightRatio()}</color> <color=yellow>({Player.m_localPlayer.GetMaxCarryWeight()})</color>\n");
                     stringBuilder.Append($"$almanac_physical: <color=orange>+{FormatPercentage(GetStrengthModifier())}%</color>\n");
                     break;
                 case Characteristic.Intelligence:
                     stringBuilder.Append($"$almanac_elemental: <color=orange>+{FormatPercentage(GetIntelligenceModifier())}%</color>\n");
                     break;
                 case Characteristic.Dexterity:
-                    stringBuilder.Append($"$se_stamina: <color=orange>+{(int)GetStaminaRatio()}</color>\n");
+                    stringBuilder.Append($"$se_stamina: <color=orange>+{(int)GetStaminaRatio()}</color> <color=yellow>({Player.m_localPlayer.GetStamina()})</color>\n");
                     stringBuilder.Append($"$almanac_attackspeedmod: <color=orange>+{FormatPercentage(GetDexterityModifier())}%</color>\n");
                     break;
                 case Characteristic.Wisdom:
-                    stringBuilder.Append($"$se_eitr: <color=orange>+{(int)GetEitrRatio()}</color>\n");
+                    stringBuilder.Append($"$se_eitr: <color=orange>+{(int)GetEitrRatio()}</color> <color=yellow>({Player.m_localPlayer.GetEitr()})</color>\n");
                     break;
             }
         }

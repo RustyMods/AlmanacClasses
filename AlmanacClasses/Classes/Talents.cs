@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using AlmanacClasses.UI;
 using BepInEx.Configuration;
@@ -8,9 +9,10 @@ using static AlmanacClasses.AlmanacClassesPlugin;
 
 namespace AlmanacClasses.Classes;
 
+[Description("An ability accessible through the skill tree UI")]
 public class Talent
 {
-    private const string m_prestigeColor = "#FF5733";
+    public const string m_prestigeColor = "#FF5733";
     public readonly string m_key;
     public readonly string m_button;
     public readonly StatusEffect? m_status;
@@ -41,9 +43,11 @@ public class Talent
     public bool m_passiveActive = true;
     public Func<bool>? m_onClickPassive;
     public bool m_addToPassiveBar;
-    public readonly TalentCharacteristics? m_characteristic;
+    public readonly int? m_characteristic;
     public SpellBook.AbilityData? m_abilityData;
     public Action? m_onPurchase;
+    public Func<string>? m_tooltip;
+    public Func<string>? m_prestigeTooltip;
     public string GetAnimation() => m_useAnimation?.Value is Toggle.On ? m_animation : "";
     public List<string> GetCustomForageItems()
     {
@@ -90,12 +94,12 @@ public class Talent
     public float GetAttackSpeedReduction(int level) => m_values == null ? 1f : Mathf.Clamp01(1 - ((m_values.m_attackSpeedReduction?.Value ?? 1f) - 0.1f * (level - 1)));
     public float GetAttackStaminaUsage(int level) => m_values == null ? 1f : Mathf.Clamp01(1 - ((m_values.m_attackStaminaUsage?.Value ?? 0f) + (level - 1) * 0.1f));
     public float GetSneakStaminaUsage(int level) => m_values == null ? 1f : Mathf.Clamp01(1 - ((m_values.m_sneakStaminaUsage?.Value ?? 0f) + (level - 1) * 0.1f));
+    public int GetProjectileCount(int level) => m_values == null ? 0 : (m_values.m_projectileCount?.Value ?? 0) + (level - 1);
     public float GetResistance(int level, HitData.DamageType type) => m_resistances?.GetResistance(level, type) ?? 1f;
     public GameObject? GetCreatures(Heightmap.Biome biome) => m_creatures?.GetCreatures(biome) ?? null;
     public GameObject? GetCreaturesByLevel(int level) => m_creaturesByLevel?.GetCreaturesByLevel(level) ?? null;
     private string GetCreatureName(GameObject? prefab) => prefab != null ? prefab.TryGetComponent(out Humanoid component) ? component.m_name : "Unknown" : "Invalid";
-    public Characteristic GetCharacteristicType() => m_characteristic?.m_type ?? Characteristic.None;
-    public int GetCharacteristic(int level) => (m_characteristic?.m_amount ?? 0) + (level - 1) * 5;
+    public int GetCharacteristic(int level) => (m_characteristic ?? 0) + (level - 1) * 5;
     public string GetName() => m_type is TalentType.Characteristic ? GetTalentType() : $"$talent_{m_key.ToLower()}";
     private string GetDescription() => $"$talent_{m_key.ToLower()}_desc";
     private float GetCreaturesLength(int level) => m_creatures == null ? 0f : GetLength(level);
@@ -112,6 +116,7 @@ public class Talent
         else
         {
             stringBuilder.Append(GetDescription() + "\n\n");
+            if (m_tooltip != null) stringBuilder.Append(m_tooltip.Invoke() + "\n");
             if (m_cooldown != null) 
                 stringBuilder.Append($"$almanac_cooldown: <color=orange>{GetCooldown(GetLevel())}</color>$text_sec\n");
             if (m_length != null) 
@@ -257,6 +262,7 @@ public class Talent
         else
         {
             stringBuilder.Append(GetDescription() + "\n\n");
+            if (m_prestigeTooltip != null) stringBuilder.Append(m_prestigeTooltip.Invoke() + "\n");
             if (m_cooldown != null)
                 stringBuilder.Append($"$almanac_cooldown: <color=orange>{GetCooldown(GetLevel())}</color>$text_sec --> <color={m_prestigeColor}>{GetCooldown(GetLevel() + 1)}</color>$text_sec\n");
             if (m_length != null)
@@ -416,6 +422,7 @@ public class Talent
         public ConfigEntry<float>? m_attackStaminaUsage;
         public ConfigEntry<float>? m_sneakStaminaUsage;
         public ConfigEntry<float>? m_armor;
+        public ConfigEntry<int>? m_projectileCount;
     }
     public class TalentCreatures
     {
@@ -550,16 +557,8 @@ public class Talent
             return damages;
         }
     }
-    public class TalentCharacteristics
-    {
-        public readonly Characteristic m_type;
-        public readonly int m_amount;
-        public TalentCharacteristics(Characteristic type, int amount)
-        {
-            m_type = type;
-            m_amount = amount;
-        }
-    }
+
+    [Description("Register new talent with a unique key, map it to a button key")]
     public Talent(string key, string buttonName, TalentType type, bool alt = false)
     {
         m_key = key;
@@ -570,11 +569,13 @@ public class Talent
         else TalentManager.m_talentsByButton[m_button] = this;
     }
 
-    public Talent(string key, string buttonName, Characteristic type, int amount, bool alt = false) : this(key, buttonName, TalentType.Characteristic, alt)
+    [Description("Register a new talent wtih a unique key, map it to a button key, which awards characteristic points")]
+    public Talent(string key, string buttonName, int amount, bool alt = false) : this(key, buttonName, TalentType.Characteristic, alt)
     {
-        m_characteristic = new TalentCharacteristics(type, amount);
+        m_characteristic = amount;
     }
 
+    [Description("Register a new talent with a unique key, map it to a button key, which has a status effect")]
     public Talent(string key, string buttonName, TalentType type, StatusEffect effect, string name, bool alt = false) : this(key, buttonName, type, alt)
     {
         m_status = effect;

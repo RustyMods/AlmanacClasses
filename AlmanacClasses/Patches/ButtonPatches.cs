@@ -50,6 +50,7 @@ public static class ButtonPatches
         SkillTree.m_instance.SetSelectedName(talent.GetName() + " $text_lvl " + talent.m_level);
         SkillTree.m_instance.SetSelectedDescription(talent.GetTooltip());
         SkillTree.m_instance.SetSelectedCost($"$almanac_cost: <color=orange>{talent.GetCost()}</color>");
+        SkillTree.m_instance.SetSelectedType(talent.GetTalentType());
     }
 
     [HarmonyPatch(typeof(Selectable), nameof(Selectable.OnPointerExit))]

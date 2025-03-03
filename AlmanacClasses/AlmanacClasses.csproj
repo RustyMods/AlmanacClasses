@@ -166,6 +166,7 @@
         <Compile Include="Classes\Abilities\Rogue\SE_RogueSpeed.cs" />
         <Compile Include="Classes\Abilities\Rogue\SE_RogueStamina.cs" />
         <Compile Include="Classes\Abilities\Sage\CallOfLightning.cs" />
+        <Compile Include="Classes\Abilities\Sage\Fireball.cs" />
         <Compile Include="Classes\Abilities\Sage\GoblinBeam.cs" />
         <Compile Include="Classes\Abilities\Sage\IceBreath.cs" />
         <Compile Include="Classes\Abilities\Sage\MeteorStrike.cs" />
@@ -237,6 +238,7 @@
         <Content Include=".gitignore" />
         <EmbeddedResource Include="assets\classesbundle" />
         <Content Include="environment.props" />
+        <EmbeddedResource Include="icons\monkeywrench_icon.png" />
         <Content Include="ILRepack.targets" />
         <Content Include="Libs\AnimationSpeedManager.dll" />
         <Content Include="Libs\ServerSync.dll">
@@ -257,9 +259,6 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="YamlDotNet" Version="16.3.0" />
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="icons" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

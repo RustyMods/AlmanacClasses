@@ -23,6 +23,7 @@ public class PassiveButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         m_border = transform.Find("$image_border").GetComponent<Image>();
         m_icon = transform.Find("$image_icon").GetComponent<Image>();
         m_name = transform.Find("$text_name").GetComponent<Text>();
+        gameObject.AddComponent<ButtonSfx>().m_sfxPrefab = LoadUI.m_vanillaButtonSFX.m_sfxPrefab;
         m_name.gameObject.SetActive(false);
         m_instances.Add(this);
     }

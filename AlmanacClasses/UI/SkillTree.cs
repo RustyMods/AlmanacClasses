@@ -109,6 +109,7 @@ public class SkillTree : MonoBehaviour
     {
         gameObject.SetActive(true);
         FillLines.SetInitialFillLines();
+        PassiveBar.m_instance.Show();
         UpdateTexts();
     }
 
@@ -116,6 +117,7 @@ public class SkillTree : MonoBehaviour
     {
         gameObject.SetActive(false);
         Prestige.DeselectTalent();
+        PassiveBar.m_instance.Hide();
         if (Player.m_localPlayer) Player.m_localPlayer.m_zanim.SetInt("crafting", 0);
     }
     public void UpdateTexts()

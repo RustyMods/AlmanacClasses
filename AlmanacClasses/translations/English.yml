@@ -25,6 +25,9 @@ text_to_reset: "to reset talents"
 text_points: "points"
 text_unlocks: "Unlocks"
 text_unlocks_additional: "Unlocks additional"
+text_on: "On"
+text_off: "Off"
+text_add_or_remove: "to add or remove by"
 
 almanac_cost: "cost"
 almanac_cooldown: "Cooldown"
@@ -47,6 +50,7 @@ almanac_dexterity: "Dexterity"
 almanac_wisdom: "Wisdom"
 almanac_ability: "Ability"
 almanac_characteristic: "Characteristic"
+almanac_characteristic_desc: "Unlock characteristic points and add desired stats"
 almanac_passive: "Passive"
 almanac_heal: "Heal"
 almanac_reflect: "Reflect"
@@ -210,6 +214,10 @@ talent_berzerk: "Berzerk"
 talent_berzerk_desc: "Passively adds armor"
 talent_airbenderalt: 'Airman'
 talent_airbenderalt_desc: 'Allows to jump in the air whilst user has eitr'
+talent_fireball: "Fireball"
+talent_fireball_desc: "Shoot a fireball projectile"
+talent_chainshot: "Chain Shot"
+talent_chainshot_desc: "Arrows continue through foes and target the next closest target"
 
 almanac_class_altar_info: 
   "Welcome to the wonderful world of almanac class system 

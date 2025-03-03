@@ -24,6 +24,7 @@ public static class AirBender
     {
         if (!instance) return;
         if (!PlayerManager.m_playerTalents.TryGetValue("AirBenderAlt", out Talent talent)) return;
+        if (!talent.m_passiveActive) return;
         if (instance.IsOnGround()) return;
 
         if (!(ZInput.GetButtonDown("Jump") || ZInput.GetButtonDown("JoyJump"))) return;
@@ -49,6 +50,7 @@ public static class AirBender
     {
         if (!instance) return;
         if (!PlayerManager.m_playerTalents.TryGetValue("AirBender", out Talent talent)) return;
+        if (!talent.m_passiveActive) return;
         if (instance.IsOnGround())
         {
             JumpCount = 0;

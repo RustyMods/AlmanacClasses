@@ -15,6 +15,7 @@ public static class VFX
     public static GameObject Meteor = null!;
     public static GameObject TrollStone = null!;
     public static GameObject GDKingRoots = null!;
+    public static GameObject Fireball = null!;
 
     public static GameObject SkeletonFriendly = null!;
     public static GameObject CustomTrap = null!;
@@ -231,6 +232,7 @@ public static class VFX
         Meteor = instance.GetPrefab("projectile_meteor_fader");
         TrollStone = instance.GetPrefab("troll_throw_projectile");
         GDKingRoots = instance.GetPrefab("gdking_root_projectile");
+        Fireball = instance.GetPrefab("staff_fireball_projectile");
         GameObject customTrap = Object.Instantiate(instance.GetPrefab("piece_trap_troll"), AlmanacClassesPlugin._Root.transform, false);
         customTrap.name = "RangerTrap";
 
