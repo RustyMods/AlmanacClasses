@@ -583,7 +583,7 @@ public static class TalentManager
             m_slash = _Plugin.config("Sage - Ice Breath", "Slash Damage", 20f, new ConfigDescription("Set damages", new AcceptableValueRange<float>(0f, 1000f))),
             m_frost = _Plugin.config("Sage - Ice Breath", "Frost Damage", 20f, new ConfigDescription("Set damages", new AcceptableValueRange<float>(0f, 1000f))),
         };
-        iceBreath.m_sprite = SpriteManager.Blink_Icon;
+        iceBreath.m_sprite = SpriteManager.IceBreath_Icon;
         iceBreath.m_animation = "roar";
         iceBreath.m_useAnimation = _Plugin.config("Sage - Ice Breath", "Use Animation", Toggle.On, "If on, casting ability triggers animation");
         iceBreath.m_healthCost = _Plugin.config("Sage - Ice Breath", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f)));
@@ -641,7 +641,7 @@ public static class TalentManager
             m_staminaRegen = _Plugin.config("Shaman - Regeneration", "Stamina Regeneration", 1.1f, new ConfigDescription("Set the multiplier", new AcceptableValueRange<float>(0f, 10f)))
         };
         shamanRegeneration.m_length = _Plugin.config("Shaman - Regeneration", "Length", 30f, new ConfigDescription("Set the length of effect", new AcceptableValueRange<float>(1f, 1000f)));
-        shamanRegeneration.m_sprite = SpriteManager.ShamanRegeneration;
+        shamanRegeneration.m_sprite = SpriteManager.ShamanRegeneration_Icon;
         shamanRegeneration.m_startEffects = VFX.UnSummonEffects;
         shamanRegeneration.m_animation = "cheer";
         shamanRegeneration.m_useAnimation = _Plugin.config("Shaman - Regeneration", "Use Animation", Toggle.On, "If on, casting ability triggers animation");
@@ -668,7 +668,7 @@ public static class TalentManager
             m_ten = _Plugin.config("Shaman - Summon", "Ten Above", "FallenValkyrie", "Set creature spawn for talent level ten and beyond")
         };
         shamanSpawn.m_length = _Plugin.config("Shaman - Summon", "Length", 25f, new ConfigDescription("Set the length of time until de-spawn", new AcceptableValueRange<float>(1f, 1000f)));
-        shamanSpawn.m_sprite = SpriteManager.ShamanGhosts_Icon;
+        shamanSpawn.m_sprite = SpriteManager.ShamanSpawn_Icon;
         shamanSpawn.m_animation = "Summon";
         shamanSpawn.m_useAnimation = _Plugin.config("Shaman - Summon", "Use Animation", Toggle.On, "If on, casting ability triggers animation");
         shamanSpawn.m_healthCost = _Plugin.config("Shaman - Summon", "Health Cost", 0f, new ConfigDescription("Set the cost to trigger talent", new AcceptableValueRange<float>(0f, 101f)));
