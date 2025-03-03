@@ -170,8 +170,10 @@
         <Compile Include="Classes\Abilities\Sage\GoblinBeam.cs" />
         <Compile Include="Classes\Abilities\Sage\IceBreath.cs" />
         <Compile Include="Classes\Abilities\Sage\MeteorStrike.cs" />
+        <Compile Include="Classes\Abilities\Sage\Smite.cs" />
         <Compile Include="Classes\Abilities\Sage\StoneThrow.cs" />
         <Compile Include="Classes\Abilities\Shaman\RootBeam.cs" />
+        <Compile Include="Classes\Abilities\Shaman\SE_Leech.cs" />
         <Compile Include="Classes\Abilities\Shaman\SE_ShamanRegeneration.cs" />
         <Compile Include="Classes\Abilities\Shaman\ShamanSpawn.cs" />
         <Compile Include="Classes\Abilities\Shaman\ShamanHeal.cs" />

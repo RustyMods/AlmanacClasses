@@ -5,8 +5,6 @@ namespace AlmanacClasses.Classes.Abilities.Sage;
 
 public static class Fireball
 {
-    private static readonly LayerMask m_layerMask = LayerMask.GetMask("Default", "static_solid", "Default_small", "piece_nonsolid", "terrain", "vehicle", "piece", "viewblock");
-
     public static void TriggerFireball(HitData.DamageTypes damages)
     {
         var transform = Player.m_localPlayer.transform;

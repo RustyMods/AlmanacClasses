@@ -5,7 +5,7 @@ using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace PieceManager
+namespace Managers
 {
     [PublicAPI]
     public static class MaterialReplacer
@@ -14,7 +14,21 @@ namespace PieceManager
         private static readonly Dictionary<string, Material> OriginalMaterials;
         private static readonly Dictionary<GameObject, ShaderType> ObjectsForShaderReplace;
         private static readonly HashSet<Shader> CachedShaders = new();
+        private static readonly List<MaterialData> m_materials = new();
+        private static readonly Dictionary<Material, string> MaterialsToReplace = new();
         private static bool hasRun = false;
+
+        public static void SwapMaterial(AssetBundle assetBundle, string materialName, string original)
+        {
+            if (assetBundle.LoadAsset<Material>(materialName) is { } material)
+            {
+                MaterialsToReplace[material] = original;
+            }
+            else
+            {
+                Debug.LogWarning(materialName + " is null");
+            }
+        }
 
         static MaterialReplacer()
         {
@@ -104,10 +118,13 @@ namespace PieceManager
                 ProcessGameObjectShaders(go, shaderType);
             }
 
+            ProcessMaterials();
+            
+
             hasRun = true;
         }
 
-        private static void ProcessGameObjectMaterials(GameObject go, bool isJotunnMock)
+        public static void ProcessGameObjectMaterials(GameObject go, bool isJotunnMock)
         {
             var renderers = go.GetComponentsInChildren<Renderer>(true);
             foreach (var renderer in renderers)
@@ -135,6 +152,21 @@ namespace PieceManager
             return originalMaterial;
         }
 
+        private static void ProcessMaterials()
+        {
+            foreach (MaterialData data in m_materials) data.Process();
+
+            foreach (var kvp in MaterialsToReplace)
+            {
+                if (!OriginalMaterials.TryGetValue(kvp.Value, out Material original)) continue;
+                kvp.Key.shader = original.shader;
+                if (kvp.Key.shader.name == "Custom/Water")
+                {
+                    if (kvp.Key.HasProperty("_ColorTop")) kvp.Key.SetColor("_ColorTop", original.GetColor("_ColorTop"));
+                }
+            }
+        }
+
         private static void ProcessGameObjectShaders(GameObject go, ShaderType shaderType)
         {
             var renderers = go.GetComponentsInChildren<Renderer>(true);
@@ -145,6 +177,7 @@ namespace PieceManager
                     if (material != null)
                     {
                         material.shader = GetShaderForType(material.shader, shaderType, material.shader.name);
+                        if (material.HasProperty("_ValueNoise")) material.SetFloat("_ValueNoise", 0f);
                     }
                 }
             }
@@ -177,6 +210,60 @@ namespace PieceManager
 
 
             return origShader;
+        }
+        
+        
+
+        public class MaterialData
+        {
+            public GameObject? PrefabToModify;
+            private readonly Material m_material = null!;
+            private readonly ShaderType m_type;
+            public readonly Dictionary<string, float> m_floatProperties = new();
+            public readonly Dictionary<string, Texture> m_texProperties = new();
+            public readonly Dictionary<string, Color> m_colorProperties = new();
+            public MaterialData(AssetBundle assetBundle, string materialName, ShaderType type)
+            {
+                if (assetBundle.LoadAsset<Material>(materialName) is { } material)
+                {
+                    m_material = new (material);
+                    m_type = type;
+                    m_materials.Add(this);
+                }
+                else
+                {
+                    Debug.LogWarning(materialName + " is null");
+                }
+            }
+
+            public void Process()
+            {
+                m_material.shader = GetShaderForType(m_material.shader, m_type, m_material.shader.name);
+                foreach (KeyValuePair<string, float> kvp in m_floatProperties)
+                {
+                    if (m_material.HasProperty(kvp.Key)) m_material.SetFloat(kvp.Key, kvp.Value);
+                }
+
+                foreach (var kvp in m_texProperties)
+                {
+                    if (m_material.HasProperty(kvp.Key)) m_material.SetTexture(kvp.Key, kvp.Value);
+                }
+
+                foreach (var kvp in m_colorProperties)
+                {
+                    if (m_material.HasProperty(kvp.Key)) m_material.SetColor(kvp.Key, kvp.Value);
+                }
+
+                if (PrefabToModify is { } prefab)
+                {
+                    foreach (var renderer in prefab.GetComponentsInChildren<Renderer>(true))
+                    {
+                        List<Material> materials = new(){m_material};
+                        renderer.sharedMaterials = materials.ToArray();
+                        renderer.materials = materials.ToArray();
+                    }
+                }
+            }
         }
     }
 }

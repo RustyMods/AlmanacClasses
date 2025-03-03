@@ -9,13 +9,14 @@ public class SE_MonkeyWrench : StatusEffect
     private Talent m_talent = null!;
     public override void Setup(Character character)
     {
-        if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
-        m_startEffects = talent.GetEffectList();
-        m_talent = talent;
-        m_name = talent.GetName();
-        m_tooltip = talent.GetTooltip();
-        // m_icon = SpriteManager.WarriorIcon;
-        talent.m_passiveActive = true;
+        if (TalentManager.m_talents.TryGetValue(m_key, out Talent talent))
+        {
+            m_startEffects = talent.GetEffectList();
+            m_talent = talent;
+            m_name = talent.GetName();
+            m_tooltip = talent.GetTooltip();
+            talent.m_passiveActive = true;
+        }
         base.Setup(character);
     }
 

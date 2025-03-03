@@ -8,6 +8,6 @@ public static class StoreGUIPatches
     [HarmonyPatch(typeof(StoreGui), nameof(StoreGui.IsVisible))]
     private static class StoreGUI_IsVisible_Patch
     {
-        private static void Postfix(ref bool __result) => __result |= TalentBook.IsTalentBookVisible();
+        private static void Postfix(ref bool __result) => __result |= SkillTree.IsPanelVisible();
     }
 }

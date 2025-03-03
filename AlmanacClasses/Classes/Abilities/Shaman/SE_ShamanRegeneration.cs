@@ -12,10 +12,12 @@ public class SE_ShamanRegeneration : StatusEffect
 
     public override void Setup(Character character)
     {
-        if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
-        m_ttl = talent.GetLength(talent.GetLevel());
-        m_startEffects = talent.GetEffectList();
-        m_talent = talent;
+        if (TalentManager.m_talents.TryGetValue(m_key, out Talent talent))
+        {
+            m_ttl = talent.GetLength(talent.GetLevel());
+            m_startEffects = talent.GetEffectList();
+            m_talent = talent;
+        }
         
         base.Setup(character);
         FindPlayers();

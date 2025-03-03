@@ -23,7 +23,6 @@ public class TalentBook : MonoBehaviour, Interactable, Hoverable
         Player.m_localPlayer.m_zanim.SetInt("crafting", 1);
         SkillTree.m_instance.Show();
     }
-    public static bool IsTalentBookVisible() => SkillTree.m_instance && SkillTree.m_instance.IsVisible();
     public bool UseItem(Humanoid user, ItemDrop.ItemData item) => false;
     public string GetHoverText() => Localization.instance.Localize(m_name) + "\n" + Localization.instance.Localize("[<color=yellow><b>$KEY_Use</b></color>] $info_open_book");
     public string GetHoverName() => Localization.instance.Localize(m_name);

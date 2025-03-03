@@ -218,6 +218,8 @@ talent_fireball: "Fireball"
 talent_fireball_desc: "Shoot a fireball projectile"
 talent_chainshot: "Chain Shot"
 talent_chainshot_desc: "Arrows continue through foes and target the next closest target"
+talent_leech: "Leech"
+talent_leech_desc: "Heals user based on damage inflicted on others"
 
 almanac_class_altar_info: 
   "Welcome to the wonderful world of almanac class system 

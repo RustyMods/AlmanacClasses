@@ -399,7 +399,7 @@ public static class ExperienceManager
         exp.name = $"SE_{name}";
         exp.m_ttl = 10f;
         exp.m_name = displayName;
-        exp.m_startEffects = VFX.FX_Experience;
+        exp.m_startEffects = VFX.FX_Experience.m_effectList;
         exp.m_icon = component.m_itemData.GetIcon();
         exp.m_amount = AlmanacClassesPlugin._Plugin.config("5 - Experience Orbs", displayName, amount, "Set the amount of experience received");
         if (!ObjectDB.instance.m_StatusEffects.Contains(exp))

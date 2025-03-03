@@ -44,11 +44,17 @@ public static class CommandsManager
                 AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo("Reset all classes data");
                 return true;
             });
+            TalentCommand clear = new("clear", "resets player talents without removing level, admin only", _ =>
+            {
+                TalentManager.ResetTalents(true);
+                AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo("Cleared player talents");
+                return true;
+            }, adminOnly: true);
             TalentCommand help = new TalentCommand("help", "list of available talent commands", _ =>
             {
                 foreach (TalentCommand command in m_commands.Values)
                 {
-                    if (command.m_isSecret) continue;
+                    if (command.IsSecret()) continue;
                     AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo($"{command.m_input} - {command.m_description}");
                 }
 
@@ -59,7 +65,7 @@ public static class CommandsManager
                 ExperienceManager.WriteExperienceMap();
                 return true;
             });
-            TalentCommand add = new TalentCommand("add", "[amount<int>] adds experience to local player, no cost must be enabled", args =>
+            TalentCommand add = new TalentCommand("add", "[amount<int>] adds experience to local player, admin only", args =>
             {
                 if (!Player.m_localPlayer.NoCostCheat())
                 {
@@ -72,16 +78,10 @@ public static class CommandsManager
                 Player.m_localPlayer.Message(MessageHud.MessageType.Center, "Increased experience by " + amount);
                 ExperienceManager.RPC_AddExperience(0L, amount, Player.m_localPlayer.transform.position);
                 return true;
-            });
-            TalentCommand spawn = new TalentCommand("spawn", "[prefabName<string>] [level<int>] spawns a friendly creature, no cost must be enabled",
+            }, adminOnly: true);
+            TalentCommand spawn = new TalentCommand("spawn", "[prefabName<string>] [level<int>] spawns a friendly creature, admin only",
                 args =>
                 {
-                    if (!Player.m_localPlayer.NoCostCheat())
-                    {
-                        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "No cost must be enabled");
-                        return false;
-                    }
-
                     if (ZNetScene.instance.GetPrefab(args[2]) is not { } creature) return false;
                     if (!int.TryParse(args[3], out int level)) return false;
                     if (!creature.GetComponent<MonsterAI>()) return false;
@@ -95,7 +95,7 @@ public static class CommandsManager
                         select prefab.name).ToList();
                     list.Sort();
                     return list;
-                });
+                }, adminOnly: true);
             TalentCommand emote = new TalentCommand("emote", "[name<string>] runs custom emote, if you use talents emote list, it will print the list of available emotes",
                 args =>
                 {
@@ -136,12 +136,6 @@ public static class CommandsManager
             TalentCommand give = new TalentCommand("give", "[playerName<string>] [amount<int>] gives player experience, no cost must be enabled",
                 args =>
                 {
-                    if (!Player.m_localPlayer.NoCostCheat())
-                    {
-                        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "No cost must be enabled");
-                        return false;
-                    }
-
                     if (args.Length < 3) return false;
                     string name = string.Join(" ", args.Args.Skip(2).Take(args.Args.Length - 3));
 
@@ -162,7 +156,7 @@ public static class CommandsManager
                     var list = Player.GetAllPlayers().Select(player => player.GetHoverName()).ToList();
                     list.Sort();
                     return list;
-                });
+                }, adminOnly: true);
             TalentCommand size = new TalentCommand("size",
                 "prints to console the kilobyte size of almanac class system data saved on player file",
                 _ =>
@@ -245,13 +239,22 @@ public static class CommandsManager
     {
         public readonly string m_input;
         public readonly string m_description;
-        public readonly bool m_isSecret;
+        private readonly bool m_isSecret;
+        private readonly bool m_adminOnly;
         private readonly Func<Terminal.ConsoleEventArgs, bool> m_command;
         private readonly Func<List<string>>? m_optionFetcher;
-        public bool Run(Terminal.ConsoleEventArgs args) => m_command(args);
+        public bool Run(Terminal.ConsoleEventArgs args) => !IsAdmin() || m_command(args);
+        private bool IsAdmin()
+        {
+            if (!m_adminOnly || ZNet.m_instance.LocalPlayerIsAdminOrHost()) return true;
+            AlmanacClassesPlugin.AlmanacClassesLogger.LogWarning("Admin only command");
+            return false;
+        }
+
+        public bool IsSecret() => m_isSecret;
         public List<string> FetchOptions() => m_optionFetcher == null ? new() :  m_optionFetcher();
         public bool HasOptions() => m_optionFetcher != null;
-        public TalentCommand(string input, string description, Func<Terminal.ConsoleEventArgs, bool> command, Func<List<string>>? optionsFetcher = null, bool isSecret = false)
+        public TalentCommand(string input, string description, Func<Terminal.ConsoleEventArgs, bool> command, Func<List<string>>? optionsFetcher = null, bool isSecret = false, bool adminOnly = false)
         {
             m_input = input;
             m_description = description;
@@ -259,6 +262,7 @@ public static class CommandsManager
             m_isSecret = isSecret;
             m_commands[m_input] = this;
             m_optionFetcher = optionsFetcher;
+            m_adminOnly = adminOnly;
         }
     }
 }

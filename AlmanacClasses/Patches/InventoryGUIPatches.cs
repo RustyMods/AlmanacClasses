@@ -19,7 +19,7 @@ public static class InventoryGUIPatches
     [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.Hide))]
     private static class InventoryGUI_Hide_Patch
     {
-        private static bool Prefix() => !TalentBook.IsTalentBookVisible();
+        private static bool Prefix() => !SkillTree.IsPanelVisible();
     }
 
     [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.UpdateCharacterStats))]

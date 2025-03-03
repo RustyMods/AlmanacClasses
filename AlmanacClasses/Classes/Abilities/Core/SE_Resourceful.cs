@@ -2,8 +2,8 @@
 
 public class SE_Resourceful : StatusEffect
 {
-    private readonly string m_key = "Resourceful";
-    private Talent m_talent = null!;
+    private const string m_key = "Resourceful";
+    private Talent? m_talent;
 
     public override void Setup(Character character)
     {
@@ -15,7 +15,7 @@ public class SE_Resourceful : StatusEffect
 
     public override void ModifyAttack(Skills.SkillType skill, ref HitData hitData)
     {
-        HitData.DamageTypes damages = m_talent.GetDamages(m_talent.GetLevel());
+        HitData.DamageTypes damages = m_talent?.GetDamages(m_talent.GetLevel()) ?? new();
         if (hitData.m_damage.m_chop > 0f)
         {
             hitData.m_damage.m_chop += damages.m_chop;

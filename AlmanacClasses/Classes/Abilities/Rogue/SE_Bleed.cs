@@ -16,7 +16,7 @@ public class SE_Bleed : StatusEffect
     {
         if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
         m_ttl = 5f;
-        m_startEffects = VFX.BleedEffects;
+        m_startEffects = VFX.BleedEffect.m_effectList;
         m_talent = talent;
         base.Setup(character);
     }
@@ -45,10 +45,7 @@ public class SE_Bleed : StatusEffect
     {
         RemoveStartEffects();
     }
-}
-
-public static class BleedTrigger
-{
+    
     [HarmonyPatch(typeof(Character),nameof(Character.Damage))]
     [HarmonyPatch(typeof(Character), nameof(Character.RPC_Damage))]
     private static class Character_RPC_Damage_Patch
