@@ -9,53 +9,68 @@ namespace AlmanacClasses.Managers;
 
 public static class SpriteManager
 {
-    public static readonly Sprite HourGlass_Icon = _AssetBundle.LoadAsset<Sprite>("hourglass");
-    public static readonly Sprite MeteorStrike_Icon = _AssetBundle.LoadAsset<Sprite>("FireMage_1");
-    public static readonly Sprite GoblinBeam_Icon = _AssetBundle.LoadAsset<Sprite>("FireMage_19");
-    public static readonly Sprite LightningStrike_Icon = _AssetBundle.LoadAsset<Sprite>("FrostMage_7");
-    public static readonly Sprite BoulderStrike_Icon = _AssetBundle.LoadAsset<Sprite>("EarthMage_11");
-    public static readonly Sprite Blink_Icon = _AssetBundle.LoadAsset<Sprite>("FrostMage_2");
-    public static readonly Sprite SongOfSpeed_Icon = _AssetBundle.LoadAsset<Sprite>("Monk_4");
-    public static readonly Sprite SongOfVitality_Icon = _AssetBundle.LoadAsset<Sprite>("Monk_10");
-    public static readonly Sprite SongOfDamage_Icon = _AssetBundle.LoadAsset<Sprite>("Monk_11");
-    public static readonly Sprite SongOfHealing_Icon = _AssetBundle.LoadAsset<Sprite>("Monk_7");
-    public static readonly Sprite SongOfSpirit_Icon = _AssetBundle.LoadAsset<Sprite>("Monk_21");
-    public static readonly Sprite ShamanHeal_Icon = _AssetBundle.LoadAsset<Sprite>("Necromancer_24");
-    public static readonly Sprite ShamanRoots_Icon = _AssetBundle.LoadAsset<Sprite>("EarthMage_18");
-    public static readonly Sprite ShamanGhosts_Icon = _AssetBundle.LoadAsset<Sprite>("Necromancer_17");
-    public static readonly Sprite ShamanRegeneration = _AssetBundle.LoadAsset<Sprite>("Necromancer_11");
-    public static readonly Sprite ShamanProtection_Icon = _AssetBundle.LoadAsset<Sprite>("Necromancer_9");
-    public static readonly Sprite DeerHunter_Icon = _AssetBundle.LoadAsset<Sprite>("Hunter_5");
-    public static readonly Sprite LuckyShot_Icon = _AssetBundle.LoadAsset<Sprite>("Hunter_10");
-    public static readonly Sprite CreatureMask_Icon = _AssetBundle.LoadAsset<Sprite>("Hunter_20");
-    public static readonly Sprite RangerTrap_Icon = _AssetBundle.LoadAsset<Sprite>("Hunter_16");
-    public static readonly Sprite QuickShot_Icon = _AssetBundle.LoadAsset<Sprite>("Hunter_18");
-    public static readonly Sprite QuickStep_Icon = _AssetBundle.LoadAsset<Sprite>("Barbarian_32");
-    public static readonly Sprite Reflect_Icon = _AssetBundle.LoadAsset<Sprite>("Barbarian_33");
-    public static readonly Sprite Backstab_Icon = _AssetBundle.LoadAsset<Sprite>("Monk_26");
-    public static readonly Sprite Relentless_Icon = _AssetBundle.LoadAsset<Sprite>("Monk_8");
-    public static readonly Sprite Bleeding_Icon = _AssetBundle.LoadAsset<Sprite>("BloodMage_7");
-    public static readonly Sprite HardHitter_Icon = _AssetBundle.LoadAsset<Sprite>("Barbarian_27");
-    public static readonly Sprite BulkUp_Icon = _AssetBundle.LoadAsset<Sprite>("Barbarian_4");
-    // public static readonly Sprite Impervious_Icon = AlmanacClassesPlugin._AssetBundle.LoadAsset<Sprite>("Barbarian_5");
-    public static readonly Sprite Resistant_Icon = _AssetBundle.LoadAsset<Sprite>("Barbarian_16");
+    
+    //public static readonly Sprite Impervious_Icon = AlmanacClassesPlugin._AssetBundle.LoadAsset<Sprite>("Barbarian_5");
+    public static readonly Sprite HourGlass_Icon = _AssetBundle.LoadAsset<Sprite>("hourglass"); // TODO: Not used?
+    // Alternative Skills
+    public static readonly Sprite WindIcon = _AssetBundle.LoadAsset<Sprite>("windicon");
     public static readonly Sprite Sail_Icon = _AssetBundle.LoadAsset<Sprite>("Monk_22");
     public static readonly Sprite ScrollMap = _AssetBundle.LoadAsset<Sprite>("scroll_map2");
-    public static readonly Sprite WindIcon = _AssetBundle.LoadAsset<Sprite>("windicon");
     public static readonly Sprite ShieldIcon = _AssetBundle.LoadAsset<Sprite>("shield_basic_metal");
     public static readonly Sprite CrownIcon = _AssetBundle.LoadAsset<Sprite>("crown_gold");
-    public static readonly Sprite WarriorIcon = _AssetBundle.LoadAsset<Sprite>("warrior_icon");
+    // Class Icons
     public static readonly Sprite BardIcon = _AssetBundle.LoadAsset<Sprite>("bard_icon");
+    public static readonly Sprite WarriorIcon = _AssetBundle.LoadAsset<Sprite>("warrior_icon");
     public static readonly Sprite RangerIcon = _AssetBundle.LoadAsset<Sprite>("ranger_icon");
     public static readonly Sprite RogueIcon = _AssetBundle.LoadAsset<Sprite>("rogue_icon");
     public static readonly Sprite ShamanIcon = _AssetBundle.LoadAsset<Sprite>("shaman_icon");
-    public static readonly Sprite MedalIcon = _AssetBundle.LoadAsset<Sprite>("medal");
-    public static readonly Sprite Fireball_Icon = _AssetBundle.LoadAsset<Sprite>("FireMage_27");
-    public static readonly Sprite ChainShot_Icon = _AssetBundle.LoadAsset<Sprite>("Monk_20");
-    public static readonly Sprite? MonkeyWrench_Icon = RegisterSprite("monkeywrench_icon.png");
-    public static readonly Sprite DualWield_Icon = _AssetBundle.LoadAsset<Sprite>("ability_sword_double");
-    public static readonly Sprite Looter_Icon = _AssetBundle.LoadAsset<Sprite>("mapicon_trader");
-    public static readonly Sprite MasterChef_Icon = _AssetBundle.LoadAsset<Sprite>("food_icon");
+    // TODO: Sage icon?
+    // Core
+    public static readonly Sprite? MedalIcon = RegisterSprite("AirBender.png", "Icons.Classes.Core");
+    public static readonly Sprite? Looter_Icon = RegisterSprite("Looter.png", "Icons.Classes.Core");
+    public static readonly Sprite? MasterChef_Icon = RegisterSprite("MasterChef.png", "Icons.Classes.Core");
+    // TODO: Berzerker, Comfort, Forager, PackMule, Resourceful, Sailor, TreasureHunter and Trader icons? Added sprites for them, in case
+    // Bard
+    public static readonly Sprite? SongOfSpeed_Icon = RegisterSprite("SongOfSpeed.png", "Icons.Classes.Bard");
+    public static readonly Sprite? SongOfVitality_Icon = RegisterSprite("SongOfVitality.png", "Icons.Classes.Bard");
+    public static readonly Sprite? SongOfDamage_Icon = RegisterSprite("SongOfDamage.png", "Icons.Classes.Bard");
+    public static readonly Sprite? SongOfHealing_Icon = RegisterSprite("SongOfHealing.png", "Icons.Classes.Bard");
+    public static readonly Sprite? SongOfSpirit_Icon = RegisterSprite("SongOfSpirit.png", "Icons.Classes.Bard");
+    // Ranger
+    public static readonly Sprite? DeerHunter_Icon = RegisterSprite("SE_Hunter.png", "Icons.Classes.Ranger");
+    public static readonly Sprite? CreatureMask_Icon = RegisterSprite("RangerSpawn.png", "Icons.Classes.Ranger");
+    public static readonly Sprite? LuckyShot_Icon = RegisterSprite("SE_LuckyShot.png", "Icons.Classes.Ranger");
+    public static readonly Sprite? RangerTrap_Icon = RegisterSprite("RangerTrap.png", "Icons.Classes.Ranger");
+    public static readonly Sprite? QuickShot_Icon = RegisterSprite("SE_QuickShot.png", "Icons.Classes.Ranger");
+    public static readonly Sprite? ChainShot_Icon = RegisterSprite("SE_ChainShot.png", "Icons.Classes.Ranger");
+    // Sage
+    public static readonly Sprite? LightningStrike_Icon = RegisterSprite("CallOfLightning.png", "Icons.Classes.Sage");
+    public static readonly Sprite? Fireball_Icon = RegisterSprite("Fireball.png", "Icons.Classes.Sage");
+    public static readonly Sprite? GoblinBeam_Icon = RegisterSprite("GoblinBeam.png", "Icons.Classes.Sage");
+    public static readonly Sprite? IceBreath_Icon = RegisterSprite("IceBreath.png", "Icons.Classes.Sage");
+    public static readonly Sprite? MeteorStrike_Icon = RegisterSprite("MeteorStrike.png", "Icons.Classes.Sage");
+    public static readonly Sprite? BoulderStrike_Icon = RegisterSprite("BoulderStrike.png", "Icons.Classes.Sage");
+    // Shaman
+    public static readonly Sprite? ShamanRoots_Icon = RegisterSprite("RootBeam.png", "Icons.Classes.Shaman");                           // RootBeam
+    public static readonly Sprite? ShamanRegeneration_Icon = RegisterSprite("SE_ShamanRegeneration.png", "Icons.Classes.Shaman");       // SE_ShamanRegeneration
+    public static readonly Sprite? ShamanProtection_Icon = RegisterSprite("SE_ShamanShield.png", "Icons.Classes.Shaman");               // SE_ShamanShield
+    public static readonly Sprite? ShamanHeal_Icon = RegisterSprite("ShamanHeal.png", "Icons.Classes.Shaman");                          // ShamanHeal
+    public static readonly Sprite? ShamanSpawn_Icon = RegisterSprite("ShamanSpawn.png", "Icons.Classes.Shaman");                        // ShamanSpawn
+    // Rogue
+    public static readonly Sprite? Backstab_Icon = RegisterSprite("SE_RogueBackstab.png", "Icons.Classes.Rogue");                       // SE_RogueBackstab
+    public static readonly Sprite? Bleeding_Icon = RegisterSprite("SE_RogueBleed.png", "Icons.Classes.Rogue");                          // SE_RogueBleed
+    public static readonly Sprite? Reflect_Icon = RegisterSprite("SE_RogueReflect.png", "Icons.Classes.Rogue");                         // SE_RogueReflect
+    public static readonly Sprite? QuickStep_Icon = RegisterSprite("SE_RogueSpeed.png", "Icons.Classes.Rogue");                         // SE_RogueSpeed
+    public static readonly Sprite? Relentless_Icon = RegisterSprite("SE_RogueStamina.png", "Icons.Classes.Rogue");                      // SE_RogueStamina
+    // Warrior
+    public static readonly Sprite? DualWield_Icon = RegisterSprite("SE_DualWield.png", "Icons.Classes.Warrior");                        // SE_DualWield
+    public static readonly Sprite? MonkeyWrench_Icon = RegisterSprite("SE_MonkeyWrench.png", "Icons.Classes.Warrior");                  // SE_MonkeyWrench
+    public static readonly Sprite? HardHitter_Icon = RegisterSprite("SE_WarriorStrength.png", "Icons.Classes.Warrior");                 // SE_WarriorStrength
+    public static readonly Sprite? BulkUp_Icon = RegisterSprite("SE_WarriorVitality.png", "Icons.Classes.Warrior");                     // SE_WarriorVitality
+    public static readonly Sprite? Resistant_Icon = RegisterSprite("SE_WarriorResistance.png", "Icons.Classes.Warrior");                // SE_WarriorResistance
+
+
+
     
     public static Sprite Wishbone_Icon = null!;
 
@@ -91,7 +106,7 @@ public static class SpriteManager
         m_backgrounds[texture.name] = sprite;
     }
 
-    private static Sprite? RegisterSprite(string fileName, string folderName = "icons")
+    private static Sprite? RegisterSprite(string fileName, string folderName = "Icons")
     {
         Assembly assembly = Assembly.GetExecutingAssembly();
 
