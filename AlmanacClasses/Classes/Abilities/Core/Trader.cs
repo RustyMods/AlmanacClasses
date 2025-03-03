@@ -12,6 +12,7 @@ public static class Trader
         {
             if (__result) return;
             if (!PlayerManager.m_playerTalents.TryGetValue("Trader", out Talent talent)) return;
+            if (!talent.m_passiveActive) return;
             Inventory? inventory = __instance.GetInventory();
             if (inventory.IsTeleportable()) return;
 

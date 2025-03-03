@@ -9,11 +9,13 @@ public class SE_Survivor : StatusEffect
     private Talent m_talent = null!;
     public override void Setup(Character character)
     {
-        if (!TalentManager.m_talents.TryGetValue(m_key, out Talent talent)) return;
-        m_ttl = 10f;
-        m_startEffects = talent.GetEffectList();
-        m_name = talent.GetName();
-        m_talent = talent;
+        if (TalentManager.m_talents.TryGetValue(m_key, out Talent talent))
+        {
+            m_ttl = 10f;
+            m_startEffects = talent.GetEffectList();
+            m_name = talent.GetName();
+            m_talent = talent;
+        }
         base.Setup(character);
     }
     public override void OnDamaged(HitData hit, Character attacker)

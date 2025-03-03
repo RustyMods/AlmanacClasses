@@ -16,6 +16,7 @@ public static class VFX
     public static GameObject TrollStone = null!;
     public static GameObject GDKingRoots = null!;
     public static GameObject Fireball = null!;
+    public static GameObject Lightning = null!;
 
     public static GameObject SkeletonFriendly = null!;
     public static GameObject CustomTrap = null!;
@@ -32,7 +33,7 @@ public static class VFX
     public static EffectList ShieldBreakEffects = null!;
     public static EffectList BleedEffects = null!;
     public static EffectList VFX_SongOfSpirit = null!;
-    
+    public static EffectList LeechHitEffects = null!;
     public static EffectList FX_DvergerPower = null!;
     public static EffectList DragonBreath = null!;
 
@@ -81,6 +82,21 @@ public static class VFX
                 {
                     m_prefab = instance.GetPrefab("fx_trap_arm"),
                     m_enabled = true,
+                }
+            }
+        };
+
+        LeechHitEffects = new EffectList()
+        {
+            m_effectPrefabs = new[]
+            {
+                new EffectList.EffectData()
+                {
+                    m_prefab = instance.GetPrefab("vfx_leech_hit"),
+                },
+                new EffectList.EffectData()
+                {
+                    m_prefab = instance.GetPrefab("sfx_leech_hit")
                 }
             }
         };
@@ -233,6 +249,7 @@ public static class VFX
         TrollStone = instance.GetPrefab("troll_throw_projectile");
         GDKingRoots = instance.GetPrefab("gdking_root_projectile");
         Fireball = instance.GetPrefab("staff_fireball_projectile");
+        Lightning = instance.GetPrefab("staff_lightning_projectile");
         GameObject customTrap = Object.Instantiate(instance.GetPrefab("piece_trap_troll"), AlmanacClassesPlugin._Root.transform, false);
         customTrap.name = "RangerTrap";
 
