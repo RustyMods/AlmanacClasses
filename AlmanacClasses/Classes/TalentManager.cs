@@ -189,8 +189,7 @@ public static class TalentManager
 
     private static void LoadAltHunter()
     {
-        Talent ChainShot = new Talent("ChainShot", "$button_ranger_talent_1", TalentType.StatusEffect,
-            ScriptableObject.CreateInstance<SE_ChainShot>(), "SE_ChainShot", true);
+        Talent ChainShot = new Talent("ChainShot", "$button_ranger_talent_1", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_ChainShot>(), "SE_ChainShot", true);
         ChainShot.m_cost = _Plugin.config("Hunter - Chain Shot", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock ability", new AcceptableValueRange<int>(1, 10)));
         ChainShot.m_alt = _Plugin.config("Hunter - Chain Shot", "Enable", Toggle.Off, "If on replaces the hunter talent");
         ChainShot.m_cap = _Plugin.config("Hunter - Chain Shot", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 10)));
@@ -205,7 +204,8 @@ public static class TalentManager
         ChainShot.m_alt.SettingChanged += (_, _) => LoadUI.ChangeButton(ChainShot, ChainShot.m_alt.Value is Toggle.Off);
         ChainShot.m_values = new Talent.TalentValues()
         {
-            m_projectileCount = _Plugin.config("Hunter - Chain Shot", "Chain Count", 3, "Set base amount of shots can bounce to other foes")
+            m_projectileCount = _Plugin.config("Hunter - Chain Shot", "Chain Count", 3, "Set base amount of shots can bounce to other foes"),
+            m_chainModifier = _Plugin.config("Hunter - Chain Shot", "Damage modifier", 0.5f, new ConfigDescription("Set the damage reduction per new chain hit", new AcceptableValueRange<float>(0f, 1f)))
         };
         ChainShot.m_tooltip = () => $"Chain count: <color=orange>{ChainShot.GetProjectileCount(ChainShot.GetLevel())}</color>";
         ChainShot.m_prestigeTooltip = () =>
