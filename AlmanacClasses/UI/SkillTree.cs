@@ -192,6 +192,7 @@ public class SkillTree : MonoBehaviour
     public void SetSelectedType(string text) => ActivePassive.text = Localization.instance.Localize(text);
     public void SetHotkeyTooltip(string text) => SpellBarHotKeyTooltip.text = Localization.instance.Localize(text);
     public bool IsVisible() => gameObject.activeInHierarchy;
+    public static bool IsPanelVisible() => m_instance && m_instance.IsVisible();
     public void SetDefaultTooltip()
     {
         SetSelectedName("$info_hover");

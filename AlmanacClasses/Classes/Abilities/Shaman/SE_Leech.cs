@@ -22,10 +22,9 @@ public class SE_Leech : StatusEffect
 
     public void OnHit(Character character, HitData hit)
     {
-        VFX.LeechHitEffects.Create(hit.m_point, Quaternion.LookRotation(-hit.m_dir), character.transform);
+        VFX.LeechEffects.Create(hit.m_point, Quaternion.LookRotation(-hit.m_dir), character.transform);
         var totalDamage = hit.GetTotalDamage();
         var healAmount = totalDamage * m_talent.GetLeechModifier(m_talent.GetLevel());
-        Debug.LogWarning("Leeched: " + healAmount + " health");
         m_character.Heal(healAmount);
     }
 

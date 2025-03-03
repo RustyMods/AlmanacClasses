@@ -17,7 +17,7 @@ public static class MeteorStrike
         yield return new WaitForSeconds(delay);
         float radius = Player.m_localPlayer.GetRadius();
         Transform transform = Player.m_localPlayer.transform;
-        GameObject[] instance =  VFX.VFX_SongOfSpirit.Create(Player.m_localPlayer.GetCenterPoint(), transform.rotation, transform, radius * 2f);
+        GameObject[] instance =  VFX.SongOfSpirit.Create(Player.m_localPlayer.GetCenterPoint(), transform.rotation, transform, radius * 2f);
         int max = 3;
         int count = 0;
         while (count < max)

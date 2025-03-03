@@ -15,8 +15,8 @@ public static class RangerTrap
     {
         yield return new WaitForSeconds(2f);
         Vector3 location = Player.m_localPlayer.transform.position;
-        VFX.TrapArmedEffects.Create(location, Quaternion.identity);
-        GameObject trap = Object.Instantiate(VFX.CustomTrap, location, Quaternion.identity);
+        VFX.TrapArmed.Create(location, Quaternion.identity);
+        GameObject trap = VFX.CustomTrap.Instantiate(location, Quaternion.identity);
         if (trap.TryGetComponent(out ZNetView zNetView))
         {
             if (zNetView.IsValid()) zNetView.GetZDO().Persistent = false;

@@ -7,7 +7,7 @@ namespace AlmanacClasses.UI;
 public class SpellInfo : MonoBehaviour
 {
     /// <summary>
-    /// The element over spells when hovering.
+    /// The element over spells when hovering with menu open.
     /// </summary>
     public static SpellInfo m_instance = null!;
     public Text[] m_texts = null!;

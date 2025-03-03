@@ -42,7 +42,6 @@ public static class Prestige
         }
             
         AddLevel(SelectedTalent);
-        // CharacteristicManager.UpdateCharacteristics();
         CharacteristicManager.Update();
         Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_prestiged " + SelectedTalent.GetName() + " $almanac_to $text_lvl " + SelectedTalent.GetLevel());
         SkillTree.m_instance.Show();

@@ -25,7 +25,7 @@ public static class StatusEffectManager
         IceBreaker.name = "SE_IceBreaker";
         IceBreaker.m_ttl = 10f;
         IceBreaker.m_name = "Iced";
-        IceBreaker.m_startEffects = VFX.DragonBreathHit;
+        IceBreaker.m_startEffects = VFX.DragonBreathHit.m_effectList;
         SE_Characteristics characteristic = ScriptableObject.CreateInstance<SE_Characteristics>();
         characteristic.name = "SE_Characteristic";
         SE_SlowDown SlowDown = ScriptableObject.CreateInstance<SE_SlowDown>();

@@ -117,7 +117,7 @@ public class SpellElement : MonoBehaviour, IPointerClickHandler, IPointerEnterHa
     }
     private void ShowSpellInfo()
     {
-        if (!TalentBook.IsTalentBookVisible())
+        if (!SkillTree.IsPanelVisible())
         {
             SpellInfo.m_instance.Show();
             SpellInfo.m_instance.SetName(Localization.instance.Localize($"<color=orange>{m_data.m_data.GetName()}</color>"));

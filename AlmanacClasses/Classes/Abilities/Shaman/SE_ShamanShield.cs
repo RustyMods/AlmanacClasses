@@ -6,7 +6,7 @@ namespace AlmanacClasses.Classes.Abilities.Shaman;
 
 public class SE_ShamanShield : StatusEffect
 {
-    private readonly string m_key = "ShamanShield";
+    private const string m_key = "ShamanShield";
     private Talent? m_talent;
     
     private float m_absorbDamage;
@@ -56,14 +56,14 @@ public class SE_ShamanShield : StatusEffect
     {
         m_absorbDamage -= hit.GetTotalDamage();
         hit.ApplyModifier(0f);
-        VFX.ShieldHitEffects.Create(hit.m_point, Quaternion.LookRotation(-hit.m_dir), m_character.transform);
+        VFX.ShiedHitEffect.Create(hit.m_point, Quaternion.LookRotation(-hit.m_dir), m_character.transform);
     }
 
     public override bool IsDone()
     {
         if (m_absorbDamage > 0f) return m_ttl > 0.0 && m_time > m_ttl;
         Transform transform = m_character.transform;
-        VFX.ShieldBreakEffects.Create(m_character.GetCenterPoint(), transform.rotation, transform,
+        VFX.ShieldBreakEffect.Create(m_character.GetCenterPoint(), transform.rotation, transform,
             m_character.GetRadius() * 2f);
         
         return true;

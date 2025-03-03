@@ -99,7 +99,7 @@ public static class SpriteManager
         using var stream = assembly.GetManifestResourceStream(path);
         if (stream == null) return null;
         byte[] buffer = new byte[stream.Length];
-        stream.Read(buffer, 0, buffer.Length);
+        int _ = stream.Read(buffer, 0, buffer.Length);
         Texture2D texture = new Texture2D(2, 2);
         
         return texture.LoadImage(buffer) ? Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero) : null;

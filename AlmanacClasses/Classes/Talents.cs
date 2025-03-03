@@ -43,7 +43,7 @@ public class Talent
     public bool m_passiveActive = true;
     public Func<bool>? m_onClickPassive;
     public bool m_addToPassiveBar;
-    public readonly int? m_characteristic;
+    private readonly int? m_characteristic;
     public SpellBook.AbilityData? m_abilityData;
     public Action? m_onPurchase;
     public Func<string>? m_tooltip;
@@ -71,7 +71,7 @@ public class Talent
     public float GetStaminaCost() => m_staminaCost?.Value ?? 0f;
     public float GetHealthCost() => m_healthCost?.Value ?? 0f;
     public HitData.DamageTypes GetDamages(int level) => m_damages?.GetDamages(level) ?? new HitData.DamageTypes();
-    public float GetHealAmount(int level) => (m_values == null) ? 0f : (m_values.m_heal?.Value ?? 0f) * level;
+    public float GetHealAmount(int level) => m_values == null ? 0f : (m_values.m_heal?.Value ?? 0f) * level;
     public float GetHealth(int level) => m_values == null ? 0f : (m_values.m_health?.Value ?? 0f) * level;
     public float GetStamina(int level) => m_values == null ? 0f : (m_values.m_stamina?.Value ?? 0f) * level;
     public float GetEitr(int level) => m_values == null ? 0f : (m_values.m_eitr?.Value ?? 0f) * level;
@@ -249,9 +249,9 @@ public class Talent
         return Localization.instance.Localize(stringBuilder.ToString());
     }
     private ConfigEntry<string>? GetCreaturesConfig() => m_creatures?.GetConfig(GetCurrentBiome());
-    private Heightmap.Biome GetCurrentBiome() => Player.m_localPlayer == null ? Heightmap.Biome.None : Player.m_localPlayer.GetCurrentBiome();
-    private string GetBiomeLocalized(Heightmap.Biome biome) => $"$biome_{biome.ToString().ToLower()}";
-    public int FormatPercentage(float value) => (int)(value * 100 - 100);
+    private static Heightmap.Biome GetCurrentBiome() => Player.m_localPlayer == null ? Heightmap.Biome.None : Player.m_localPlayer.GetCurrentBiome();
+    private static string GetBiomeLocalized(Heightmap.Biome biome) => $"$biome_{biome.ToString().ToLower()}";
+    public static int FormatPercentage(float value) => (int)(value * 100 - 100);
     public string GetPrestigeTooltip()
     {
         StringBuilder stringBuilder = new StringBuilder();

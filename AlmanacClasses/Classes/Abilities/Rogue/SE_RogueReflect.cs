@@ -2,7 +2,7 @@
 
 public class SE_RogueReflect : StatusEffect
 {
-    private readonly string m_key = "RogueReflect";
+    private const string m_key = "RogueReflect";
     private Talent m_talent = null!;
     public override void Setup(Character character)
     {

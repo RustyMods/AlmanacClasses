@@ -11,7 +11,7 @@ public static class PlayerControllerPatches
     {
         private static bool Prefix(PlayerController __instance)
         {
-            if (!TalentBook.IsTalentBookVisible()) return true;
+            if (!SkillTree.IsPanelVisible()) return true;
             __instance.m_character.SetControls(Vector3.zero, false, false, false, false, false, false, false, false, false, false);
             return false;
         }
