@@ -35,7 +35,6 @@ public class InventoryButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public void SetName(string text) => m_name.text = Localization.instance.Localize(text);
     public void SetBorder(bool enable) => m_border.fillAmount = enable ? 1f : 0f;
     public void OnClick(UnityAction action) => m_button.onClick.AddListener(action);
-
     public void OnPointerEnter(PointerEventData eventData)
     {
         m_name.gameObject.SetActive(true);
@@ -44,7 +43,6 @@ public class InventoryButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         SkillTree.m_instance.SetSelectedCost($"$almanac_cost: <color=orange>{m_talent.GetCost()}</color>");
         SkillTree.m_instance.SetSelectedType(m_talent.GetTalentType());
     }
-
     public void OnPointerExit(PointerEventData eventData)
     {
         m_name.gameObject.SetActive(false);

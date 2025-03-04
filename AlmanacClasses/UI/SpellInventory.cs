@@ -9,12 +9,12 @@ namespace AlmanacClasses.UI;
 public class SpellInventory : MonoBehaviour
 {
     public static readonly GameObject m_element = AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("Inventory_element");
+    public static readonly Dictionary<Talent, InventoryButton> m_elements = new();
     public static SpellInventory m_instance = null!;
     public Text m_title = null!;
     public RectTransform m_mask = null!;
     public RectTransform m_contentList = null!;
     public GridLayoutGroup m_layoutGroup = null!;
-    public static Dictionary<Talent, InventoryButton> m_elements = new();
     public void Init()
     {
         m_instance = this;
@@ -26,6 +26,7 @@ public class SpellInventory : MonoBehaviour
         m_layoutGroup = list.GetComponent<GridLayoutGroup>();
         m_element.AddComponent<InventoryButton>();
         m_element.AddComponent<ButtonSfx>().m_sfxPrefab = LoadUI.m_vanillaButtonSFX.m_sfxPrefab;
+        m_title.text = "$text_inventory";
     }
     
     public void Resize()
@@ -85,7 +86,7 @@ public class SpellInventory : MonoBehaviour
         if (resize) Resize();
     }
 
-    public bool IsInInventory(Talent talent) => m_elements.Keys.Contains(talent);
+    public static bool IsInInventory(Talent talent) => m_elements.Keys.Contains(talent);
 
     private int GetChildCount() => m_contentList.childCount;
 

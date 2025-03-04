@@ -8,7 +8,61 @@ Still in development, please report bugs and issues to me at OdinPlus while I ke
 - JoshLaseter
 - Koreshx
 
+## 0.5.9 update patch notes
+<details closed>
+
+```
+Alternative talents:
+- Chain Shot [enable in configs, replaces Hunter]
+    - When active, bows/crossbows can ricochet and hit other targets, damage reduced each ricochet
+- Fireball [enable in configs, replaces Goblin Beam]
+    - Shoots a fireball projectile
+- Leech [enable in configs, replaces Shaman Regeneration]
+    - Heals user whenever they deal damage
+
+Talent Changes:
+- Enlightened [added eitr regen]
+
+Characteristics Overhaul:
+- You now unlock characteristic points by purchasing characteristic talents
+- Use the points at your discretion through the new UI panel
+
+Performance Improvements:
+- Experience bar updates when experience changes, rather than every second
+
+Command Overhaul:
+- All the commands have been moved under a single prefix [talents]
+- Improved search functionality
+
+UI Improvements:
+- Spell bar, Experience bar, Passive bar are more responsive when dragging
+
+New UI:
+- Spell Inventory:
+    - When purchasing a talent that requires to be casted (abilities) and the spell bar is full, it can be found in the inventory panel
+    - You can now remove/add spells from your spell bar by interacting with the inventory
+- Characteristic Panel:
+    - Displays current benefits from characteristics
+- Passive bar:
+    - Some passive talents are added to this new bar to be enabled/disabled
+
+Compendium Changes:
+- Passives now display if they are on/off
+- Added passives that are not active
+
+Icon Updates:
+- Dealman has been working on overhauling the icons displayed in the spell bar
+
+Altar changes:
+- Fixed materials
+- Updated emissions
+```
+
+</details>
+
 ## Highlights
+<details closed>
+
 Unique talent abilities that are either passive or activated spells
 
 Some noteworthy abilities:
@@ -22,12 +76,18 @@ Some noteworthy abilities:
 
 And many more abilities
 
+</details>
+
 ## Prestige System
 
-Class system has a prestige system. You can prestige after you've met the threshold (configurable)
+Class system has a prestige system. You can prestige after you've met the <span style="color: orange;">threshold</span> (configurable)
 Prestige each talent individually to increase their utility
 
 ## Classes
+
+<details closed>
+<summary>List of classes, although the system is structured in a way where you can combined talents from each class to craft a unique hero</summary>
+
 - Bard
 - Shaman
 - Sage
@@ -35,8 +95,15 @@ Prestige each talent individually to increase their utility
 - Rogue
 - Warrior
 
+</details>
+
 ## Experience
-Experience system rewards player whenever a creature is killed in the surrounding area. It does not matter who kills creature, all players will be rewarded.
+
+<details closed>
+<summary>
+Experience system rewards player whenever a creature is killed in the surrounding area. It does not matter who kills creature, all nearby players will be rewarded.
+</summary>
+
 Players also gain experience by:
 - Chopping Trees
 - Chopping Logs
@@ -49,37 +116,45 @@ Creature reward different experience, you can configure this using the generated
 
 If a creature is not registered to this file, then the experienced gained will be based on the biome the player is in.
 
+</details>
+
 ## Characteristics
+
+<details closed>
+
 Just like the talents, you can use your talent points to unlock characteristics points which have different effects:
 - Intelligence: Increased magic damage
-- Strength: Increased melee damage and carry weight
+- Strength: Increased physical damage and carry weight
 - Dexterity: Increased attack speed and stamina
 - Constitution: Increased health
 - Wisdom: Increased eitr
 
+</details>
+
 ## Configurations
+
+<details closed>
+
 Plugin is fully configurable using the cfg file generated in BepinEx/config directory:
 - RustyMods.AlmanacClasses.cfg
+
+</details>
 
 ## Server
 AlmanacExperienceMap.yml is synced through server for admins to configure.
 
-## Roadmap
-- Add more custom animations
-- Get feedback from community to balance talents
-
 ## Commands
 ```
-talents help - list of commands
-talents reset - reset almanac class data
-talents write - saves experience map to disk
-talents add [amount<int>] - add experience
-talents give [playerName<string>] [amount<int> - gives player experience, no cost must be enabled
-talents size - logs kilobyte size of class system data on player file
-talents save - saves class data
+talents help  - list of available commands
+talents reset - resets all player almanac class data
+talents clear - resets player talents without removing level, admin only
+talents give  - [player name<string>] [amount<int>] gives player experience (nearby players only), admin only
+talents size  - prints size of almanac class data saved on player file
+talents save  - saves class data to player
 ```
-
 ## Changelog
+<details closed>
+
 ```
 0.2.0 - Beta release
 0.2.1 - Changed air jump button to get game settings jump button instead of spacebar, fixed some localization
@@ -130,11 +205,18 @@ talents save - saves class data
 0.5.6 - Added ability to change background and changed Call of Lightning FX
 0.5.7 - Bog Witch update
 0.5.8 - Added PR from Dealman and JoshLaseter
+0.5.9 - Major update, read full description above
 ```
+</details>
+
+## Screenshots
+<details closed>
 
 ![](https://i.imgur.com/F1w6ijU.png)
 ![](https://i.imgur.com/5TkBQit.png)
 ![](https://i.imgur.com/fhGeDnA.png)
+
+</details>
 
 ## Contact information
 For Questions or Comments, find <span style="color:orange">Rusty</span> in the Odin Plus Team Discord
@@ -153,6 +235,9 @@ If you enjoy this mod and want to support me:
 </span>
 
 ## Talents
+
+<details closed>
+
 ```yaml
 Treasure Hunter: "Works like the wishbone to find treasure"
 Sailor: "Always tailwind when sailing"
@@ -201,4 +286,9 @@ Builder: "Decrease cost of building"
 Gipsy: "Allows to teleport non-teleportable materials based on talent level"
 Berzerk: "Passively adds armor"
 Airman: 'Allows to jump in the air whilst user has eitr'
+Leech: 'Heals players on hit enemy'
+Fireball: 'Fires fireball projectile'
+Chain Shot: 'Arrows/Bolts can ricochet off targets to hit nearby enemies'
 ```
+
+</details>

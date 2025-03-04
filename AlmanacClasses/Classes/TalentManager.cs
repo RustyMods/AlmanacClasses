@@ -130,8 +130,8 @@ public static class TalentManager
         {
             m_leech = _Plugin.config("Shaman - Leech", "Amount", 0.1f, new ConfigDescription("Percentage of the total damage from hit converted into health points", new AcceptableValueRange<float>(0f, 1f)))
         };
-        Leech.m_tooltip = () => $"Leech: <color=orange>{Talent.FormatPercentage(1 + Leech.GetLeechModifier(Leech.GetLevel()))}%</color> total damage";
-        Leech.m_prestigeTooltip = () => $"Leech: <color=orange>{Talent.FormatPercentage(1 + Leech.GetLeechModifier(Leech.GetLevel()))}%</color> --> <color={Talent.m_prestigeColor}>{Talent.FormatPercentage(1 + Leech.GetLeechModifier(Leech.GetLevel() + 1))}%</color> total damage";
+        Leech.m_tooltip = () => $"$text_leech: <color=orange>{Talent.FormatPercentage(1 + Leech.GetLeechModifier(Leech.GetLevel()))}%</color> $text_total_damage";
+        Leech.m_prestigeTooltip = () => $"$text_leech: <color=orange>{Talent.FormatPercentage(1 + Leech.GetLeechModifier(Leech.GetLevel()))}%</color> --> <color={Talent.m_prestigeColor}>{Talent.FormatPercentage(1 + Leech.GetLeechModifier(Leech.GetLevel() + 1))}%</color> $text_total_damage";
 
     }
     private static void LoadAltCore()
@@ -208,11 +208,11 @@ public static class TalentManager
             m_projectileCount = _Plugin.config("Hunter - Chain Shot", "Chain Count", 3, "Set base amount of shots can bounce to other foes"),
             m_chainModifier = _Plugin.config("Hunter - Chain Shot", "Damage modifier", 0.5f, new ConfigDescription("Set the damage reduction per new chain hit", new AcceptableValueRange<float>(0f, 1f)))
         };
-        ChainShot.m_tooltip = () => $"Chain count: <color=orange>{ChainShot.GetProjectileCount(ChainShot.GetLevel())}</color>\n" 
-                                    + $"Damage: <color=orange>{Talent.FormatPercentage(1 + ChainShot.GetChainModifier(ChainShot.GetLevel()))}%</color> total damage";
+        ChainShot.m_tooltip = () => $"$text_chain_count: <color=orange>{ChainShot.GetProjectileCount(ChainShot.GetLevel())}</color>\n" 
+                                    + $"$text_damage: <color=orange>{Talent.FormatPercentage(1 + ChainShot.GetChainModifier(ChainShot.GetLevel()))}%</color> $text_total_damage";
         ChainShot.m_prestigeTooltip = () =>
-            $"Chain count: <color=orange>{ChainShot.GetProjectileCount(ChainShot.GetLevel())}</color> --> <color={Talent.m_prestigeColor}>{ChainShot.GetProjectileCount(ChainShot.GetLevel() + 1)}</color>\n" 
-            + $"Damage: <color=orange>{Talent.FormatPercentage(1 + ChainShot.GetChainModifier(ChainShot.GetLevel()))}%</color> --> <color={Talent.m_prestigeColor}>{Talent.FormatPercentage(1 + ChainShot.GetChainModifier(ChainShot.GetLevel() + 1))}%</color> total damage";
+            $"$text_chain_count: <color=orange>{ChainShot.GetProjectileCount(ChainShot.GetLevel())}</color> --> <color={Talent.m_prestigeColor}>{ChainShot.GetProjectileCount(ChainShot.GetLevel() + 1)}</color>\n" 
+            + $"$text_damage: <color=orange>{Talent.FormatPercentage(1 + ChainShot.GetChainModifier(ChainShot.GetLevel()))}%</color> --> <color={Talent.m_prestigeColor}>{Talent.FormatPercentage(1 + ChainShot.GetChainModifier(ChainShot.GetLevel() + 1))}%</color> $text_total_damage";
     }
 
     private static void LoadAltSage()
@@ -282,11 +282,12 @@ public static class TalentManager
         Talent Core10 = new Talent("Core10", "$button_core_10", 10);
         Talent Core11 = new Talent("Core11", "$button_core_11", 10);
         Talent Core12 = new Talent("Core12", "$button_core_12", 10);
-        Talent wise = new Talent("Wise", "$button_sneak", TalentType.Passive, ScriptableObject.CreateInstance<StatusEffect>(), "SE_Enlightened");
+        Talent wise = new Talent("Wise", "$button_sneak", TalentType.Passive, ScriptableObject.CreateInstance<SE_Enlightened>(), "SE_Enlightened");
         wise.m_cost = _Plugin.config("Core - Wise", "Purchase Cost", 5, new ConfigDescription("Set the cost to purchase talent", new AcceptableValueRange<int>(1, 10)));
         wise.m_values = new Talent.TalentValues()
         {
-            m_eitr = _Plugin.config("Core - Wise", "Eitr", 5f, new ConfigDescription("Set the amount of eitr", new AcceptableValueRange<float>(0f, 101f)))
+            m_eitr = _Plugin.config("Core - Wise", "Eitr", 5f, new ConfigDescription("Set the amount of eitr", new AcceptableValueRange<float>(0f, 101f))),
+            m_eitrRegen = _Plugin.config("Core - Wise", "Eitr Regeneration", 1.1f, new ConfigDescription("Set the amount of eitr regeneration", new AcceptableValueRange<float>(1f, 10f)))
         };
         wise.m_cap = _Plugin.config("Core - Wise", "Prestige Cap", 10, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
         Talent Airbender = new Talent("AirBender", "$button_lumberjack", TalentType.Passive);

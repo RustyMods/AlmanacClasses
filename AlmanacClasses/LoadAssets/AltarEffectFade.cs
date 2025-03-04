@@ -33,7 +33,7 @@ public class AltarEffectFade : MonoBehaviour
         Player closestPlayer = Player.GetClosestPlayer(transform.position, 5f);
         m_intensity = Mathf.MoveTowards(m_intensity, closestPlayer is not null ? 1f : 0.0f, Time.deltaTime / m_fadeDuration);
         SetParticleSystems(closestPlayer is not null);
-        SetEmission(m_intensity);
+        SetEmission(m_intensity * 1.1f);
     }
 
     public void SetEmission(float intensity)

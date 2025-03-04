@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using AlmanacClasses.Classes.Abilities;
+using AlmanacClasses.Classes.Abilities.Bard;
 using AlmanacClasses.Classes.Abilities.Core;
 using AlmanacClasses.FileSystem;
 using AlmanacClasses.LoadAssets;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using AlmanacClasses.Classes;
@@ -29,7 +30,7 @@ public static class CommandsManager
                         return command.Run(args);
                     }), optionsFetcher: () => m_commands.Keys.ToList());
 
-            TalentCommand reset = new TalentCommand("reset", "resets all player almanac class talent data", _ =>
+            TalentCommand reset = new TalentCommand("reset", "resets all player almanac class data", _ =>
             {
                 PlayerManager.m_tempPlayerData.m_experience = 0;
                 ExperienceBar.UpdateExperienceBar();
@@ -67,12 +68,6 @@ public static class CommandsManager
             });
             TalentCommand add = new TalentCommand("add", "[amount<int>] adds experience to local player, admin only", args =>
             {
-                if (!Player.m_localPlayer.NoCostCheat())
-                {
-                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, "No cost must be enabled");
-                    return false;
-                }
-
                 if (args.Length < 3) return false;
                 if (!int.TryParse(args[2], out int amount)) return false;
                 Player.m_localPlayer.Message(MessageHud.MessageType.Center, "Increased experience by " + amount);
@@ -95,7 +90,7 @@ public static class CommandsManager
                         select prefab.name).ToList();
                     list.Sort();
                     return list;
-                }, adminOnly: true);
+                }, adminOnly: true, isSecret: true);
             TalentCommand emote = new TalentCommand("emote", "[name<string>] runs custom emote, if you use talents emote list, it will print the list of available emotes",
                 args =>
                 {
@@ -132,7 +127,7 @@ public static class CommandsManager
                     list.Add("list");
                     list.Sort();
                     return list;
-                });
+                }, isSecret: true);
             TalentCommand give = new TalentCommand("give", "[playerName<string>] [amount<int>] gives player experience, no cost must be enabled",
                 args =>
                 {
@@ -250,10 +245,11 @@ public static class CommandsManager
             AlmanacClassesPlugin.AlmanacClassesLogger.LogWarning("Admin only command");
             return false;
         }
-
         public bool IsSecret() => m_isSecret;
         public List<string> FetchOptions() => m_optionFetcher == null ? new() :  m_optionFetcher();
         public bool HasOptions() => m_optionFetcher != null;
+        
+        [Description("Register a custom command with the prefix talents")]
         public TalentCommand(string input, string description, Func<Terminal.ConsoleEventArgs, bool> command, Func<List<string>>? optionsFetcher = null, bool isSecret = false, bool adminOnly = false)
         {
             m_input = input;

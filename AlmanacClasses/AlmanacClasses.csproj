@@ -145,6 +145,7 @@
         <Compile Include="Classes\Abilities\Core\Pickpocket.cs" />
         <Compile Include="Classes\Abilities\Core\RainProof.cs" />
         <Compile Include="Classes\Abilities\Core\SE_Characteristics.cs" />
+        <Compile Include="Classes\Abilities\Core\SE_Enlightened.cs" />
         <Compile Include="Classes\Abilities\Core\SE_ExperienceOrb.cs" />
         <Compile Include="Classes\Abilities\Core\SE_PackMule.cs" />
         <Compile Include="Classes\Abilities\Core\SE_Resourceful.cs" />
