@@ -46,8 +46,6 @@ public static class CommandsManager
             });
             TalentCommand resetui = new("resetui", "resets the UI elements to their default values, AlmanacClasses UI only", _ =>
             {
-                // TODO: Bug, doesn't work until UI has been moved around once
-                //AlmanacClassesPlugin._SpellBookPos.Value = (Vector2)AlmanacClassesPlugin._SpellBookPos.DefaultValue;
                 SpellBook.ResetUI();
                 ExperienceBar.ResetUI();
                 PassiveBar.ResetUI();
