@@ -229,7 +229,7 @@ namespace AlmanacClasses
                 "Set the location of the spellbar", false);
             _SpellBookPos.SettingChanged += SpellBook.OnSpellBarPosChange;
 
-            _PassiveBarPos = config("2 - Settings", "Passive Bar Position", new Vector2((1500f / 1920f) * Screen.width, (150f / 1080f) * Screen.height),
+            _PassiveBarPos = config("2 - Settings", "Passive Bar Position", new Vector2((1500f / 1920f) * Screen.width, (200f / 1080f) * Screen.height),
                 "Set the location of the passive bar", false);
             _PassiveBarPos.SettingChanged += PassiveBar.OnPassiveBarPosChange;
             
