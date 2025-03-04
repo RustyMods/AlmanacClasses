@@ -117,7 +117,7 @@ public static class TalentManager
     private static void LoadAltShaman()
     {
         Talent Leech = new Talent("Leech", "$button_shaman_talent_4", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_Leech>(), "SE_Leech", true);
-        Leech.m_sprite = SpriteManager.ShamanRegeneration;
+        Leech.m_sprite = SpriteManager.ShamanRegeneration_Icon;
         Leech.m_cost = _Plugin.config("Shaman - Leech", "Purchase Cost", 3, new ConfigDescription("Set cost to unlock ability", new AcceptableValueRange<int>(1, 10)));
         Leech.m_cooldown = _Plugin.config("Shaman - Leech", "Cooldown", 180f, new ConfigDescription("Set cooldown of ability", new AcceptableValueRange<float>(1f, 1000f)));
         Leech.m_length = _Plugin.config("Shaman - Leech", "Length", 60f, new ConfigDescription("Set length of ability", new AcceptableValueRange<float>(1f, 1000f)));
