@@ -2,17 +2,18 @@
 using AlmanacClasses.Classes;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 namespace AlmanacClasses.UI;
 
-public class PassiveBar : MonoBehaviour
+public class PassiveBar : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     public static PassiveBar m_instance = null!;
-    public static bool m_updatePosition;
     public static GameObject m_element = null!;
-
     public RectTransform m_rect = null!;
     public RectTransform m_contentList = null!;
+    
+    private static bool m_isDragging;
     
     public void Init()
     {
@@ -34,13 +35,32 @@ public class PassiveBar : MonoBehaviour
         m_element.AddComponent<ButtonSfx>().m_sfxPrefab = LoadUI.m_vanillaButtonSFX.m_sfxPrefab;
         Hide();
     }
-    public void Update()
+    
+    public void OnBeginDrag(PointerEventData eventData)
     {
-        if (!m_instance) return;
-        if (Input.GetKeyDown(KeyCode.Escape)) m_updatePosition = false;
-        if (!m_updatePosition) return;
-        AlmanacClassesPlugin._PassiveBarPos.Value = Input.mousePosition;
-        if (Input.GetKeyDown(KeyCode.Mouse0)) m_updatePosition = false;
+        if (!(Menu.IsVisible() ^ SkillTree.IsPanelVisible())) return;
+        if (eventData.button is not PointerEventData.InputButton.Left) return;
+        
+        m_isDragging = true;
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        m_rect.position = Input.mousePosition;
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        AlmanacClassesPlugin._PassiveBarPos.Value = m_rect.position;
+        m_isDragging = false;
+    }
+    
+    public static void ResetUI()
+    {
+        var defaultPos = (Vector2)AlmanacClassesPlugin._PassiveBarPos.DefaultValue;
+        m_instance.m_rect.position = defaultPos;
+        
+        AlmanacClassesPlugin._PassiveBarPos.Value = defaultPos;
     }
 
     public void Show() => gameObject.SetActive(true);
@@ -69,16 +89,12 @@ public class PassiveBar : MonoBehaviour
         component.SetName(Localization.m_instance.Localize(talent.GetName()));
         component.OnClick(() =>
         {
-            if (Input.GetKey(KeyCode.LeftAlt))
+            if (m_isDragging)
+                return;
+
+            if (talent.m_onClickPassive?.Invoke() ?? false)
             {
-                m_updatePosition = !m_updatePosition;
-            }
-            else
-            {
-                if (talent.m_onClickPassive?.Invoke() ?? false)
-                {
-                    component.SetBorder(talent.m_passiveActive);
-                }
+                component.SetBorder(talent.m_passiveActive);
             }
         });
         component.ShouldUpdate(talent.m_onClickPassive is null);
