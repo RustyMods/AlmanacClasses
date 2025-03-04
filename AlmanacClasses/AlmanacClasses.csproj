@@ -244,7 +244,6 @@
         <EmbeddedResource Include="Icons\Classes\Warrior\SE_WarriorVitality_Transparent.png" />
         <EmbeddedResource Include="Icons\Classes\Warrior\SE_DualWield.png" />
         <EmbeddedResource Include="Icons\Classes\Warrior\SE_MonkeyWrench.png" />
-        <EmbeddedResource Include="Icons\Classes\Warrior\SE_MonkeyWrench_Transparent.png" />
         <EmbeddedResource Include="Icons\Classes\Warrior\SE_WarriorResistance.png" />
         <EmbeddedResource Include="Icons\Classes\Warrior\SE_WarriorResistance_Transparent.png" />
         <EmbeddedResource Include="Icons\Classes\Warrior\SE_WarriorStrength.png" />
