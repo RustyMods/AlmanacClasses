@@ -212,7 +212,7 @@ namespace AlmanacClasses
             _DisplayExperience = config("2 - Settings", "Show Creature Experience", Toggle.Off,
                 "If on, creature hover names will display the amount of experience they give");
 
-            _ExperienceBarPos = config("2 - Settings", "XP Bar Position", new Vector2(300f, 25f),
+            _ExperienceBarPos = config("2 - Settings", "XP Bar Position", new Vector2((300f / 1920f) * Screen.width, (25f / 1080f) * Screen.height),
                 "Set the position of the experience bar", false);
             _ExperienceBarPos.SettingChanged += ExperienceBar.OnChangeExperienceBarPosition;
             _ExperienceBarScale = config("2 - Settings", "XP Bar Scale", 100f,
@@ -224,11 +224,11 @@ namespace AlmanacClasses
                 false);
             _HudVisible.SettingChanged += ExperienceBar.OnChangeExperienceBarVisibility;
 
-            _SpellBookPos = config("2 - Settings", "Spell Bar Position", new Vector2(1500f, 100f),
+            _SpellBookPos = config("2 - Settings", "Spell Bar Position", new Vector2((1500f / 1920f) * Screen.width, (100f / 1080f) * Screen.height),
                 "Set the location of the spellbar", false);
             _SpellBookPos.SettingChanged += SpellBook.OnSpellBarPosChange;
 
-            _PassiveBarPos = config("2 - Settings", "Passive Bar Position", new Vector2(1500f, 150f),
+            _PassiveBarPos = config("2 - Settings", "Passive Bar Position", new Vector2((1500f / 1920f) * Screen.width, (200f / 1080f) * Screen.height),
                 "Set the location of the passive bar", false);
             _PassiveBarPos.SettingChanged += PassiveBar.OnPassiveBarPosChange;
             
@@ -249,7 +249,7 @@ namespace AlmanacClasses
             _TalentPointsPerTenLevel = config("2 - Settings", "Talent Points Per Ten Levels", 7,
                 new ConfigDescription("Set extra talent points rewarded per 10 levels",
                     new AcceptableValueRange<int>(0, 10)));
-            _MenuTooltipPosition = config("2 - Settings", "Menu Tooltip Position", new Vector2(0f, 150f),
+            _MenuTooltipPosition = config("2 - Settings", "Menu Tooltip Position", new Vector2(0f, (150f / 1080f) * Screen.height),
                 "Set position of spell bar tooltip, always attached to spell bar position", false);
             _MenuTooltipPosition.SettingChanged += SpellInfo.OnSpellInfoPositionChange;
 

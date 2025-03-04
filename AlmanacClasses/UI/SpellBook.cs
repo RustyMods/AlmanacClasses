@@ -4,6 +4,7 @@ using System.Linq;
 using AlmanacClasses.Classes;
 using AlmanacClasses.Classes.Abilities;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace AlmanacClasses.UI;
@@ -11,7 +12,7 @@ namespace AlmanacClasses.UI;
 /// <summary>
 /// Component that controls the spell bar
 /// </summary>
-public class SpellBook : MonoBehaviour
+public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     public static SpellBook m_instance = null!;
     public static Dictionary<int, AbilityData> m_abilities = new();
@@ -23,7 +24,7 @@ public class SpellBook : MonoBehaviour
     // Root parent that contains instantiated elements
     private Transform m_contentList = null!;
     private float m_timer;
-    public static bool m_updatePosition;
+    
     public void Init()
     {
         m_instance = this;
@@ -46,19 +47,40 @@ public class SpellBook : MonoBehaviour
         m_contentList = transform.Find("$part_content");
         UpdateFontSize();
     }
-    public void UpdatePosition()
+    
+    public void OnBeginDrag(PointerEventData eventData)
     {
-        if (Input.GetKeyDown(KeyCode.Escape)) m_updatePosition = false;
-
-        if (!m_updatePosition) return;
-        AlmanacClassesPlugin._SpellBookPos.Value = Input.mousePosition;
-        SpellInfo.m_instance.SetPosition(AlmanacClassesPlugin._SpellBookPos.Value + AlmanacClassesPlugin._MenuTooltipPosition.Value);
-        if (SpellInfo.m_instance.IsVisible()) SpellInfo.m_instance.Hide();
-        if (Input.GetKeyDown(KeyCode.Mouse0)) m_updatePosition = false;
+        if (!(Menu.IsVisible() ^ SkillTree.IsPanelVisible())) return;
+        if (eventData.button is not PointerEventData.InputButton.Left) return;
+        if (SpellElement.IsMovingSpell()) return;
     }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        m_rect.position = Input.mousePosition;
+        if (SpellInfo.m_instance.IsVisible())
+            SpellInfo.m_instance.Hide();
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        AlmanacClassesPlugin._SpellBookPos.Value = m_rect.position;
+        SpellInfo.m_instance.SetPosition(AlmanacClassesPlugin._SpellBookPos.Value + AlmanacClassesPlugin._MenuTooltipPosition.Value);
+    }
+
+    public static void ResetUI()
+    {
+        var defaultSpellBarPos = (Vector2)AlmanacClassesPlugin._SpellBookPos.DefaultValue;
+        var defaultSpellInfoPos = (Vector2)AlmanacClassesPlugin._MenuTooltipPosition.DefaultValue;
+        m_instance.m_rect.position = defaultSpellBarPos;
+        SpellInfo.m_instance.SetPosition(defaultSpellBarPos + defaultSpellInfoPos);
+        
+        AlmanacClassesPlugin._SpellBookPos.Value = defaultSpellBarPos;
+        AlmanacClassesPlugin._MenuTooltipPosition.Value = defaultSpellInfoPos;
+    }
+    
     public void Update()
     {
-        UpdatePosition();
         if (!m_instance || !Player.m_localPlayer || Minimap.IsOpen()) return;
         if (Player.m_localPlayer.IsTeleporting() || Player.m_localPlayer.IsDead() || Player.m_localPlayer.IsSleeping()) return;
         m_timer += Time.deltaTime;

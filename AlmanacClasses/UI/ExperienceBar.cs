@@ -9,28 +9,15 @@ namespace AlmanacClasses.UI;
 /// <summary>
 /// Container which controls the experience bar
 /// </summary>
-public class ExperienceBar : MonoBehaviour, IPointerClickHandler
+public class ExperienceBar : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     public static ExperienceBar m_instance = null!;
-    public static bool m_updatePosition;
-
+    
     public RectTransform m_rect = null!;
     public Image m_fillBar = null!;
     public Text m_text = null!;
-
     public Text[] m_texts = null!;
-
-    public void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape)) m_updatePosition = false;
-        if (!m_updatePosition) return;
-        AlmanacClassesPlugin._ExperienceBarPos.Value = Input.mousePosition;
-    }
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        m_updatePosition = !m_updatePosition;
-    }
+    
     public void Init()
     {
         m_instance = this;
@@ -45,6 +32,33 @@ public class ExperienceBar : MonoBehaviour, IPointerClickHandler
         SetFill(0f);
         SetText("");
         m_texts = GetComponentsInChildren<Text>();
+    }
+    
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        if (!(Menu.IsVisible() ^ SkillTree.IsPanelVisible())) return;
+        if (eventData.button is not PointerEventData.InputButton.Left) return;
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        m_rect.position = Input.mousePosition;
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        AlmanacClassesPlugin._ExperienceBarPos.Value = m_rect.position;
+    }
+    
+    public static void ResetUI()
+    {
+        var defaultPos = (Vector2)AlmanacClassesPlugin._ExperienceBarPos.DefaultValue;
+        var defaultScale = (float)AlmanacClassesPlugin._ExperienceBarScale.DefaultValue;
+        m_instance.m_rect.position = defaultPos;
+        m_instance.SetScale(defaultScale / 100f);
+        
+        AlmanacClassesPlugin._PassiveBarPos.Value = defaultPos;
+        AlmanacClassesPlugin._ExperienceBarScale.Value = defaultScale;
     }
 
     public void SetFill(float amount) => m_fillBar.fillAmount = amount;

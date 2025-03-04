@@ -59,10 +59,6 @@ public class SpellElement : MonoBehaviour, IPointerClickHandler, IPointerEnterHa
             {
                 SelectSpell();
             } 
-            else
-            {
-                SpellBook.m_updatePosition = !SpellBook.m_updatePosition;
-            }
         }
         else
         {
@@ -154,6 +150,7 @@ public class SpellElement : MonoBehaviour, IPointerClickHandler, IPointerEnterHa
         SpellInfo.m_instance.Hide();
     }
 
+    public static bool IsMovingSpell() => m_draggedSpellImage is not null;
     public void SetIcon(Sprite? sprite) => m_icon.sprite = sprite;
     public void SetHotkey(string text) => m_hotkey.text = text;
     public void SetBorder(float amount) => m_gray.fillAmount = amount;
