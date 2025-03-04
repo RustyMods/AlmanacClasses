@@ -11,9 +11,6 @@ public static class MenuPatches
     {
         private static void Postfix()
         {
-            ExperienceBar.m_updatePosition = false;
-            SpellBook.m_updatePosition = false;
-            PassiveBar.m_updatePosition = false;
             SpellInfo.m_instance.Hide();
             PassiveBar.m_instance.Hide();
         }

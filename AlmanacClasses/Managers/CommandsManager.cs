@@ -45,6 +45,13 @@ public static class CommandsManager
                 AlmanacClassesPlugin.AlmanacClassesLogger.LogInfo("Reset all classes data");
                 return true;
             });
+            TalentCommand resetui = new("resetui", "resets the UI elements to their default values, AlmanacClasses UI only", _ =>
+            {
+                SpellBook.ResetUI();
+                ExperienceBar.ResetUI();
+                PassiveBar.ResetUI();
+                return true;
+            });
             TalentCommand clear = new("clear", "resets player talents without removing level, admin only", _ =>
             {
                 TalentManager.ResetTalents(true);

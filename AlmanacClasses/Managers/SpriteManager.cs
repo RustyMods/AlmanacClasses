@@ -51,23 +51,23 @@ public static class SpriteManager
     public static readonly Sprite? MeteorStrike_Icon = RegisterSprite("MeteorStrike.png", "Icons.Classes.Sage");
     public static readonly Sprite? BoulderStrike_Icon = RegisterSprite("BoulderStrike.png", "Icons.Classes.Sage");
     // Shaman
-    public static readonly Sprite? ShamanRoots_Icon = RegisterSprite("RootBeam.png", "Icons.Classes.Shaman");                           // RootBeam
-    public static readonly Sprite? ShamanRegeneration_Icon = RegisterSprite("SE_ShamanRegeneration.png", "Icons.Classes.Shaman");       // SE_ShamanRegeneration
-    public static readonly Sprite? ShamanProtection_Icon = RegisterSprite("SE_ShamanShield.png", "Icons.Classes.Shaman");               // SE_ShamanShield
-    public static readonly Sprite? ShamanHeal_Icon = RegisterSprite("ShamanHeal.png", "Icons.Classes.Shaman");                          // ShamanHeal
-    public static readonly Sprite? ShamanSpawn_Icon = RegisterSprite("ShamanSpawn.png", "Icons.Classes.Shaman");                        // ShamanSpawn
+    public static readonly Sprite? ShamanRoots_Icon = RegisterSprite("RootBeam.png", "Icons.Classes.Shaman");
+    public static readonly Sprite? ShamanRegeneration_Icon = RegisterSprite("SE_ShamanRegeneration.png", "Icons.Classes.Shaman");
+    public static readonly Sprite? ShamanProtection_Icon = RegisterSprite("SE_ShamanShield.png", "Icons.Classes.Shaman");
+    public static readonly Sprite? ShamanHeal_Icon = RegisterSprite("ShamanHeal.png", "Icons.Classes.Shaman");
+    public static readonly Sprite? ShamanSpawn_Icon = RegisterSprite("ShamanSpawn.png", "Icons.Classes.Shaman");
     // Rogue
-    public static readonly Sprite? Backstab_Icon = RegisterSprite("SE_RogueBackstab.png", "Icons.Classes.Rogue");                       // SE_RogueBackstab
-    public static readonly Sprite? Bleeding_Icon = RegisterSprite("SE_RogueBleed.png", "Icons.Classes.Rogue");                          // SE_RogueBleed
-    public static readonly Sprite? Reflect_Icon = RegisterSprite("SE_RogueReflect.png", "Icons.Classes.Rogue");                         // SE_RogueReflect
-    public static readonly Sprite? QuickStep_Icon = RegisterSprite("SE_RogueSpeed.png", "Icons.Classes.Rogue");                         // SE_RogueSpeed
-    public static readonly Sprite? Relentless_Icon = RegisterSprite("SE_RogueStamina.png", "Icons.Classes.Rogue");                      // SE_RogueStamina
+    public static readonly Sprite? Backstab_Icon = RegisterSprite("SE_RogueBackstab.png", "Icons.Classes.Rogue");
+    public static readonly Sprite? Bleeding_Icon = RegisterSprite("SE_RogueBleed.png", "Icons.Classes.Rogue");
+    public static readonly Sprite? Reflect_Icon = RegisterSprite("SE_RogueReflect.png", "Icons.Classes.Rogue");
+    public static readonly Sprite? QuickStep_Icon = RegisterSprite("SE_RogueSpeed.png", "Icons.Classes.Rogue");
+    public static readonly Sprite? Relentless_Icon = RegisterSprite("SE_RogueStamina.png", "Icons.Classes.Rogue");
     // Warrior
-    public static readonly Sprite? DualWield_Icon = RegisterSprite("SE_DualWield.png", "Icons.Classes.Warrior");                        // SE_DualWield
-    public static readonly Sprite? MonkeyWrench_Icon = RegisterSprite("SE_MonkeyWrench.png", "Icons.Classes.Warrior");                  // SE_MonkeyWrench
-    public static readonly Sprite? HardHitter_Icon = RegisterSprite("SE_WarriorStrength.png", "Icons.Classes.Warrior");                 // SE_WarriorStrength
-    public static readonly Sprite? BulkUp_Icon = RegisterSprite("SE_WarriorVitality.png", "Icons.Classes.Warrior");                     // SE_WarriorVitality
-    public static readonly Sprite? Resistant_Icon = RegisterSprite("SE_WarriorResistance.png", "Icons.Classes.Warrior");                // SE_WarriorResistance
+    public static readonly Sprite? DualWield_Icon = RegisterSprite("SE_DualWield.png", "Icons.Classes.Warrior");
+    public static readonly Sprite? MonkeyWrench_Icon = RegisterSprite("SE_MonkeyWrench.png", "Icons.Classes.Warrior");
+    public static readonly Sprite? HardHitter_Icon = RegisterSprite("SE_WarriorStrength.png", "Icons.Classes.Warrior");
+    public static readonly Sprite? BulkUp_Icon = RegisterSprite("SE_WarriorVitality.png", "Icons.Classes.Warrior");
+    public static readonly Sprite? Resistant_Icon = RegisterSprite("SE_WarriorResistance.png", "Icons.Classes.Warrior");
 
 
 
