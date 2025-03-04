@@ -21,6 +21,7 @@ public class SkillTree : MonoBehaviour
     public Image StatsTooltipBackground = null!;
     public Image ExtraInfoBackground = null!;
     public Image BonusBackground = null!;
+    public Image InventoryBackground = null!;
     [Header("Text Elements")]
     public Text PointsUsed = null!;
     public Text RequiredPoints = null!;
@@ -72,6 +73,7 @@ public class SkillTree : MonoBehaviour
         TooltipBackground = transform.Find("Panel/$part_header/$part_tooltip").GetComponent<Image>();
         ExtraInfoBackground = transform.Find("Panel/$part_header/$part_prestige").GetComponent<Image>();
         BonusBackground = transform.Find("Panel/$part_header/$part_stats_bonus").GetComponent<Image>();
+        InventoryBackground = transform.Find("Panel/$part_header/$part_inventory").GetComponent<Image>();
         ExperienceBarFill = transform.Find("Panel/$part_header/$part_stats/$part_experience_bar/$image_experience_fill").GetComponent<Image>();
         ExperienceText = transform.Find("Panel/$part_header/$part_stats/$part_experience_bar/$text_experience").GetComponent<Text>();
         LevelText = transform.Find("Panel/$part_header/$part_stats/$part_level/$text_title").GetComponent<Text>();
@@ -102,6 +104,7 @@ public class SkillTree : MonoBehaviour
         UpdateBackground();
         Utils.FindChild(transform, "$button_center").GetComponent<Button>().onClick.AddListener(Prestige.OnClickPrestige);
         transform.Find("Panel/$part_header/$part_characteristics").gameObject.AddComponent<CharacteristicPanel>().Init();
+        transform.Find("Panel/$part_header/$part_inventory").gameObject.AddComponent<SpellInventory>().Init();
         gameObject.SetActive(false);
     }
 
@@ -219,6 +222,7 @@ public class SkillTree : MonoBehaviour
         StatsTooltipBackground.sprite = background;
         ExtraInfoBackground.sprite = background;
         BonusBackground.sprite = background;
+        InventoryBackground.sprite = background;
     }
     public void SetBackgroundColor(Color color) => PanelBackground.color = color;
     private void LoadCloseButton()

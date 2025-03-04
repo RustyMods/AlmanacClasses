@@ -85,7 +85,7 @@ public class Talent
     public float GetSpeedModifier(int level) => m_values == null ? 0f : (m_values.m_speed?.Value ?? 0f) * level - (level - 1);
     public float GetChance(int level) => m_values == null ? 0f : Mathf.Clamp((m_values.m_chance?.Value ?? 0f) + (level - 1) * 5f, 0f, 100f);
     public float GetReflect(int level) => m_values == null ? 0f : (m_values.m_reflect?.Value ?? 0f) * level;
-    public float GetChainModifier(int level) => m_values == null ? 0f : (m_values.m_chainModifier?.Value ?? 0f) * level;
+    public float GetChainModifier(int level) => m_values == null ? 0f : Mathf.Clamp01((m_values.m_chainModifier?.Value ?? 0f) + (level - 1) * 0.1f);
     public float GetLeechModifier(int level) => m_values == null ? 0f : Mathf.Clamp01((m_values.m_leech?.Value ?? 0f) + (level - 1) * 0.1f);
     public float GetAddedComfort(int level) => m_values == null ? 0f : (m_values.m_comfort?.Value ?? 0f) * level;
     public float GetDamageReduction(int level) => m_values == null ? 1f : Mathf.Clamp01(1 - ((m_values.m_damageReduction?.Value ?? 1f) - 0.1f * (level - 1)));

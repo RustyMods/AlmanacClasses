@@ -79,7 +79,7 @@ public class SE_ChainShot : StatusEffect
             var arrow = Instantiate(__instance.gameObject, hit.GetTopPoint() + hit.transform.up * 1.01f, __instance.transform.rotation);
             var projectile = arrow.GetComponent<IProjectile>();
             var hitData = __instance.m_originalHitData.Clone();
-            hitData.ApplyModifier(0.5f);
+            hitData.ApplyModifier(talent.GetChainModifier(talent.GetLevel()));
             var velocity = (target.GetCenterPoint() - arrow.transform.position).normalized * 25f;
             projectile.Setup(__instance.m_owner, velocity, __instance.m_hitNoise, hitData, __instance.m_weapon, __instance.m_ammo);
             chainShot.m_hitCharacters.Add(target);

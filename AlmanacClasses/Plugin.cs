@@ -77,7 +77,6 @@ namespace AlmanacClasses
         public static ConfigEntry<KeyCode> _Spell6 = null!;
         public static ConfigEntry<KeyCode> _Spell7 = null!;
         public static ConfigEntry<KeyCode> _Spell8 = null!;
-        // public static ConfigEntry<KeyCode> _MonkeyWrenchToggle = null!;
         public static ConfigEntry<float> _DisplayTextFontSizeModifier = null!;
         public static ConfigEntry<Toggle> _UseExperienceLevelCap = null!;
         public static ConfigEntry<string> _CustomBackground = null!;

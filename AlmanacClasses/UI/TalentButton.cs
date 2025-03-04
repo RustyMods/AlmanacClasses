@@ -141,7 +141,7 @@ public class TalentButton : MonoBehaviour
                 if (ability.m_addToPassiveBar) PassiveBar.m_instance.Add(ability);
                 break;
             case TalentType.Ability or TalentType.StatusEffect:
-                if (!SpellBook.Add(ability)) return;
+                SpellInventory.m_instance.Add(ability, SpellBook.Add(ability), true);
                 break;
             case TalentType.Characteristic:
                 CharacteristicManager.UpdateCharacteristicPoints();

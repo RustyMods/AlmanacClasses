@@ -56,6 +56,7 @@ public static class TalentManager
     {
         MonkeyWrench.ResetTwoHandedWeapons();
         SpellBook.m_abilities.Clear();
+        SpellInventory.m_instance.Clear();
         RemoveStatusEffects();
         TalentButton.ClearAll();
         FillLines.Reset();
@@ -117,7 +118,7 @@ public static class TalentManager
     private static void LoadAltShaman()
     {
         Talent Leech = new Talent("Leech", "$button_shaman_talent_4", TalentType.StatusEffect, ScriptableObject.CreateInstance<SE_Leech>(), "SE_Leech", true);
-        Leech.m_sprite = SpriteManager.ShamanRegeneration;
+        Leech.m_sprite = SpriteManager.ShamanRegeneration_Icon;
         Leech.m_cost = _Plugin.config("Shaman - Leech", "Purchase Cost", 3, new ConfigDescription("Set cost to unlock ability", new AcceptableValueRange<int>(1, 10)));
         Leech.m_cooldown = _Plugin.config("Shaman - Leech", "Cooldown", 180f, new ConfigDescription("Set cooldown of ability", new AcceptableValueRange<float>(1f, 1000f)));
         Leech.m_length = _Plugin.config("Shaman - Leech", "Length", 60f, new ConfigDescription("Set length of ability", new AcceptableValueRange<float>(1f, 1000f)));
@@ -207,9 +208,11 @@ public static class TalentManager
             m_projectileCount = _Plugin.config("Hunter - Chain Shot", "Chain Count", 3, "Set base amount of shots can bounce to other foes"),
             m_chainModifier = _Plugin.config("Hunter - Chain Shot", "Damage modifier", 0.5f, new ConfigDescription("Set the damage reduction per new chain hit", new AcceptableValueRange<float>(0f, 1f)))
         };
-        ChainShot.m_tooltip = () => $"Chain count: <color=orange>{ChainShot.GetProjectileCount(ChainShot.GetLevel())}</color>";
+        ChainShot.m_tooltip = () => $"Chain count: <color=orange>{ChainShot.GetProjectileCount(ChainShot.GetLevel())}</color>\n" 
+                                    + $"Damage: <color=orange>{Talent.FormatPercentage(1 + ChainShot.GetChainModifier(ChainShot.GetLevel()))}%</color> total damage";
         ChainShot.m_prestigeTooltip = () =>
-            $"Chain count: <color=orange>{ChainShot.GetProjectileCount(ChainShot.GetLevel())}</color> --> <color={Talent.m_prestigeColor}>{ChainShot.GetProjectileCount(ChainShot.GetLevel() + 1)}</color>";
+            $"Chain count: <color=orange>{ChainShot.GetProjectileCount(ChainShot.GetLevel())}</color> --> <color={Talent.m_prestigeColor}>{ChainShot.GetProjectileCount(ChainShot.GetLevel() + 1)}</color>\n" 
+            + $"Damage: <color=orange>{Talent.FormatPercentage(1 + ChainShot.GetChainModifier(ChainShot.GetLevel()))}%</color> --> <color={Talent.m_prestigeColor}>{Talent.FormatPercentage(1 + ChainShot.GetChainModifier(ChainShot.GetLevel() + 1))}%</color> total damage";
     }
 
     private static void LoadAltSage()

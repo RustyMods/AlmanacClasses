@@ -224,6 +224,7 @@
         <Compile Include="UI\ExperienceBar.cs" />
         <Compile Include="UI\FillLines.cs" />
         <Compile Include="UI\HoverCharacteristic.cs" />
+        <Compile Include="UI\InventoryButton.cs" />
         <Compile Include="UI\LoadUI.cs" />
         <Compile Include="UI\PassiveBar.cs" />
         <Compile Include="UI\PassiveButton.cs" />
@@ -232,19 +233,21 @@
         <Compile Include="UI\SpellElement.cs" />
         <Compile Include="UI\SpellInfo.cs" />
         <Compile Include="UI\SpellBook.cs" />
+        <Compile Include="UI\SpellInventory.cs" />
         <Compile Include="UI\TalentBook.cs" />
         <Compile Include="UI\TalentButton.cs" />
         <Compile Include="VersionHandshake.cs" />
     </ItemGroup>
     <ItemGroup>
+        <EmbeddedResource Include="..\..\..\bundles_2024\classesbundle">
+          <Link>assets\classesbundle</Link>
+        </EmbeddedResource>
         <Content Include=".gitignore" />
-        <EmbeddedResource Include="assets\classesbundle" />
         <Content Include="environment.props" />
         <EmbeddedResource Include="Icons\monkeywrench_icon.png" />
         <EmbeddedResource Include="Icons\Classes\Warrior\SE_WarriorVitality_Transparent.png" />
         <EmbeddedResource Include="Icons\Classes\Warrior\SE_DualWield.png" />
         <EmbeddedResource Include="Icons\Classes\Warrior\SE_MonkeyWrench.png" />
-        <EmbeddedResource Include="Icons\Classes\Warrior\SE_MonkeyWrench_Transparent.png" />
         <EmbeddedResource Include="Icons\Classes\Warrior\SE_WarriorResistance.png" />
         <EmbeddedResource Include="Icons\Classes\Warrior\SE_WarriorResistance_Transparent.png" />
         <EmbeddedResource Include="Icons\Classes\Warrior\SE_WarriorStrength.png" />

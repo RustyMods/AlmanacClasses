@@ -72,16 +72,13 @@ public class SpellBook : MonoBehaviour
         m_instance.m_rect.position = AlmanacClassesPlugin._SpellBookPos.Value;
         SpellInfo.m_instance.SetPosition(AlmanacClassesPlugin._SpellBookPos.Value + new Vector2(0f, 150f));
     }
-
     public static void OnLogout() => ClearSpellBook();
     public static void ClearSpellBook()
     {
         m_abilities.Clear();
         UpdateAbilities();
     }
-
     public static bool IsAbilityInBook(Talent ability) => m_abilities.Values.Any(talent => ability == talent.m_data);
-
     public static void RemoveAbility(Talent ability)
     {
         if (!IsAbilityInBook(ability)) return;
@@ -98,7 +95,6 @@ public class SpellBook : MonoBehaviour
         NormalizeBook();
         UpdateAbilities();
     }
-
     private static void NormalizeBook()
     {
         Dictionary<int, AbilityData> newAbilities = new Dictionary<int, AbilityData>();
@@ -111,7 +107,6 @@ public class SpellBook : MonoBehaviour
 
         m_abilities = newAbilities;
     }
-    
     public void UpdateFontSize()
     {
         foreach (Text component in m_elementTexts)
@@ -121,7 +116,6 @@ public class SpellBook : MonoBehaviour
             component.resizeTextForBestFit = true;
         }
     }
-
     private static Dictionary<int, GameObject> GetExistingElements()
     {
         Dictionary<int, GameObject> existingElements = new Dictionary<int, GameObject>();
@@ -133,7 +127,6 @@ public class SpellBook : MonoBehaviour
 
         return existingElements;
     }
-
     public static void UpdateAbilities()
     {
         if (!Player.m_localPlayer || Player.m_localPlayer.IsDead()) return;
@@ -171,7 +164,6 @@ public class SpellBook : MonoBehaviour
             Destroy(existingElements[key]);
         }
     }
-
     private static string GetKeyCode(int index)
     {
         return AddAltKey(RemoveAlpha(index switch
@@ -187,7 +179,6 @@ public class SpellBook : MonoBehaviour
             _ => ""
         }));
     }
-
     private static string AddAltKey(string input) => AlmanacClassesPlugin._SpellAlt.Value is KeyCode.None
         ? input
         : $"{AlmanacClassesPlugin._SpellAlt.Value} + {input}";
@@ -204,7 +195,6 @@ public class SpellBook : MonoBehaviour
             _ => time.ToString()
         };
     }
-    
     public static bool Add(Talent ability)
     {
         if (IsAbilityInBook(ability))

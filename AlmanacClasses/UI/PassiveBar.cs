@@ -21,15 +21,6 @@ public class PassiveBar : MonoBehaviour
         m_contentList = transform.Find("$part_content").GetComponent<RectTransform>();
         m_element = AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("PassiveBar_element");
         m_element.AddComponent<PassiveButton>();
-        var elementName = new GameObject("$text_name");
-        var rect = elementName.AddComponent<RectTransform>();
-        rect.SetParent(m_element.transform);
-        rect.sizeDelta = new Vector2(100f, 20f);
-        rect.anchoredPosition = new Vector2(0f, 40f);
-        var text = elementName.AddComponent<Text>();
-        text.alignment = TextAnchor.MiddleCenter;
-        text.horizontalOverflow = HorizontalWrapMode.Overflow;
-        text.verticalOverflow = VerticalWrapMode.Overflow;
         m_rect.anchoredPosition = AlmanacClassesPlugin._PassiveBarPos.Value;
         m_element.AddComponent<ButtonSfx>().m_sfxPrefab = LoadUI.m_vanillaButtonSFX.m_sfxPrefab;
         Hide();

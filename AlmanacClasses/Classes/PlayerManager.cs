@@ -132,9 +132,20 @@ public static class PlayerManager
         AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Loaded player talents");
         LoadSpellBook();
         LoadPlayerTalents();
+        LoadInventory();
         m_initiatedPlayerTalents = true;
     }
 
+    private static void LoadInventory()
+    {
+        foreach (var key in m_tempPlayerData.m_boughtTalents.Keys)
+        {
+            if (!TalentManager.m_talents.TryGetValue(key, out Talent talent)) continue;
+            if (talent.m_type is not (TalentType.Ability or TalentType.StatusEffect)) continue;
+            SpellInventory.m_instance.Add(talent, SpellBook.IsAbilityInBook(talent));
+        }
+        SpellInventory.m_instance.Resize();
+    }
     private static void LoadSpellBook()
     {
         foreach (KeyValuePair<int, string> kvp in m_tempPlayerData.m_spellBook)

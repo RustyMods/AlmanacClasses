@@ -185,6 +185,7 @@ public static class LoadUI
         prefab.AddComponent<SkillTree>().Init();
         Font? font = GetFont(AlmanacClassesPlugin._Font.Value);
         AddFonts(SkillTree.m_instance.m_texts, font);
+        AddFonts(SpellInventory.m_element.GetComponentsInChildren<Text>(), font);
         RegisterButtons();
         RegisterFillLines();
         SetAllButtonEvents();
@@ -605,10 +606,11 @@ public static class LoadUI
             PlayerManager.m_tempPlayerData.m_boughtTalents.Remove(original.m_key);
             PlayerManager.m_playerTalents[alt.m_key] = alt;
             SpellBook.RemoveAbility(original);
+            SpellInventory.m_instance.Remove(original);
             switch (talent.m_type)
             {
                 case TalentType.Ability or TalentType.StatusEffect:
-                    SpellBook.Add(alt);
+                    SpellInventory.m_instance.Add(alt, SpellBook.Add(alt), true);
                     break;
                 case TalentType.Passive:
                     if (talent.m_status is { } passiveStatus) Player.m_localPlayer.GetSEMan().AddStatusEffect(passiveStatus.NameHash());
@@ -625,10 +627,11 @@ public static class LoadUI
             PlayerManager.m_tempPlayerData.m_boughtTalents.Remove(alt.m_key);
             PlayerManager.m_playerTalents[original.m_key] = original;
             SpellBook.RemoveAbility(alt);
+            SpellInventory.m_instance.Remove(alt);
             switch (original.m_type)
             {
                 case TalentType.Ability or TalentType.StatusEffect:
-                    SpellBook.Add(original);
+                    SpellInventory.m_instance.Add(original, SpellBook.Add(original), true);
                     break;
                 case TalentType.Passive:
                     if (talent.m_status is { } passiveStatus)
@@ -665,6 +668,7 @@ public static class LoadUI
         foreach (var text in AllTexts) text.font = font;
         SpellElement.UpdateFont(font);
         PassiveButton.OnFontChange(font);
+        InventoryButton.OnFontChange(font);
     }
     
     public enum FontOptions
