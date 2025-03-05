@@ -16,12 +16,10 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
 {
     public static SpellBook m_instance = null!;
     public static Dictionary<int, AbilityData> m_abilities = new();
-    // Element base, that gets instantiated when new spell is added to book
-    public static GameObject m_element = null!;
+    private static GameObject m_element = null!;
     
     public RectTransform m_rect = null!;
     public Text[] m_elementTexts = null!;
-    // Root parent that contains instantiated elements
     private Transform m_contentList = null!;
     private float m_timer;
     
@@ -47,17 +45,18 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
         m_contentList = transform.Find("$part_content");
         UpdateFontSize();
     }
-    
+
+    private Vector3 mouseDifference = Vector3.zero;
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (!(Menu.IsVisible() ^ SkillTree.IsPanelVisible())) return;
-        if (eventData.button is not PointerEventData.InputButton.Left) return;
-        if (SpellElement.IsMovingSpell()) return;
+        Vector2 pos = eventData.position;
+        mouseDifference = m_rect.position - new Vector3(pos.x, pos.y, 0);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        m_rect.position = Input.mousePosition;
+        if (!Input.GetKey(KeyCode.LeftAlt)) return; // so it follows previous system, where you need to hold L.Alt to move spell bar
+        m_rect.position = Input.mousePosition + mouseDifference;
         if (SpellInfo.m_instance.IsVisible())
             SpellInfo.m_instance.Hide();
     }

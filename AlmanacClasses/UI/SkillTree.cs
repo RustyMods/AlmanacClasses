@@ -81,7 +81,9 @@ public class SkillTree : MonoBehaviour
         TalentPointsText = transform.Find("Panel/$part_header/$part_stats/$part_talent_points/$text_title").GetComponent<Text>();
         TalentsPointsAmount = transform.Find("Panel/$part_header/$part_stats/$part_talent_points/$text_count").GetComponent<Text>();
         CharacteristicText = transform.Find("Panel/$part_header/$part_stats/$part_characteristic_points/$text_title").GetComponent<Text>();
+        CharacteristicText.resizeTextForBestFit = true;
         CharacteristicAmount = transform.Find("Panel/$part_header/$part_stats/$part_characteristic_points/$text_count").GetComponent<Text>();
+        CharacteristicAmount.horizontalOverflow = HorizontalWrapMode.Overflow;
         StatsTooltip = transform.Find("Panel/$part_header/$part_stats_tooltip/$text").GetComponent<Text>();
         BonusTooltip = transform.Find("Panel/$part_header/$part_stats_bonus/$text").GetComponent<Text>();
         TalentName = Utils.FindChild(transform, "$text_name").GetComponent<Text>();

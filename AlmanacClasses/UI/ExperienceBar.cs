@@ -34,15 +34,16 @@ public class ExperienceBar : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         m_texts = GetComponentsInChildren<Text>();
     }
     
+    private Vector3 mouseDifference = Vector3.zero;
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (!(Menu.IsVisible() ^ SkillTree.IsPanelVisible())) return;
-        if (eventData.button is not PointerEventData.InputButton.Left) return;
+        Vector2 pos = eventData.position;
+        mouseDifference = m_rect.position - new Vector3(pos.x, pos.y, 0);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        m_rect.position = Input.mousePosition;
+        m_rect.position = Input.mousePosition + mouseDifference;
     }
 
     public void OnEndDrag(PointerEventData eventData)
@@ -64,7 +65,6 @@ public class ExperienceBar : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     public void SetFill(float amount) => m_fillBar.fillAmount = amount;
     public void SetText(string text) => m_text.text = text;
     public void SetScale(float scale) => m_rect.localScale = new Vector3(scale, scale, scale);
-
     public static void SetHUDVisibility(bool enable)
     {
         if (m_instance == null) return;

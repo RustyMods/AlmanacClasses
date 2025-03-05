@@ -27,17 +27,18 @@ public class PassiveBar : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         Hide();
     }
     
+    private Vector3 mouseDifference = Vector3.zero;
+
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (!(Menu.IsVisible() ^ SkillTree.IsPanelVisible())) return;
-        if (eventData.button is not PointerEventData.InputButton.Left) return;
-        
+        Vector2 pos = eventData.position;
+        mouseDifference = m_rect.position - new Vector3(pos.x, pos.y, 0);
         m_isDragging = true;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        m_rect.position = Input.mousePosition;
+        m_rect.position = Input.mousePosition + mouseDifference;
     }
 
     public void OnEndDrag(PointerEventData eventData)
