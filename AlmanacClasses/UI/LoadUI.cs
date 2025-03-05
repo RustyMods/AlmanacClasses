@@ -605,7 +605,7 @@ public static class LoadUI
             PlayerManager.m_tempPlayerData.m_boughtTalents[alt.m_key] = PlayerManager.m_tempPlayerData.m_boughtTalents[original.m_key];
             PlayerManager.m_tempPlayerData.m_boughtTalents.Remove(original.m_key);
             PlayerManager.m_playerTalents[alt.m_key] = alt;
-            SpellBook.RemoveAbility(original);
+            SpellBook.Remove(original);
             SpellInventory.m_instance.Remove(original);
             switch (talent.m_type)
             {
@@ -626,7 +626,7 @@ public static class LoadUI
             PlayerManager.m_tempPlayerData.m_boughtTalents[original.m_key] = PlayerManager.m_tempPlayerData.m_boughtTalents[alt.m_key];
             PlayerManager.m_tempPlayerData.m_boughtTalents.Remove(alt.m_key);
             PlayerManager.m_playerTalents[original.m_key] = original;
-            SpellBook.RemoveAbility(alt);
+            SpellBook.Remove(alt);
             SpellInventory.m_instance.Remove(alt);
             switch (original.m_type)
             {

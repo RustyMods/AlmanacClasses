@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AlmanacClasses.Classes;
+using AlmanacClasses.Classes.Abilities;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -65,7 +66,8 @@ public class SpellInventory : MonoBehaviour
         {
             if (SpellBook.IsAbilityInBook(talent))
             {
-                SpellBook.RemoveAbility(talent);
+                if (!AbilityManager.IsReady(talent)) return;
+                SpellBook.Remove(talent);
                 element.SetBorder(false);
             }
             else

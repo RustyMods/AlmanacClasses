@@ -240,10 +240,8 @@
         <Compile Include="VersionHandshake.cs" />
     </ItemGroup>
     <ItemGroup>
-        <EmbeddedResource Include="..\..\..\bundles_2024\classesbundle">
-          <Link>assets\classesbundle</Link>
-        </EmbeddedResource>
         <Content Include=".gitignore" />
+        <EmbeddedResource Include="assets\classesbundle" />
         <Content Include="environment.props" />
         <EmbeddedResource Include="Icons\monkeywrench_icon.png" />
         <EmbeddedResource Include="Icons\Classes\Warrior\SE_WarriorVitality_Transparent.png" />

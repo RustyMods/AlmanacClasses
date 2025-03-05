@@ -86,7 +86,7 @@ public static class AbilityManager
     }
     private static void CastTalent(Talent ability)
     {
-        if (!CheckCooldown(ability)) return;
+        if (!IsReady(ability)) return;
         if (!CheckCost(ability)) return;
         if (!CheckStatusEffect(ability) && !CheckAbilityName(ability)) return;
         UseCost(ability.GetHealthCost(), ability.GetStaminaCost(), ability.GetEitrCost(false));
@@ -94,7 +94,7 @@ public static class AbilityManager
         AlmanacClassesPlugin._Plugin.StartCoroutine(CoolDown(ability));
     }
 
-    private static bool CheckCooldown(Talent ability)
+    public static bool IsReady(Talent ability)
     {
         if (!m_castedSpells.Contains(ability.m_key)) return true;
         if (!m_cooldownMap.TryGetValue(ability.m_key, out float cooldown)) return true;

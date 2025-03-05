@@ -100,7 +100,7 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
         UpdateAbilities();
     }
     public static bool IsAbilityInBook(Talent ability) => m_abilities.Values.Any(talent => ability == talent.m_data);
-    public static void RemoveAbility(Talent ability)
+    public static void Remove(Talent ability)
     {
         if (!IsAbilityInBook(ability)) return;
 
