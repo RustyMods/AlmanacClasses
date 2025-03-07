@@ -74,10 +74,11 @@ public class CharacteristicButtons : MonoBehaviour
     public static void UpdateAllButtons()
     {
         bool displayAdd = CharacteristicManager.GetRemainingPoints() > 0;
+        bool displayRemove = AlmanacClassesPlugin._ResetCost.Value <= 0 || AlmanacClassesPlugin._FreeCharacteristicChange.Value is AlmanacClassesPlugin.Toggle.On;
         foreach (var button in CharacteristicPanel.m_instance.m_components)
         {
             button.DisplayAdd(displayAdd);
-            button.DisplayRemove(CharacteristicManager.GetCharacteristic(button.m_type) > 0);
+            button.DisplayRemove(displayRemove && CharacteristicManager.GetCharacteristic(button.m_type) > 0);
         }
     }
 }

@@ -177,7 +177,7 @@ public static class PlayerManager
         foreach (KeyValuePair<string, Talent> kvp in TalentManager.m_altTalentsByButton)
         {
             Talent talent = kvp.Value;
-            if (talent.m_alt?.Value is AlmanacClassesPlugin.Toggle.Off) continue;
+            if (!talent.IsAltOn()) continue;
             LoadUI.ChangeButton(talent, false);
         }
     }

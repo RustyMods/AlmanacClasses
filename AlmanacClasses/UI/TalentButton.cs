@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 using AlmanacClasses.Classes;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace AlmanacClasses.UI;
@@ -12,7 +13,7 @@ namespace AlmanacClasses.UI;
 /// Contains all the necessary methods to control the buttons
 /// </summary>
 [RequireComponent(typeof(Button))]
-public class TalentButton : MonoBehaviour
+public class TalentButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     public static readonly List<Selectable> m_selectables = new();
     public static readonly List<TalentButton> m_checkedTalents = new();
@@ -45,6 +46,8 @@ public class TalentButton : MonoBehaviour
             m_buttonOriginalSpriteMap[this] = iconImage.sprite;
             m_icon = iconImage;
         }
+
+        gameObject.AddComponent<ButtonSfx>().m_sfxPrefab = LoadUI.m_vanillaButtonSFX.m_sfxPrefab;
     }
 
     public void SetCheckmark(bool enable)
@@ -194,4 +197,24 @@ public class TalentButton : MonoBehaviour
     }
 
     public static bool IsTalentButton(Selectable button) => m_selectables.Contains(button);
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (name == "$button_center")
+        {
+            Prestige.UpdateSelectedPrestigeTooltip();
+            return;
+        }
+        if (!TalentManager.m_talentsByButton.TryGetValue(name, out Talent talent)) return;
+        if (TalentManager.m_altTalentsByButton.TryGetValue(name, out Talent alt) && alt.IsAltOn())
+        {
+            talent = alt;
+        }
+        SkillTree.m_instance.SetSelectedName(talent.GetName() + " $text_lvl " + talent.m_level);
+        SkillTree.m_instance.SetSelectedDescription(talent.GetTooltip());
+        SkillTree.m_instance.SetSelectedCost($"$almanac_cost: <color=orange>{talent.GetCost()}</color>");
+        SkillTree.m_instance.SetSelectedType(talent.GetTalentType());
+    }
+
+    public void OnPointerExit(PointerEventData eventData) => SkillTree.m_instance.SetDefaultTooltip();
+    
 }

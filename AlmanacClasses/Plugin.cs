@@ -37,7 +37,7 @@ namespace AlmanacClasses
         public static AlmanacClassesPlugin _Plugin = null!;
         public static GameObject _Root = null!;
         
-        public static ConfigEntry<LoadUI.FontOptions> _Font = null!;
+        public static ConfigEntry<FontManager.FontOptions> _Font = null!;
         private static ConfigEntry<Toggle> _serverConfigLocked = null!;
         public static ConfigEntry<int> _PrestigeThreshold = null!;
         public static ConfigEntry<int> _ResetCost = null!;
@@ -81,18 +81,16 @@ namespace AlmanacClasses
         public static ConfigEntry<Toggle> _UseExperienceLevelCap = null!;
         public static ConfigEntry<string> _CustomBackground = null!;
         public static ConfigEntry<Vector2> _PassiveBarPos = null!;
+        public static ConfigEntry<Toggle> _FreeCharacteristicChange = null!;
 
         public bool m_headless = SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null;
         public void Awake()
         {
-            Localizer.Load(); 
-
+            Localizer.Load();
             _Plugin = this;
-            
             _Root = new GameObject("almanac_classes_root");
             DontDestroyOnLoad(_Root);
             _Root.SetActive(false);
-            
             InitConfigs();
             FilePaths.CreateFolders();
             LoadPieces.LoadClassAltar();
@@ -109,7 +107,6 @@ namespace AlmanacClasses
             StaticExperience.LoadServerStaticExperienceWatcher();
             Watcher.InitWatcher();
         }
-        
         public void Update()
         {
             if (m_headless) return;
@@ -119,35 +116,7 @@ namespace AlmanacClasses
             PlayerManager.UpdatePassiveEffects(dt);
             SkillTree.UpdateUI();
         }
-        
-        private void AddAttackSpeedModifiers()
-        {
-            AnimationSpeedManager.Add((character, speed) =>
-            {
-                if (character is not Player player || !player.InAttack() || player.m_currentAttack is null) return speed;
-                return speed * CharacteristicManager.GetDexterityModifier();
-            });
-            
-            AnimationSpeedManager.Add((character, speed) =>
-            {
-                if (character is not Player player || !player.InAttack() || player.m_currentAttack is null) return speed;
-                if (!PlayerManager.m_playerTalents.TryGetValue("MonkeyWrench", out Talent talent)) return speed;
-                if (player.GetCurrentWeapon() == null) return speed;
-                if (!MonkeyWrench.IsMonkeyWrenchItem(player.GetCurrentWeapon().m_shared.m_name)) return speed;
-                return speed * talent.GetAttackSpeedReduction(talent.GetLevel());
-            });
-        }
-
         private void OnDestroy() => Config.Save();
-        
-        private static AssetBundle GetAssetBundle(string fileName)
-        {
-            Assembly execAssembly = Assembly.GetExecutingAssembly();
-            string resourceName = execAssembly.GetManifestResourceNames().Single(str => str.EndsWith(fileName));
-            using Stream? stream = execAssembly.GetManifestResourceStream(resourceName);
-            return AssetBundle.LoadFromStream(stream);
-        }
-        
         public void SetupWatcher()
         {
             FileSystemWatcher watcher = new(Paths.ConfigPath, ConfigFileName);
@@ -158,7 +127,6 @@ namespace AlmanacClasses
             watcher.SynchronizingObject = ThreadingHelper.SynchronizingObject;
             watcher.EnableRaisingEvents = true;
         }
-
         private void ReadConfigValues(object sender, FileSystemEventArgs e)
         {
             if (!File.Exists(ConfigFileFullPath)) return;
@@ -178,8 +146,8 @@ namespace AlmanacClasses
             _serverConfigLocked = config("1 - General", "Lock Configuration", Toggle.On,
                 "If on, the configuration is locked and can be changed by server admins only.");
             _ = ConfigSync.AddLockingConfigEntry(_serverConfigLocked);
-            _Font = config("1 - General", "Font", LoadUI.FontOptions.NorseBold, "Set UI font");
-            _Font.SettingChanged += LoadUI.OnFontChange;
+            _Font = config("1 - General", "Font", FontManager.FontOptions.NorseBold, "Set UI font", false);
+            _Font.SettingChanged += FontManager.OnFontChange;
             _CustomBackground = config("1 - General", "Custom Background", "", "Set name of png file to use as background");
             _CustomBackground.SettingChanged += (_, _) =>
             {
@@ -189,6 +157,12 @@ namespace AlmanacClasses
             InitSettingsConfigs();
             InitKeyCodeConfigs();
 
+            _FreeCharacteristicChange = config("4 - Characteristics", "Free Change", Toggle.Off,
+                "If on, players can change characteristics without resetting");
+            _FreeCharacteristicChange.SettingChanged += (_, _) =>
+            {
+                CharacteristicButtons.UpdateAllButtons();
+            };
             _EitrRatio = config("4 - Characteristics", "1. Eitr Ratio", 2f, new ConfigDescription("Set the amount of wisdom points required for 1 eitr", new AcceptableValueRange<float>(1f, 10f)));
             _HealthRatio = config("4 - Characteristics", "3. Health Ratio", 1f, new ConfigDescription("Set the amount of constitution points for 1 health", new AcceptableValueRange<float>(1f, 10f)));
             _StaminaRatio = config("4 - Characteristics", "5. Stamina Ratio", 3f, new ConfigDescription("Set the amount of dexterity points for 1 stamina", new AcceptableValueRange<float>(1f, 10f)));
@@ -272,7 +246,6 @@ namespace AlmanacClasses
                 new ConfigDescription("Modify the size of the visual text", new AcceptableValueRange<float>(0.1f, 5f)));
             _UseExperienceLevelCap = config("2 - Settings", "Use Experience Level Cap", Toggle.On, "If on, player must be between a certain level to gain experience, defined by experience map files");
         }
-
         private void InitKeyCodeConfigs()
         {
             _SpellAlt = config("3 - Spell Keys", "Alt Key", KeyCode.LeftAlt, "Set the alt key code, If None, then it ignores", false);
@@ -289,7 +262,6 @@ namespace AlmanacClasses
             _Spell6 = config("3 - Spell Keys", "Spell 6", KeyCode.Alpha6, "Set the key code for spell 6", false);
             _Spell7 = config("3 - Spell Keys", "Spell 7", KeyCode.Alpha7, "Set the key code for spell 7", false);
             _Spell8 = config("3 - Spell Keys", "Spell 8", KeyCode.Alpha8, "Set the key code for spell 8", false);
-            // _MonkeyWrenchToggle = config("3 - Spell Keys", "Monkey Wrench Toggle", KeyCode.H, "Set the key code for toggling Monkey Wrench on/off", false);
         }
         public ConfigEntry<T> config<T>(string group, string name, T value, ConfigDescription description,
             bool synchronizedSetting = true)
@@ -312,6 +284,31 @@ namespace AlmanacClasses
             bool synchronizedSetting = true)
         {
             return config(group, name, value, new ConfigDescription(description), synchronizedSetting);
+        }
+        
+        private static AssetBundle GetAssetBundle(string fileName)
+        {
+            Assembly execAssembly = Assembly.GetExecutingAssembly();
+            string resourceName = execAssembly.GetManifestResourceNames().Single(str => str.EndsWith(fileName));
+            using Stream? stream = execAssembly.GetManifestResourceStream(resourceName);
+            return AssetBundle.LoadFromStream(stream);
+        }
+        private static void AddAttackSpeedModifiers()
+        {
+            AnimationSpeedManager.Add((character, speed) =>
+            {
+                if (character is not Player player || !player.InAttack() || player.m_currentAttack is null) return speed;
+                return speed * CharacteristicManager.GetDexterityModifier();
+            });
+            
+            AnimationSpeedManager.Add((character, speed) =>
+            {
+                if (character is not Player player || !player.InAttack() || player.m_currentAttack is null) return speed;
+                if (!PlayerManager.m_playerTalents.TryGetValue("MonkeyWrench", out Talent talent)) return speed;
+                if (player.GetCurrentWeapon() == null) return speed;
+                if (!MonkeyWrench.IsMonkeyWrenchItem(player.GetCurrentWeapon().m_shared.m_name)) return speed;
+                return speed * talent.GetAttackSpeedReduction(talent.GetLevel());
+            });
         }
     }
 }

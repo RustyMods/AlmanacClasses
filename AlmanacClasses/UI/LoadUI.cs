@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using AlmanacClasses.Classes;
+using AlmanacClasses.Managers;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -13,8 +12,7 @@ public static class LoadUI
     [Header("Assets")]
     public static ButtonSfx m_vanillaButtonSFX = null!;
     public static Button m_vanillaButton = null!;
-    [Header("All Texts")] 
-    public static readonly List<Text> AllTexts = new();
+
     [Header("Fill Lines")]
     #region All Fill Lines Images
     #region Line Up
@@ -159,21 +157,16 @@ public static class LoadUI
     public static void InitHud(Hud instance)
     {
         AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Initializing HUD");
-        var ExperienceBarHUD = Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("Experience_Bar"), instance.transform, false);
-        ExperienceBarHUD.AddComponent<ExperienceBar>().Init();
-        var SpellBar = Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_UI"), Hud.instance.transform, false);
-        SpellBar.AddComponent<SpellBook>().Init();
-        var PassiveBar = Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("PassiveBar_UI"), Hud.instance.transform, false);
-        PassiveBar.AddComponent<PassiveBar>().Init();
-        
-        Font? font = GetFont(AlmanacClassesPlugin._Font.Value);
-        AddFonts(ExperienceBar.m_instance.m_texts, font);
-        AddFonts(SpellBook.m_instance.m_elementTexts, font);
-        AddFonts(UI.PassiveBar.m_element.GetComponentsInChildren<Text>(), font);
-        SpellBook.m_instance.UpdateFontSize();
-        
+        Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("Experience_Bar"), instance.transform, false).AddComponent<ExperienceBar>().Init();
+        Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_UI"), Hud.instance.transform, false).AddComponent<SpellBook>().Init();
+        Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("PassiveBar_UI"), Hud.instance.transform, false).AddComponent<PassiveBar>().Init();
         Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("ElementHover_UI"), instance.transform, false).AddComponent<SpellInfo>().Init();
-        AddFonts(SpellInfo.m_instance.m_texts, font);
+        
+        FontManager.SetFont(ExperienceBar.m_instance.m_texts);
+        FontManager.SetFont(SpellBook.m_instance.m_elementTexts);
+        FontManager.SetFont(PassiveBar.m_element.GetComponentsInChildren<Text>());
+        FontManager.SetFont(SpellInfo.m_instance.m_texts);
+        SpellBook.m_instance.UpdateFontSize();
     }
     public static void InitSkillTree(InventoryGui instance)
     {
@@ -181,11 +174,10 @@ public static class LoadUI
         Transform vanillaButton = Utils.FindChild(Utils.FindChild(instance.transform, "TrophiesFrame"), "Closebutton");
         m_vanillaButtonSFX = vanillaButton.GetComponent<ButtonSfx>();
         m_vanillaButton = vanillaButton.GetComponent<Button>();
-        var prefab = Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("Almanac_SkillTree"), instance.transform, false);
-        prefab.AddComponent<SkillTree>().Init();
-        Font? font = GetFont(AlmanacClassesPlugin._Font.Value);
-        AddFonts(SkillTree.m_instance.m_texts, font);
-        AddFonts(SpellInventory.m_element.GetComponentsInChildren<Text>(), font);
+        
+        Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("Almanac_SkillTree"), instance.transform, false).AddComponent<SkillTree>().Init();
+        FontManager.SetFont(SkillTree.m_instance.m_texts);
+        FontManager.SetFont(SpellInventory.m_element.GetComponentsInChildren<Text>());
         RegisterButtons();
         RegisterFillLines();
         SetAllButtonEvents();
@@ -357,10 +349,8 @@ public static class LoadUI
         foreach (Button button in talents.GetComponentsInChildren<Button>())
         {
             button.gameObject.AddComponent<TalentButton>().Init();
-            AddSFX(button);
         }
     }
-    private static void AddSFX(Button button) => button.gameObject.AddComponent<ButtonSfx>().m_sfxPrefab = m_vanillaButtonSFX.m_sfxPrefab;
     private static void SetAllButtonEvents()
     {
         SetCoreButtonsEvents();
@@ -590,7 +580,7 @@ public static class LoadUI
         if (!TalentManager.m_altTalentsByButton.TryGetValue(talent.m_button, out Talent alt)) return;
         if (talent.m_type is TalentType.Passive && talent.m_status is { } status)
         {
-            Player.m_localPlayer.GetSEMan().RemoveStatusEffect(status.m_nameHash);
+            Player.m_localPlayer.GetSEMan().RemoveStatusEffect(status.NameHash());
         }
         if (!revert)
         {
@@ -639,40 +629,5 @@ public static class LoadUI
                     break;
             }
         }
-    }
-    private static void AddFonts(Text[] array, Font? font)
-    {
-        foreach (Text text in array)
-        {
-            text.font = font;
-            AllTexts.Add(text);
-        }
-    }
-
-    private static Font? GetFont(FontOptions option)
-    {
-        string fontOption = option switch
-        {   
-            FontOptions.Norse => "Norse",
-            FontOptions.AveriaSerifLibre => "AveriaSerifLibre-Regular",
-            FontOptions.NorseBold => "Norsebold",
-            _ => "AveriaSerifLibre-Regular"
-        };
-        Font[]? fonts = Resources.FindObjectsOfTypeAll<Font>();
-        return fonts.FirstOrDefault(x => x.name == fontOption);
-    }
-
-    public static void OnFontChange(object sender, EventArgs args)
-    {
-        var font = GetFont(AlmanacClassesPlugin._Font.Value);
-        foreach (var text in AllTexts) text.font = font;
-        SpellElement.UpdateFont(font);
-        PassiveButton.OnFontChange(font);
-        InventoryButton.OnFontChange(font);
-    }
-    
-    public enum FontOptions
-    {
-        Norse, NorseBold, AveriaSerifLibre  
     }
 }

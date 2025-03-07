@@ -108,6 +108,8 @@ public class Talent
     public float GetCreaturesByLevelLength(int level) => m_creaturesByLevel == null ? 0f : GetLength(level);
     public int GetCreatureByLevelLevel(int level) => level switch { 2 => 2, 3 => 3, 4 => 1, 5 => 2, 6 => 3, 7 => 1, 8 => 2, 9 => 3, _ => 1, };
     public float GetArmor(int level) => m_values == null ? 0f : (m_values.m_armor?.Value ?? 0f) + (level - 1) * 2f;
+
+    public bool IsAltOn() => m_alt?.Value is Toggle.On;
     public string GetTooltip()
     {
         StringBuilder stringBuilder = new StringBuilder();
