@@ -26,7 +26,7 @@ public class ExperienceBar : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         m_rect.SetAsLastSibling();
         m_rect.position = AlmanacClassesPlugin._ExperienceBarPos.Value;
 
-        SetScale(AlmanacClassesPlugin._ExperienceBarScale.Value / 100f);
+        SetScale(AlmanacClassesPlugin._ExperienceBarScale.Value);
         m_fillBar = transform.Find("FillBar").GetComponent<Image>();
         m_text = transform.Find("$text_experience").GetComponent<Text>();
         SetFill(0f);
@@ -56,15 +56,15 @@ public class ExperienceBar : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         var defaultPos = (Vector2)AlmanacClassesPlugin._ExperienceBarPos.DefaultValue;
         var defaultScale = (float)AlmanacClassesPlugin._ExperienceBarScale.DefaultValue;
         m_instance.m_rect.position = defaultPos;
-        m_instance.SetScale(defaultScale / 100f);
+        m_instance.SetScale(defaultScale);
         
-        AlmanacClassesPlugin._PassiveBarPos.Value = defaultPos;
+        AlmanacClassesPlugin._ExperienceBarPos.Value = defaultPos;
         AlmanacClassesPlugin._ExperienceBarScale.Value = defaultScale;
     }
 
     public void SetFill(float amount) => m_fillBar.fillAmount = amount;
     public void SetText(string text) => m_text.text = text;
-    public void SetScale(float scale) => m_rect.localScale = new Vector3(scale, scale, scale);
+    public void SetScale(float scale) => m_rect.localScale = (new Vector3(scale, scale, scale) / 100f);
     public static void SetHUDVisibility(bool enable)
     {
         if (m_instance == null) return;
@@ -101,6 +101,6 @@ public class ExperienceBar : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     public static void OnExperienceBarScaleChange(object sender, EventArgs e)
     {
         if (m_instance == null) return;
-        m_instance.SetScale(AlmanacClassesPlugin._ExperienceBarScale.Value / 100f);
+        m_instance.SetScale(AlmanacClassesPlugin._ExperienceBarScale.Value);
     }
 }
