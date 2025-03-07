@@ -58,7 +58,7 @@ public class ExperienceBar : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         m_instance.m_rect.position = defaultPos;
         m_instance.SetScale(defaultScale);
         
-        AlmanacClassesPlugin._PassiveBarPos.Value = defaultPos;
+        AlmanacClassesPlugin._ExperienceBarPos.Value = defaultPos;
         AlmanacClassesPlugin._ExperienceBarScale.Value = defaultScale;
     }
 
