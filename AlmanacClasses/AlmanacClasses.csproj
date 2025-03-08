@@ -246,6 +246,7 @@
     <ItemGroup>
         <Content Include=".gitignore" />
         <EmbeddedResource Include="assets\classesbundle" />
+        <Content Include="assets\AlmanacClassesPackage.unitypackage" />
         <Content Include="environment.props" />
         <EmbeddedResource Include="Icons\monkeywrench_icon.png" />
         <EmbeddedResource Include="Icons\Classes\Warrior\SE_WarriorVitality_Transparent.png" />
