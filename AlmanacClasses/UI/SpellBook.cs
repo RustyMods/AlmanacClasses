@@ -200,9 +200,31 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
             _ => ""
         }));
     }
-    private static string AddAltKey(string input) => AlmanacClassesPlugin._SpellAlt.Value is KeyCode.None
-        ? input
-        : $"{AlmanacClassesPlugin._SpellAlt.Value} + {input}";
+
+    private static string AddAltKey(string key)
+    {
+        var spellModifier = AlmanacClassesPlugin._SpellAlt.Value;
+        if (spellModifier is KeyCode.None)
+            return key;
+
+        switch (spellModifier)
+        {
+            case KeyCode.LeftAlt:
+                return $"L.Alt + {key}";
+            case KeyCode.LeftControl:
+                return $"L.Ctrl + {key}";
+            case KeyCode.RightAlt:
+                return $"R.Alt + {key}";
+            case KeyCode.RightControl:
+                return $"R.Ctrl + {key}";
+            case KeyCode.LeftShift:
+                return $"L.Shift + {key}";
+            case KeyCode.RightShift:
+                return $"R.Shift + {key}";
+            default:
+                return $"{spellModifier} + {key}";
+        }  
+    }
 
     private static string RemoveAlpha(string input) => input.Replace("Alpha", string.Empty);
 
