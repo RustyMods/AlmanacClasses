@@ -23,7 +23,7 @@ public class ExperienceBar : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         m_instance = this;
         SetHUDVisibility(false);
         m_rect = GetComponent<RectTransform>();
-        m_rect.SetAsLastSibling();
+        m_rect.SetAsFirstSibling();
         m_rect.position = AlmanacClassesPlugin._ExperienceBarPos.Value;
 
         SetScale(AlmanacClassesPlugin._ExperienceBarScale.Value);

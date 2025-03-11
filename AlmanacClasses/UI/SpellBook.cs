@@ -27,6 +27,7 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     {
         m_instance = this;
         m_rect = GetComponent<RectTransform>();
+        m_rect.SetAsFirstSibling();
         m_rect.position = AlmanacClassesPlugin._SpellBookPos.Value;
         m_element = AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_element");
         GameObject HoverName = new GameObject("$text_title");

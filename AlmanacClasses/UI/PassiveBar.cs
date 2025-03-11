@@ -19,6 +19,7 @@ public class PassiveBar : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     {
         m_instance = this;
         m_rect = GetComponent<RectTransform>();
+        m_rect.SetAsFirstSibling();
         m_contentList = transform.Find("$part_content").GetComponent<RectTransform>();
         m_element = AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("PassiveBar_element");
         m_element.AddComponent<PassiveButton>();
