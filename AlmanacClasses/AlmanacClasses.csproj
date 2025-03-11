@@ -218,7 +218,6 @@
         <Compile Include="Patches\ButtonPatches.cs" />
         <Compile Include="Patches\CharacterPatches.cs" />
         <Compile Include="Patches\GamePatches.cs" />
-        <Compile Include="Patches\HudPatches.cs" />
         <Compile Include="Patches\InventoryGUIPatches.cs" />
         <Compile Include="Patches\MenuPatches.cs" />
         <Compile Include="Patches\ObjectDBPatches.cs" />
