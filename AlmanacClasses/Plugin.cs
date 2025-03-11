@@ -198,7 +198,7 @@ namespace AlmanacClasses
                 false);
             _HudVisible.SettingChanged += ExperienceBar.OnChangeExperienceBarVisibility;
 
-            _SpellBookPos = config("2 - Settings", "Spell Bar Position", new Vector2((1500f / 1920f) * Screen.width, (100f / 1080f) * Screen.height),
+            _SpellBookPos = config("2 - Settings", "Spell Bar Position", new Vector2((922f / 2560f) * Screen.width, (99.33f / 1440f) * Screen.height),
                 "Set the location of the spellbar", false);
             _SpellBookPos.SettingChanged += SpellBook.OnSpellBarPosChange;
 
