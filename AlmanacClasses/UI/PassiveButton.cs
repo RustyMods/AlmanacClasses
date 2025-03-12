@@ -33,14 +33,14 @@ public class PassiveButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         m_instances.Remove(this);
     }
 
-    // public void Update()
-    // {
-    //     if (!m_shouldUpdate) return;
-    //     m_timer += Time.deltaTime;
-    //     if (m_timer < 1f) return;
-    //     m_timer = 0.0f;
-    //     SetBorder(m_talent.m_passiveActive);
-    // }
+    public void Update()
+    {
+        if (!m_shouldUpdate) return;
+        m_timer += Time.deltaTime;
+        if (m_timer < 1f) return;
+        m_timer = 0.0f;
+        SetBorder(m_talent.m_passiveActive);
+    }
 
     public void SetIcon(Sprite? sprite) => m_icon.sprite = sprite;
     public void SetName(string text) => m_name.text = text;
