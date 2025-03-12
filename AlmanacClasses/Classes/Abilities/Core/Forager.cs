@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using HarmonyLib;
+using UnityEngine;
 
 namespace AlmanacClasses.Classes.Abilities.Core;
 
@@ -18,11 +19,18 @@ public static class Forager
             {
                 if (!IsForageItem(__instance.m_itemPrefab.name, talent.GetCustomForageItems())) return;
             }
+            
             var bonusChance = talent.GetForageModifier(talent.GetLevel()) - 1.0f;
-            if (ClassUtilities.RandomBoolWithWeight(bonusChance))
-            {
+            var guaranteedDrops = Mathf.FloorToInt(bonusChance);
+            var extraDropChance = bonusChance % 1;
+            
+            // In the case of for example 250% bonus drop, we have 2 guaranteed drops
+            // And 50% chance of a 3rd.
+            for (var i = 0; i < guaranteedDrops; i++)
                 __instance.Drop(__instance.m_itemPrefab, 1, __instance.m_amount);
-            }
+            
+            if (ClassUtilities.RandomBoolWithWeight(extraDropChance))
+                __instance.Drop(__instance.m_itemPrefab, 1, __instance.m_amount);
         }
     }
 
@@ -39,9 +47,8 @@ public static class Forager
             {
                 if (!IsForageItem(__instance.m_itemPrefab.name, talent.GetCustomForageItems())) return;
             }
-
             var bonusChance = (talent.GetForageModifier(talent.GetLevel()) - 1.0f) * 100.0f;
-            __result += Localization.instance.Localize($"\n[{talent.GetName()} <color=orange>{talent.GetLevel()}</color>]: <color=orange>{bonusChance}%</color> Double Drop");
+            __result += Localization.instance.Localize($"\n[{talent.GetName()} <color=orange>{talent.GetLevel()}</color>]: <color=orange>{Mathf.Round(bonusChance)}%</color> Double Drop");
         }
     }
 
