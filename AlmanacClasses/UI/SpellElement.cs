@@ -54,10 +54,7 @@ public class SpellElement : MonoBehaviour, IPointerClickHandler, IPointerEnterHa
         if (m_isMovingSpell && m_draggedSpellImage != null)
             m_draggedSpellImage.transform.position = Input.mousePosition;
 
-        if (m_isMovingSpell && m_targetSpellElement == null && Input.GetMouseButtonUp(0))
-            CancelSpellExchange();
-
-        if (m_isMovingSpell && Input.GetKeyDown(KeyCode.Escape))
+        if (m_isMovingSpell && m_targetSpellElement == null && Input.GetMouseButtonUp(0)|| m_isMovingSpell && Input.GetKeyDown(KeyCode.Escape))
             CancelSpellExchange();
     }
     
