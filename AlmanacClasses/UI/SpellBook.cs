@@ -40,6 +40,8 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
         {
             if (m_contentList.GetChild(i))
             {
+                // System works a bit differently this time around, m_index shouldn't be altered,
+                // it's pre-determined for each slot.
                 m_abilitySlots[i] = m_contentList.GetChild(i);
                 m_abilitySlots[i].gameObject.AddComponent<SpellElement>();
                 m_abilitySlots[i].gameObject.GetComponent<SpellElement>().m_index = i;
@@ -129,6 +131,15 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
         return (spellElement.m_AbilityData != null);
     }
 
+    public static bool IsAbilitySlotInUse(int slotIndex)
+    {
+        var spellElement = m_abilitySlots[slotIndex].gameObject.GetComponent<SpellElement>();
+        if (spellElement != null)
+            return (spellElement.m_AbilityData == null);
+
+        return false;
+    }
+
     private Vector3 mouseDifference = Vector3.zero;
     public void OnBeginDrag(PointerEventData eventData)
     {
@@ -207,22 +218,66 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
         ResetAllAbilitySlots();
         UpdateAbilities();
     }
-    public static bool IsAbilityInBook(Talent ability) => m_abilities.Values.Any(talent => ability == talent.m_talentData);
+    
+    public static bool IsAbilityInBook(Talent ability)
+    {
+        foreach (var abilitySlot in m_abilitySlots)
+        {
+            var spellElement = abilitySlot.Value.GetComponent<SpellElement>();
+            var abilityData = spellElement.m_AbilityData;
+            if (abilityData != null && abilityData.m_talentData == ability)
+                return true;
+        }
+
+        return false;
+    }
+
     public static void Remove(Talent ability)
     {
-        if (!IsAbilityInBook(ability)) return;
-
+        if (!IsAbilityInBook(ability))
+            return;
+        
         KeyValuePair<int, AbilityData> kvp = default;
         foreach (KeyValuePair<int, AbilityData> item in m_abilities)
         {
-            if (item.Value.m_talentData != ability) continue;
+            if (item.Value.m_talentData != ability)
+                continue;
+            
             kvp = item;
             break;
         }
-
-        if (!m_abilities.Remove(kvp.Key)) return;
+        
+        if (!m_abilities.Remove(kvp.Key))
+        {
+            AlmanacClassesPlugin.AlmanacClassesLogger.LogError($"[SpellBook::Remove] Failed to remove ability {ability.GetName()}");
+            return;
+        }
+        
+        ResetAbilitySlot(kvp.Key);
         UpdateAbilities();
     }
+
+    /// <summary>
+    /// Attempts to find a slot that is empty and can be used
+    /// </summary>
+    /// <param name="slotIndex">Index of the empty slot, -1 if none was found</param>
+    /// <returns>true if a slot was successfully found, otherwise false</returns>
+    public static bool TryFindFirstAvailableSlot(out int slotIndex)
+    {
+        slotIndex = -1;
+        
+        for (var i = 0; i <= 7; i++)
+        {
+            if (IsAbilitySlotInUse(i))
+            {
+                slotIndex = i;
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
     private static void NormalizeBook()
     {
         Dictionary<int, AbilityData> newAbilities = new Dictionary<int, AbilityData>();
@@ -257,11 +312,13 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     }
     public static void UpdateAbilities()
     {
-        if (!Player.m_localPlayer || Player.m_localPlayer.IsDead()) return;
+        if (!Player.m_localPlayer || Player.m_localPlayer.IsDead())
+            return;
         
         foreach (KeyValuePair<int, AbilityData> kvp in m_abilities)
         {
-            if (!m_abilitySlots[kvp.Key].gameObject.TryGetComponent(out SpellElement component)) continue;
+            if (!m_abilitySlots[kvp.Key].gameObject.TryGetComponent(out SpellElement component))
+                continue;
             
             Sprite? icon = kvp.Value.m_talentData.GetSprite();
             component.m_AbilityData = kvp.Value;
@@ -334,16 +391,25 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
             Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_spell_in_book");
             return false;
         }
+        
         if (m_abilities.Count > 7)
         {
             Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_spell_book_full");
             return false;
         }
+        
+        var emptySlot = TryFindFirstAvailableSlot(out var slotIndex);
+        if (emptySlot)
+        {
+            m_abilities[slotIndex] = new AbilityData(ability);
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_added_spell");
+            UpdateAbilities();
 
-        m_abilities.Add(m_abilities.Count, new AbilityData(ability));
-        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_added_spell");
-        UpdateAbilities();
-        return true;
+            return true;
+        }
+
+        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_spell_book_full");
+        return false;
     }
     public class AbilityData
     {

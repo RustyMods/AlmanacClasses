@@ -66,7 +66,9 @@ public class SpellInventory : MonoBehaviour
         {
             if (SpellBook.IsAbilityInBook(talent))
             {
-                if (!AbilityManager.IsReady(talent)) return;
+                if (!AbilityManager.IsReady(talent))
+                    return;
+                
                 SpellBook.Remove(talent);
                 element.SetBorder(false);
             }
