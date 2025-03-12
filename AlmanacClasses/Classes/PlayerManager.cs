@@ -185,7 +185,7 @@ public static class PlayerManager
     {
         foreach (KeyValuePair<int, SpellBook.AbilityData> kvp in SpellBook.m_abilities)
         {
-            m_tempPlayerData.m_spellBook[kvp.Key] = kvp.Value.m_data.m_key;
+            m_tempPlayerData.m_spellBook[kvp.Key] = kvp.Value.m_talentData.m_key;
         }
     }
 

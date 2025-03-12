@@ -16,10 +16,10 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
 {
     public static SpellBook m_instance = null!;
     public static Dictionary<int, AbilityData> m_abilities = new();
-    private static GameObject m_element = null!;
+    private static readonly Dictionary<int, Transform> m_abilitySlots = new();
     
     public RectTransform m_rect = null!;
-    public Text[] m_elementTexts = null!;
+    public List<Text> m_elementTexts = new();
     private Transform m_contentList = null!;
     private float m_timer;
     
@@ -27,23 +27,106 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     {
         m_instance = this;
         m_rect = GetComponent<RectTransform>();
+        m_rect.SetAsFirstSibling();
         m_rect.position = AlmanacClassesPlugin._SpellBookPos.Value;
-        m_element = AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_element");
-        GameObject HoverName = new GameObject("$text_title");
-        var rect = HoverName.AddComponent<RectTransform>();
-        Text text = HoverName.AddComponent<Text>();
-        text.fontSize = 25;
-        text.alignment = TextAnchor.MiddleCenter;
-        text.supportRichText = true;
-        text.horizontalOverflow = HorizontalWrapMode.Overflow;
-        text.verticalOverflow = VerticalWrapMode.Overflow;
-        text.raycastTarget = false;
-        rect.SetParent(m_element.transform.Find("$part_image/$part_image_text"));
-        rect.anchoredPosition = new Vector2(0f, 60f);
-        m_element.AddComponent<SpellElement>();
-        m_elementTexts = m_element.GetComponentsInChildren<Text>();
         m_contentList = transform.Find("$part_content");
+        SetupAbilitySlots();
         UpdateFontSize();
+    }
+
+    private void SetupAbilitySlots()
+    {
+        for (int i = 0; i <= 7; i++)
+        {
+            if (m_contentList.GetChild(i))
+            {
+                m_abilitySlots[i] = m_contentList.GetChild(i);
+                m_abilitySlots[i].gameObject.AddComponent<SpellElement>();
+                m_abilitySlots[i].gameObject.GetComponent<SpellElement>().m_index = i;
+                var elementTexts = m_abilitySlots[i].gameObject.GetComponentsInChildren<Text>();
+                m_elementTexts.AddRange(elementTexts);
+            }
+            else
+            {
+                AlmanacClassesPlugin.AlmanacClassesLogger.LogError($"Failed to find AbilitySlot {i+1}");
+            }
+        }
+    }
+
+    private void SetupAbilityFonts()
+    {
+        var currentFont = Managers.FontManager.GetFont(AlmanacClassesPlugin._Font.Value);
+        for (int i = 0; i <= 7; i++)
+        {
+            var textElements = GetAbilitySlotSpellElement(i)?.GetComponentsInChildren<Text>();
+            if (textElements != null && textElements.Length > 0)
+            {
+                foreach (var textElement in textElements)
+                {
+                    textElement.font = currentFont;
+                }
+            }
+        }
+    }
+
+    private static SpellElement? GetAbilitySlotSpellElement(int index)
+    {
+        if (m_abilitySlots.Count < 8 || index < 0 || index > 8) return null;
+        
+        return m_abilitySlots[index].gameObject.GetComponent<SpellElement>();
+    }
+
+    public static bool TryGetSpellElement(PointerEventData eventData, out SpellElement spellElement)
+    {
+        spellElement = eventData.pointerCurrentRaycast.gameObject.GetComponentInParent<SpellElement>();
+        if (spellElement)
+            return true;
+
+        return false;
+    }
+
+    public static void ResetAbilitySlot(int index)
+    {
+        var spellElement = GetAbilitySlotSpellElement(index);
+
+        if (spellElement == null) return;
+        
+        spellElement.m_AbilityData = null;
+        spellElement.m_icon.sprite = null;
+        spellElement.m_icon.enabled = false;
+        var elementTexts = m_abilitySlots[index].gameObject.GetComponentsInChildren<Text>();
+        foreach (var elementText in elementTexts)
+        {
+            elementText.text = "";
+        }
+        spellElement.SetBorder(0);
+        spellElement.SetTimer("");
+        spellElement.SetFillAmount(0);
+        spellElement.SetName("");
+    }
+
+    private static void ResetAllAbilitySlots()
+    {
+        for (int i = 0; i <= 7; i++)
+        {
+            var spellElement = GetAbilitySlotSpellElement(i);
+            if (spellElement == null) return;
+        
+            spellElement.m_AbilityData = null;
+            spellElement.m_icon.sprite = null;
+            spellElement.m_icon.enabled = false;
+            
+            var elementTexts = m_abilitySlots[i].gameObject.GetComponentsInChildren<Text>();
+            foreach (var elementText in elementTexts)
+            {
+                elementText.text = "";
+            }
+        }
+    }
+
+    public static bool IsAbilitySlotInUse(SpellElement spellElement)
+    {
+        return (spellElement.m_AbilityData != null);
     }
 
     private Vector3 mouseDifference = Vector3.zero;
@@ -55,6 +138,8 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
 
     public void OnDrag(PointerEventData eventData)
     {
+        // TODO: I feel like this may be a redundant keybind, since moving spell slots relies on IPointer, this on IDrag interfaces.
+        // left-mouse needs to be pressed down and released for a click to register, dragging won't trigger it - shouldn't cause any conflicts.
         if (!Input.GetKey(KeyCode.LeftAlt)) return; // so it follows previous system, where you need to hold L.Alt to move spell bar
         m_rect.position = Input.mousePosition + mouseDifference;
         if (SpellInfo.m_instance.IsVisible())
@@ -78,6 +163,28 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
         AlmanacClassesPlugin._MenuTooltipPosition.Value = defaultSpellInfoPos;
     }
     
+    /// <summary>
+    /// Checks if the UI is visible, if it has been moved off-screen
+    /// </summary>
+    public static bool IsVisible()
+    {
+        return m_instance.m_rect.position.x < Screen.width;
+    }
+    
+    /// <summary>
+    /// Sets 'visibility' by moving it off-screen, like Valheim does, thus it can keep ticking.
+    /// </summary>
+    public static void SetVisible(bool shouldBeVisible)
+    {
+        if (IsVisible() == shouldBeVisible)
+            return;
+        
+        if (shouldBeVisible)
+            m_instance.m_rect.position = AlmanacClassesPlugin._SpellBookPos.Value;
+        else
+            m_instance.m_rect.position = Hud.s_notVisiblePosition;
+    }
+    
     public void Update()
     {
         if (!m_instance || !Player.m_localPlayer || Minimap.IsOpen()) return;
@@ -97,9 +204,10 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     public static void ClearSpellBook()
     {
         m_abilities.Clear();
+        ResetAllAbilitySlots();
         UpdateAbilities();
     }
-    public static bool IsAbilityInBook(Talent ability) => m_abilities.Values.Any(talent => ability == talent.m_data);
+    public static bool IsAbilityInBook(Talent ability) => m_abilities.Values.Any(talent => ability == talent.m_talentData);
     public static void Remove(Talent ability)
     {
         if (!IsAbilityInBook(ability)) return;
@@ -107,13 +215,12 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
         KeyValuePair<int, AbilityData> kvp = default;
         foreach (KeyValuePair<int, AbilityData> item in m_abilities)
         {
-            if (item.Value.m_data != ability) continue;
+            if (item.Value.m_talentData != ability) continue;
             kvp = item;
             break;
         }
 
         if (!m_abilities.Remove(kvp.Key)) return;
-        NormalizeBook();
         UpdateAbilities();
     }
     private static void NormalizeBook()
@@ -151,38 +258,20 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     public static void UpdateAbilities()
     {
         if (!Player.m_localPlayer || Player.m_localPlayer.IsDead()) return;
-
-        Dictionary<int, GameObject> existingElements = GetExistingElements();
-
+        
         foreach (KeyValuePair<int, AbilityData> kvp in m_abilities)
         {
-            SpellElement component;
-            if (existingElements.TryGetValue(kvp.Key, out GameObject element))
-            {
-                if (!element.TryGetComponent(out component)) continue;
-                component.m_data = kvp.Value;
-                component.m_index = kvp.Key;
-            }
-            else
-            {
-                element = Instantiate(m_element, m_instance.m_contentList);
-                if (!element.TryGetComponent(out component)) continue;
-                component.m_data = kvp.Value;
-                component.m_index = kvp.Key;
-            }
-
-            Sprite? icon = kvp.Value.m_data.GetSprite();
+            if (!m_abilitySlots[kvp.Key].gameObject.TryGetComponent(out SpellElement component)) continue;
+            
+            Sprite? icon = kvp.Value.m_talentData.GetSprite();
+            component.m_AbilityData = kvp.Value;
             component.SetIcon(icon);
-            component.SetName($"<color=orange>{Localization.instance.Localize(kvp.Value.m_data.GetName())}</color>");
+            component.SetIconVisibility(true);
+            component.SetName($"<color=orange>{Localization.instance.Localize(kvp.Value.m_talentData.GetName())}</color>");
             component.SetHotkey(GetKeyCode(kvp.Key));
-            kvp.Value.m_go = element;
+            
+            kvp.Value.m_gameObject = m_abilitySlots[kvp.Key].gameObject;
             kvp.Value.Update();
-        }
-
-        foreach (int key in existingElements.Keys)
-        {
-            if (m_abilities.ContainsKey(key)) continue;
-            Destroy(existingElements[key]);
         }
     }
     private static string GetKeyCode(int index)
@@ -200,9 +289,31 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
             _ => ""
         }));
     }
-    private static string AddAltKey(string input) => AlmanacClassesPlugin._SpellAlt.Value is KeyCode.None
-        ? input
-        : $"{AlmanacClassesPlugin._SpellAlt.Value} + {input}";
+
+    private static string AddAltKey(string key)
+    {
+        var spellModifier = AlmanacClassesPlugin._SpellAlt.Value;
+        if (spellModifier is KeyCode.None)
+            return key;
+
+        switch (spellModifier)
+        {
+            case KeyCode.LeftAlt:
+                return $"L.Alt + {key}";
+            case KeyCode.LeftControl:
+                return $"L.Ctrl + {key}";
+            case KeyCode.RightAlt:
+                return $"R.Alt + {key}";
+            case KeyCode.RightControl:
+                return $"R.Ctrl + {key}";
+            case KeyCode.LeftShift:
+                return $"L.Shift + {key}";
+            case KeyCode.RightShift:
+                return $"R.Shift + {key}";
+            default:
+                return $"{spellModifier} + {key}";
+        }  
+    }
 
     private static string RemoveAlpha(string input) => input.Replace("Alpha", string.Empty);
 
@@ -236,19 +347,19 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     }
     public class AbilityData
     {
-        public readonly Talent m_data;
-        public GameObject? m_go;
+        public readonly Talent m_talentData;
+        public GameObject? m_gameObject;
 
         public void Update()
         {
             if (!Player.m_localPlayer) return;
             try
             {
-                if (m_go is null) return;
-                if (!m_go.TryGetComponent(out SpellElement component)) return;
-                if (AbilityManager.m_cooldownMap.TryGetValue(m_data.m_key, out float ratio))
+                if (m_gameObject is null) return;
+                if (!m_gameObject.TryGetComponent(out SpellElement component)) return;
+                if (AbilityManager.m_cooldownMap.TryGetValue(m_talentData.m_key, out float ratio))
                 {
-                    if (m_data.m_status is not { } status)
+                    if (m_talentData.m_status is not { } status)
                     {
                         component.SetBorder(0f);
                     }
@@ -267,19 +378,21 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
                         }
                     }
 
-                    int cooldownTime = (int)(m_data.GetCooldown(m_data.GetLevel()) * ratio);
-                    component.SetTimer(GetCooldownColored(cooldownTime));
+                    int cooldownTime = (int)(m_talentData.GetCooldown(m_talentData.GetLevel()) * ratio);
+                    //component.SetTimer(GetCooldownColored(cooldownTime));
                     component.SetFillAmount(ratio);
                     if (cooldownTime <= 0)
                     {
-                        component.SetTimer(Localization.instance.Localize("$info_ready"));
+                        //component.SetTimer("");
+                        //component.SetTimer(Localization.instance.Localize("$info_ready"));
                     }
                 }
                 else
                 {
                     component.SetBorder(0f);
                     component.SetFillAmount(0f);
-                    component.SetTimer(Localization.instance.Localize("$info_ready"));
+                    //component.SetTimer(Localization.instance.Localize("$info_ready"));
+                    //component.SetTimer("");
                 }
             }
             catch
@@ -289,7 +402,7 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
         }
         public AbilityData(Talent talent)
         {
-            m_data = talent;
+            m_talentData = talent;
             talent.m_abilityData = this;
         }
     }

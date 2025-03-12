@@ -16,8 +16,8 @@ public static class TextsDialoguePatches
             StringBuilder stringBuilder = new StringBuilder();
             foreach (var talent in SpellBook.m_abilities.Values)
             {
-                stringBuilder.Append($"<color=orange>{talent.m_data.GetName()}</color>\n");
-                stringBuilder.Append(talent.m_data.GetTooltip());
+                stringBuilder.Append($"<color=orange>{talent.m_talentData.GetName()}</color>\n");
+                stringBuilder.Append(talent.m_talentData.GetTooltip());
                 stringBuilder.Append("\n");
             }
             TextsDialog.TextInfo text = new TextsDialog.TextInfo("$title_spell_book", Localization.instance.Localize(stringBuilder.ToString()));

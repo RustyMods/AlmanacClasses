@@ -39,49 +39,49 @@ public static class AbilityManager
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell1.Value))
         {
             if (!SpellBook.m_abilities.TryGetValue(0, out SpellBook.AbilityData ability)) return;
-            CastTalent(ability.m_data);
+            CastTalent(ability.m_talentData);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell2.Value))
         {
             if (!SpellBook.m_abilities.TryGetValue(1, out SpellBook.AbilityData ability)) return;
-            CastTalent(ability.m_data);
+            CastTalent(ability.m_talentData);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell3.Value))
         {
             if (!SpellBook.m_abilities.TryGetValue(2, out SpellBook.AbilityData ability)) return;
-            CastTalent(ability.m_data);
+            CastTalent(ability.m_talentData);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell4.Value))
         {
             if (!SpellBook.m_abilities.TryGetValue(3, out SpellBook.AbilityData ability)) return;
-            CastTalent(ability.m_data);
+            CastTalent(ability.m_talentData);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell5.Value))
         {
             if (!SpellBook.m_abilities.TryGetValue(4, out SpellBook.AbilityData ability)) return;
-            CastTalent(ability.m_data);
+            CastTalent(ability.m_talentData);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell6.Value))
         {
             if (!SpellBook.m_abilities.TryGetValue(5, out SpellBook.AbilityData ability)) return;
-            CastTalent(ability.m_data);
+            CastTalent(ability.m_talentData);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell7.Value))
         {
             if (!SpellBook.m_abilities.TryGetValue(6, out SpellBook.AbilityData ability)) return;
-            CastTalent(ability.m_data);
+            CastTalent(ability.m_talentData);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell8.Value))
         {
             if (!SpellBook.m_abilities.TryGetValue(7, out SpellBook.AbilityData ability)) return;
-            CastTalent(ability.m_data);
+            CastTalent(ability.m_talentData);
         }
     }
     private static void CastTalent(Talent ability)
