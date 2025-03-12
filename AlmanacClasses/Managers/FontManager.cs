@@ -33,7 +33,7 @@ public static class FontManager
         _ => "AveriaSerifLibre-Regular"
     };
 
-    public static Font? GetFont(FontOptions option)
+    private static Font? GetFont(FontOptions option)
     {
         if (m_fonts.TryGetValue(option, out Font? font)) return font;
         Font[]? fonts = Resources.FindObjectsOfTypeAll<Font>();

@@ -258,7 +258,7 @@ public class SkillTree : MonoBehaviour
     
     private static void OnReset()
     {
-        if (!Player.m_localPlayer.m_noPlacementCost || !(Player.m_localPlayer.GetInventory().CountItems("$item_coins") < AlmanacClassesPlugin._ResetCost.Value))
+        if (Player.m_localPlayer.GetInventory().CountItems("$item_coins") < AlmanacClassesPlugin._ResetCost.Value)
         {
             Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"$text_cost {AlmanacClassesPlugin._ResetCost.Value} $item_coins $text_to_reset");
             return;

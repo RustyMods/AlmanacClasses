@@ -9,9 +9,6 @@ namespace AlmanacClasses.UI;
 
 public static class LoadUI
 {
-    private static bool m_hudInitialized;
-    public static UIManager? UIManager;
-    
     [Header("Assets")]
     public static ButtonSfx m_vanillaButtonSFX = null!;
     public static Button m_vanillaButton = null!;
@@ -159,25 +156,17 @@ public static class LoadUI
     };
     public static void InitHud(Hud instance)
     {
-        if (m_hudInitialized)
-            return;
-        
         AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Initializing HUD");
         Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("Experience_Bar"), instance.transform, false).AddComponent<ExperienceBar>().Init();
-        Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_UI"), instance.transform, false).AddComponent<SpellBook>().Init();
-        Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("PassiveBar_UI"), instance.transform, false).AddComponent<PassiveBar>().Init();
+        Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_UI"), Hud.instance.transform, false).AddComponent<SpellBook>().Init();
+        Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("PassiveBar_UI"), Hud.instance.transform, false).AddComponent<PassiveBar>().Init();
         Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("ElementHover_UI"), instance.transform, false).AddComponent<SpellInfo>().Init();
         
         FontManager.SetFont(ExperienceBar.m_instance.m_texts);
-        FontManager.SetFont(SpellBook.m_instance.m_elementTexts.ToArray());
+        FontManager.SetFont(SpellBook.m_instance.m_elementTexts);
         FontManager.SetFont(PassiveBar.m_element.GetComponentsInChildren<Text>());
         FontManager.SetFont(SpellInfo.m_instance.m_texts);
         SpellBook.m_instance.UpdateFontSize();
-
-        UIManager = new GameObject("UIManager").AddComponent<UIManager>();
-        UIManager.Initialize(SpellBook.m_instance, PassiveBar.m_instance, ExperienceBar.m_instance, SpellInfo.m_instance);
-        
-        m_hudInitialized = true;
     }
     public static void InitSkillTree(InventoryGui instance)
     {

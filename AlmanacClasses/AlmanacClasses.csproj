@@ -127,9 +127,6 @@
         <Reference Include="UnityEngine.UI">
             <HintPath>$(CorlibPath)\UnityEngine.UI.dll</HintPath>
         </Reference>
-        <Reference Include="UnityEngine.UIModule">
-            <HintPath>$(CorlibPath)\UnityEngine.UIModule.dll</HintPath>
-        </Reference>
         <Reference Include="Unity.TextMeshPro">
             <HintPath>$(GamePath)\valheim_Data\Managed\Unity.TextMeshPro.dll</HintPath>
         </Reference>
@@ -218,11 +215,11 @@
         <Compile Include="Patches\ButtonPatches.cs" />
         <Compile Include="Patches\CharacterPatches.cs" />
         <Compile Include="Patches\GamePatches.cs" />
+        <Compile Include="Patches\HudPatches.cs" />
         <Compile Include="Patches\InventoryGUIPatches.cs" />
         <Compile Include="Patches\MenuPatches.cs" />
         <Compile Include="Patches\ObjectDBPatches.cs" />
         <Compile Include="Patches\PlayerControllerPatches.cs" />
-        <Compile Include="Patches\PlayerPatches.cs" />
         <Compile Include="Patches\StoreGUIPatches.cs" />
         <Compile Include="Patches\TextsDialoguePatches.cs" />
         <Compile Include="Plugin.cs" />
@@ -244,7 +241,6 @@
         <Compile Include="UI\SpellInventory.cs" />
         <Compile Include="UI\TalentBook.cs" />
         <Compile Include="UI\TalentButton.cs" />
-        <Compile Include="UI\UIManager.cs" />
         <Compile Include="VersionHandshake.cs" />
     </ItemGroup>
     <ItemGroup>

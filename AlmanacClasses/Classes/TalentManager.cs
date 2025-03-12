@@ -56,7 +56,6 @@ public static class TalentManager
     {
         MonkeyWrench.ResetTwoHandedWeapons();
         SpellBook.m_abilities.Clear();
-        SpellBook.ClearSpellBook();
         SpellInventory.m_instance.Clear();
         RemoveStatusEffects();
         TalentButton.ClearAll();
