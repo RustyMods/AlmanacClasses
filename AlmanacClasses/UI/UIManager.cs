@@ -13,6 +13,33 @@ public class UIManager : MonoBehaviour
     public PassiveBar? PassiveBar;
     public ExperienceBar? ExperienceBar;
     public SpellInfo? SpellInfoPanel;
+    
+    public enum RichTextColor
+    {
+        None = 0,
+        Aqua,
+        Black,
+        Blue,
+        Brown,
+        Cyan,
+        DarkBlue,
+        Fuchsia,
+        Green,
+        Grey,
+        LightBlue,
+        Lime,
+        Magenta,
+        Maroon,
+        Navy,
+        Olive,
+        Orange,
+        Purple,
+        Red,
+        Silver,
+        Teal,
+        White,
+        Yellow
+    }
 
     private void Awake()
     {

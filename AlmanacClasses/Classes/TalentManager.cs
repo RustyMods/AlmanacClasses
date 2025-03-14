@@ -75,6 +75,18 @@ public static class TalentManager
     {
         foreach (KeyValuePair<string, Talent> kvp in m_talents) kvp.Value.SetLevel(1);
     }
+
+    public static string GetLocalizedTalentName(Talent talent, UIManager.RichTextColor  color = UIManager.RichTextColor.None)
+    {
+        if (Localization.instance == null) return "N/A";
+
+        var talentName = Localization.instance.Localize(talent.GetName());
+        if (color == UIManager.RichTextColor.None)
+            return talentName;
+
+        return $"<color={color.ToString().ToLower()}>{talentName}</color>";
+        
+    }
     
     private static void RemoveStatusEffects()
     {

@@ -319,11 +319,12 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
             if (!m_abilitySlots[kvp.Key].gameObject.TryGetComponent(out SpellElement component))
                 continue;
             
-            Sprite? icon = kvp.Value.m_talentData.GetSprite();
+            var talent = kvp.Value.m_talentData;
+            Sprite? icon = talent.GetSprite();
             component.m_AbilityData = kvp.Value;
             component.SetIcon(icon);
             component.SetIconVisibility(true);
-            component.SetName($"<color=orange>{Localization.instance.Localize(kvp.Value.m_talentData.GetName())}</color>");
+            component.SetName(TalentManager.GetLocalizedTalentName(talent));
             component.SetHotkey(GetKeyCode(kvp.Key));
             
             kvp.Value.m_gameObject = m_abilitySlots[kvp.Key].gameObject;
