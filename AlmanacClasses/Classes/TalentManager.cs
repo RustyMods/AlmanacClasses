@@ -55,7 +55,8 @@ public static class TalentManager
     public static void ResetTalents(bool command = false)
     {
         MonkeyWrench.ResetTwoHandedWeapons();
-        SpellBook.m_abilities.Clear();
+        // SpellBook.m_abilities.Clear();
+        SpellBook.ClearSpellBook();
         SpellInventory.m_instance.Clear();
         RemoveStatusEffects();
         TalentButton.ClearAll();
@@ -359,12 +360,7 @@ public static class TalentManager
         Talent trader = new Talent("Trader", "$button_sail", TalentType.Passive);
         trader.m_cost = _Plugin.config("Core - Trader", "Purchase Cost", 5, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         trader.m_cap = _Plugin.config("Core - Trader", "Prestige Cap", 5, new ConfigDescription("Set the prestige cap", new AcceptableValueRange<int>(1, 101)));
-        trader.m_addToPassiveBar = true;
-        trader.m_onClickPassive = () =>
-        {
-            trader.m_passiveActive = !trader.m_passiveActive;
-            return true;
-        };
+        
         Talent forager = new Talent("Forager", "$button_treasure", TalentType.Passive);
         forager.m_cost = _Plugin.config("Core - Forager", "Purchase Cost", 3, new ConfigDescription("Set the cost to unlock the talent", new AcceptableValueRange<int>(1, 10)));
         forager.m_values = new Talent.TalentValues()

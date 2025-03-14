@@ -44,7 +44,7 @@ public class Talent
     public Func<bool>? m_onClickPassive;
     public bool m_addToPassiveBar;
     private readonly int? m_characteristic;
-    public SpellBook.AbilityData? m_abilityData;
+    // public SpellBook.AbilityData? m_abilityData;
     public Action? m_onPurchase;
     public Func<string>? m_tooltip;
     public Func<string>? m_prestigeTooltip;

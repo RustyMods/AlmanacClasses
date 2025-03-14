@@ -11,8 +11,11 @@ public static class MenuPatches
     {
         private static void Postfix()
         {
-            SpellInfo.m_instance.Hide();
-            PassiveBar.m_instance.Hide();
+            if (SpellInfo.m_instance != null)
+                SpellInfo.m_instance.Hide();
+            
+            if (PassiveBar.m_instance != null)
+                PassiveBar.m_instance.Hide();
         }
     }
 
@@ -21,7 +24,8 @@ public static class MenuPatches
     {
         private static void Postfix()
         {
-            PassiveBar.m_instance.Show();
+            if (PassiveBar.m_instance != null)
+                PassiveBar.m_instance.Show();
         }
     }
 }

@@ -220,6 +220,7 @@
         <Compile Include="Patches\MenuPatches.cs" />
         <Compile Include="Patches\ObjectDBPatches.cs" />
         <Compile Include="Patches\PlayerControllerPatches.cs" />
+        <Compile Include="Patches\PlayerPatches.cs" />
         <Compile Include="Patches\StoreGUIPatches.cs" />
         <Compile Include="Patches\TextsDialoguePatches.cs" />
         <Compile Include="Plugin.cs" />
@@ -235,18 +236,19 @@
         <Compile Include="UI\PassiveButton.cs" />
         <Compile Include="UI\Prestige.cs" />
         <Compile Include="UI\SkillTree.cs" />
-        <Compile Include="UI\SpellElement.cs" />
-        <Compile Include="UI\SpellInfo.cs" />
         <Compile Include="UI\SpellBook.cs" />
+        <Compile Include="UI\SpellInfo.cs" />
         <Compile Include="UI\SpellInventory.cs" />
+        <Compile Include="UI\SpellSlot.cs" />
         <Compile Include="UI\TalentBook.cs" />
         <Compile Include="UI\TalentButton.cs" />
+        <Compile Include="UI\UIManager.cs" />
         <Compile Include="VersionHandshake.cs" />
     </ItemGroup>
     <ItemGroup>
         <Content Include=".gitignore" />
-        <EmbeddedResource Include="assets\classesbundle" />
         <Content Include="assets\AlmanacClassesPackage.unitypackage" />
+        <EmbeddedResource Include="assets\classesbundle" />
         <Content Include="environment.props" />
         <EmbeddedResource Include="Icons\monkeywrench_icon.png" />
         <EmbeddedResource Include="Icons\Classes\Warrior\SE_WarriorVitality_Transparent.png" />
