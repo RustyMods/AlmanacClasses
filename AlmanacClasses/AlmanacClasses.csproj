@@ -127,9 +127,6 @@
         <Reference Include="UnityEngine.UI">
             <HintPath>$(CorlibPath)\UnityEngine.UI.dll</HintPath>
         </Reference>
-        <Reference Include="UnityEngine.UIModule">
-            <HintPath>$(CorlibPath)\UnityEngine.UIModule.dll</HintPath>
-        </Reference>
         <Reference Include="Unity.TextMeshPro">
             <HintPath>$(GamePath)\valheim_Data\Managed\Unity.TextMeshPro.dll</HintPath>
         </Reference>
@@ -218,6 +215,7 @@
         <Compile Include="Patches\ButtonPatches.cs" />
         <Compile Include="Patches\CharacterPatches.cs" />
         <Compile Include="Patches\GamePatches.cs" />
+        <Compile Include="Patches\HudPatches.cs" />
         <Compile Include="Patches\InventoryGUIPatches.cs" />
         <Compile Include="Patches\MenuPatches.cs" />
         <Compile Include="Patches\ObjectDBPatches.cs" />
@@ -238,10 +236,10 @@
         <Compile Include="UI\PassiveButton.cs" />
         <Compile Include="UI\Prestige.cs" />
         <Compile Include="UI\SkillTree.cs" />
-        <Compile Include="UI\SpellElement.cs" />
-        <Compile Include="UI\SpellInfo.cs" />
         <Compile Include="UI\SpellBook.cs" />
+        <Compile Include="UI\SpellInfo.cs" />
         <Compile Include="UI\SpellInventory.cs" />
+        <Compile Include="UI\SpellSlot.cs" />
         <Compile Include="UI\TalentBook.cs" />
         <Compile Include="UI\TalentButton.cs" />
         <Compile Include="UI\UIManager.cs" />
@@ -249,8 +247,8 @@
     </ItemGroup>
     <ItemGroup>
         <Content Include=".gitignore" />
-        <EmbeddedResource Include="assets\classesbundle" />
         <Content Include="assets\AlmanacClassesPackage.unitypackage" />
+        <EmbeddedResource Include="assets\classesbundle" />
         <Content Include="environment.props" />
         <EmbeddedResource Include="Icons\monkeywrench_icon.png" />
         <EmbeddedResource Include="Icons\Classes\Warrior\SE_WarriorVitality_Transparent.png" />

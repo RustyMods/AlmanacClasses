@@ -152,8 +152,11 @@ public static class PlayerManager
         {
             if (!TalentManager.m_talents.TryGetValue(kvp.Value, out Talent match)) continue;
             if (match == null) continue;
-            SpellBook.m_abilities[kvp.Key] = new SpellBook.AbilityData(match);
-            SpellBook.UpdateAbilities();
+            if (SpellBook.IsAbilityInBook(match)) continue;
+            if (SpellBook.m_slots.TryGetValue(kvp.Key, out SpellSlot slot))
+            {
+                slot.SetAbility(match);
+            }
         }
     }
 
@@ -184,9 +187,10 @@ public static class PlayerManager
     }
     private static void SaveSpellBook()
     {
-        foreach (KeyValuePair<int, SpellBook.AbilityData> kvp in SpellBook.m_abilities)
+        foreach (var slot in SpellBook.m_slots.Values)
         {
-            m_tempPlayerData.m_spellBook[kvp.Key] = kvp.Value.m_talentData.m_key;
+            if (slot.m_talent is null) continue;
+            m_tempPlayerData.m_spellBook[slot.m_index] = slot.m_talent.m_key;
         }
     }
 

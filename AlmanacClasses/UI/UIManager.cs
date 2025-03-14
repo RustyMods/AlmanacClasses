@@ -48,7 +48,7 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
-        if (Player.m_localPlayer == null || Hud.m_instance == null)
+        if (!Player.m_localPlayer || !Hud.m_instance)
             return;
         
         if (Player.m_localPlayer.InCutscene() || Hud.m_instance.m_userHidden)
@@ -79,7 +79,7 @@ public class UIManager : MonoBehaviour
 
     public void SetVisible(bool shouldBeVisible)
     {
-        if (!m_isInitialized || SpellBook == null || PassiveBar == null || ExperienceBar == null|| SpellInfoPanel == null)
+        if (!m_isInitialized || !SpellBook || !PassiveBar || !ExperienceBar|| !SpellInfoPanel)
             return;
         
         if (IsVisible() == shouldBeVisible)

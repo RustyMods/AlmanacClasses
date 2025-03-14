@@ -14,10 +14,11 @@ public static class TextsDialoguePatches
         {
             if (!Player.m_localPlayer) return;
             StringBuilder stringBuilder = new StringBuilder();
-            foreach (var talent in SpellBook.m_abilities.Values)
+            foreach (var talent in SpellBook.m_slots.Values)
             {
-                stringBuilder.Append($"<color=orange>{talent.m_talentData.GetName()}</color>\n");
-                stringBuilder.Append(talent.m_talentData.GetTooltip());
+                if (talent.m_talent is null) continue;
+                stringBuilder.Append($"<color=orange>{talent.m_talent.GetName()}</color>\n");
+                stringBuilder.Append(talent.m_talent.GetTooltip());
                 stringBuilder.Append("\n");
             }
             TextsDialog.TextInfo text = new TextsDialog.TextInfo("$title_spell_book", Localization.instance.Localize(stringBuilder.ToString()));

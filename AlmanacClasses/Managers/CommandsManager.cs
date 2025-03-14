@@ -38,7 +38,8 @@ public static class CommandsManager
                 PlayerManager.m_playerTalents.Clear();
                 CharacteristicManager.ResetCharacteristics();
                 SpellBook.ClearSpellBook();
-                SpellBook.m_abilities.Clear();
+                
+                // SpellBook.m_abilities.Clear();
                 TalentManager.ResetTalents(true);
                 ExperienceBar.UpdateExperienceBar();
                 TalentManager.Init();
