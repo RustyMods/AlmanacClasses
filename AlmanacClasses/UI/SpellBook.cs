@@ -43,10 +43,9 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
                 // System works a bit differently this time around, m_index shouldn't be altered,
                 // it's pre-determined for each slot.
                 m_abilitySlots[i] = m_contentList.GetChild(i);
-                m_abilitySlots[i].gameObject.AddComponent<SpellElement>();
+                var spellElement = m_abilitySlots[i].gameObject.AddComponent<SpellElement>();
                 m_abilitySlots[i].gameObject.GetComponent<SpellElement>().m_index = i;
-                var elementTexts = m_abilitySlots[i].gameObject.GetComponentsInChildren<Text>();
-                m_elementTexts.AddRange(elementTexts);
+                m_elementTexts.AddRange(spellElement.m_texts);
             }
             else
             {
