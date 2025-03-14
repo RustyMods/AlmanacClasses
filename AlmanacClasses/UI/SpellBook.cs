@@ -211,7 +211,6 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
         if (TryFindAvailableSlot() is { } slot)
         {
             slot.SetAbility(ability);
-            m_slots[slot.m_index] = slot;
             Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_added_spell");
             return true;
         }
