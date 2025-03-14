@@ -19,6 +19,7 @@ using UnityEngine.Rendering;
 namespace AlmanacClasses
 {
     [BepInPlugin(ModGUID, ModName, ModVersion)]
+    [BepInIncompatibility("BepIn.Sarcen.FarmGrid")]
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
