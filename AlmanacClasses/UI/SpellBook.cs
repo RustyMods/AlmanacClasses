@@ -36,7 +36,7 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
 
     private void SetupAbilitySlots()
     {
-        for (int i = 0; i <= 7; i++)
+        for (var i = 0; i <= 7; i++)
         {
             if (m_contentList.GetChild(i))
             {
@@ -44,11 +44,13 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
                 // it's pre-determined for each slot.
                 m_abilitySlots[i] = m_contentList.GetChild(i);
                 var spellElement = m_abilitySlots[i].gameObject.AddComponent<SpellElement>();
-                m_abilitySlots[i].gameObject.GetComponent<SpellElement>().m_index = i;
+                spellElement.name = $"$SpellElement_{i}";
+                spellElement.m_index = i;
                 m_elementTexts.AddRange(spellElement.m_texts);
             }
             else
             {
+                // TODO: In the unitypackage, the slots start with 1 - should change this to follow 0-based indexing...
                 AlmanacClassesPlugin.AlmanacClassesLogger.LogError($"Failed to find AbilitySlot {i+1}");
             }
         }
@@ -72,7 +74,7 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
 
     private static SpellElement? GetAbilitySlotSpellElement(int index)
     {
-        if (m_abilitySlots.Count < 8 || index < 0 || index > 8) return null;
+        if (index < 0 || index > m_abilitySlots.Count) return null;
         
         return m_abilitySlots[index].gameObject.GetComponent<SpellElement>();
     }
@@ -222,10 +224,13 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     {
         foreach (var abilitySlot in m_abilitySlots)
         {
-            var spellElement = abilitySlot.Value.GetComponent<SpellElement>();
-            var abilityData = spellElement.m_AbilityData;
-            if (abilityData != null && abilityData.m_talentData == ability)
-                return true;
+            var spellElement = GetAbilitySlotSpellElement(abilitySlot.Key);
+            var abilityData = spellElement?.m_AbilityData;
+
+            if (abilityData == null || !ability.Equals(abilityData.m_talentData))
+                continue;
+            
+            return true;
         }
 
         return false;
@@ -311,21 +316,22 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     }
     public static void UpdateAbilities()
     {
-        if (!Player.m_localPlayer || Player.m_localPlayer.IsDead())
+        if (!Player.m_localPlayer || Player.m_localPlayer.IsDead() || m_abilities.Count <= 0)
             return;
         
         foreach (KeyValuePair<int, AbilityData> kvp in m_abilities)
         {
-            if (!m_abilitySlots[kvp.Key].gameObject.TryGetComponent(out SpellElement component))
+            var spellElement = GetAbilitySlotSpellElement(kvp.Key);
+            if (spellElement == null)
                 continue;
             
             var talent = kvp.Value.m_talentData;
             Sprite? icon = talent.GetSprite();
-            component.m_AbilityData = kvp.Value;
-            component.SetIcon(icon);
-            component.SetIconVisibility(true);
-            component.SetName(TalentManager.GetLocalizedTalentName(talent));
-            component.SetHotkey(GetKeyCode(kvp.Key));
+            spellElement.m_AbilityData = kvp.Value;
+            spellElement.SetIcon(icon);
+            spellElement.SetIconVisibility(true);
+            spellElement.SetName(TalentManager.GetLocalizedTalentName(talent));
+            spellElement.SetHotkey(GetKeyCode(kvp.Key));
             
             kvp.Value.m_gameObject = m_abilitySlots[kvp.Key].gameObject;
             kvp.Value.Update();
