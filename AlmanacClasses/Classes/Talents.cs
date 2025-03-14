@@ -48,6 +48,20 @@ public class Talent
     public Action? m_onPurchase;
     public Func<string>? m_tooltip;
     public Func<string>? m_prestigeTooltip;
+
+    public override int GetHashCode()
+    {
+        return m_key.GetHashCode();
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is not Talent otherTalent)
+            return false;
+        
+        return (otherTalent.m_key == m_key);
+    }
+
     public string GetAnimation() => m_useAnimation?.Value is Toggle.On ? m_animation : "";
     public List<string> GetCustomForageItems()
     {
