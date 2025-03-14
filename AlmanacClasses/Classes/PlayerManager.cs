@@ -153,6 +153,7 @@ public static class PlayerManager
             if (!TalentManager.m_talents.TryGetValue(kvp.Value, out Talent match)) continue;
             if (match == null) continue;
             SpellBook.m_abilities[kvp.Key] = new SpellBook.AbilityData(match);
+            SpellBook.UpdateAbilities();
         }
     }
 
