@@ -9,9 +9,6 @@ namespace AlmanacClasses.UI;
 
 public class SpellSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
-    // TODO: This is barely used, set font during Awake() instead?
-    // public static readonly List<SpellSlot> m_instances = new();
-
     public static GameObject? m_draggedSpellImage = null;
     public static SpellSlot? m_selectedSlot = null;
     public static bool m_hoveringSlot;
@@ -38,11 +35,10 @@ public class SpellSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
         m_gray = Utils.FindChild(transform, "$image_gray").GetComponent<Image>();
         m_fill = Utils.FindChild(transform, "$image_fill").GetComponent<Image>();
         m_timer = Utils.FindChild(transform, "$text_timer").GetComponent<Text>();
-        m_timer.transform.position += new Vector3(0f, -1f);
+        m_timer.transform.position += new Vector3(0f, -15f);
         m_title = Utils.FindChild(transform, "$text_title").GetComponent<Text>();
         m_texts = GetComponentsInChildren<Text>();
         HideName();
-        // m_instances.Add(this);
     }
     
     public void Update()
@@ -77,7 +73,6 @@ public class SpellSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
                 SetFillAmount(ratio);
                 if (cooldownTime <= 0)
                 {
-                    SetTimer("");
                     SetTimer(Localization.instance.Localize("$info_ready"));
                 }
             }

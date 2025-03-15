@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using AlmanacClasses.Classes;
 using HarmonyLib;
@@ -29,7 +30,6 @@ public static class ClassesAPI
     public static int GetStrength() => GetCharacteristic("Strength");
     public static int GetIntelligence() => GetCharacteristic("Intelligence");
     public static int GetWisdom() => GetCharacteristic("Wisdom");
-
     static ClassesAPI()
     {
         if (Type.GetType("AlmanacClasses.API.API, AlmanacClasses") is not { } api)
@@ -61,7 +61,7 @@ public static class API
             _ => 0
         };
     }
-    
+
     // Another way to add experience is to call Player.m_localPlayer.Message(..., "Added 10 experience")
     [HarmonyPatch(typeof(Player), nameof(Player.Message))]
     private static class Player_Message_Patch
