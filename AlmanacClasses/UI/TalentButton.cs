@@ -213,8 +213,22 @@ public class TalentButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         SkillTree.m_instance.SetSelectedDescription(talent.GetTooltip());
         SkillTree.m_instance.SetSelectedCost($"$almanac_cost: <color=orange>{talent.GetCost()}</color>");
         SkillTree.m_instance.SetSelectedType(talent.GetTalentType());
+        if (m_icon is { } icon && m_checkmarkIcon is { } checkmark)
+        {
+            icon.rectTransform.localScale /= 1.15f;
+            checkmark.rectTransform.localScale /= 1.15f;
+        }
     }
 
-    public void OnPointerExit(PointerEventData eventData) => SkillTree.m_instance.SetDefaultTooltip();
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        SkillTree.m_instance.SetDefaultTooltip();
+        if (name == "$button_center") return;
+        if (m_icon is { } icon && m_checkmarkIcon is { } checkmark)
+        {
+            icon.rectTransform.localScale *= 1.15f;
+            checkmark.rectTransform.localScale *= 1.15f;
+        }
+    }
     
 }

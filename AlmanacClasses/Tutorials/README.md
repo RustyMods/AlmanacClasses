@@ -11,6 +11,7 @@ Still in development, please report bugs and issues to me at OdinPlus while I ke
 ## 0.5.9 update patch notes
 <details closed>
 
+
 ```
 Alternative talents:
 - Chain Shot [enable in configs, replaces Hunter]
@@ -59,6 +60,10 @@ Altar changes:
 ```
 
 </details>
+
+## MarketplaceNPC
+
+Marketplace NPC exp key: RustyClasses_EXP
 
 ## Highlights
 <details closed>

@@ -157,16 +157,15 @@ public static class LoadUI
         { "$button_rogue_talent_5", new(){"$button_rogue_1", "$button_rogue_2", "$button_rogue_talent_2"}},
         { "$button_warrior_talent_5", new(){"$button_warrior_1", "$button_warrior_2", "$button_warrior_talent_2"}},
     };
-    public static void InitHud(Hud instance)
+    public static void InitHud()
     {
-        if (m_hudInitialized)
-            return;
+        if (m_hudInitialized || !Hud.instance) return;
         
         AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Initializing HUD");
-        Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("Experience_Bar"), instance.transform, false).AddComponent<ExperienceBar>().Init();
-        Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_UI"), instance.transform, false).AddComponent<SpellBook>().Init();
-        Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("PassiveBar_UI"), instance.transform, false).AddComponent<PassiveBar>().Init();
-        Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("ElementHover_UI"), instance.transform, false).AddComponent<SpellInfo>().Init();
+        Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("Experience_Bar"), Hud.instance.transform, false).AddComponent<ExperienceBar>().Init();
+        Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("SpellBar_UI"), Hud.instance.transform, false).AddComponent<SpellBook>().Init();
+        Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("PassiveBar_UI"), Hud.instance.transform, false).AddComponent<PassiveBar>().Init();
+        Object.Instantiate(AlmanacClassesPlugin._AssetBundle.LoadAsset<GameObject>("ElementHover_UI"), Hud.instance.transform, false).AddComponent<SpellInfo>().Init();
         
         FontManager.SetFont(ExperienceBar.m_instance.m_texts);
         FontManager.SetFont(SpellBook.m_instance.m_elementTexts.ToArray());

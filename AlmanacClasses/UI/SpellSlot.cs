@@ -26,9 +26,10 @@ public class SpellSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
     public Talent? m_talent;
     public int m_index;
     private bool m_updating;
-
+    public bool m_loaded;
     public void Awake()
     {
+        if (m_loaded) return;
         m_rect = GetComponent<RectTransform>();
         m_icon = Utils.FindChild(transform, "$image_icon").GetComponent<Image>();
         m_hotkey = Utils.FindChild(transform, "$text_hotkey").GetComponent<Text>();
@@ -39,6 +40,23 @@ public class SpellSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
         m_title = Utils.FindChild(transform, "$text_title").GetComponent<Text>();
         m_texts = GetComponentsInChildren<Text>();
         HideName();
+        m_loaded = true;
+    }
+
+    public void Init()
+    {
+        if (m_loaded) return;
+        m_rect = GetComponent<RectTransform>();
+        m_icon = Utils.FindChild(transform, "$image_icon").GetComponent<Image>();
+        m_hotkey = Utils.FindChild(transform, "$text_hotkey").GetComponent<Text>();
+        m_gray = Utils.FindChild(transform, "$image_gray").GetComponent<Image>();
+        m_fill = Utils.FindChild(transform, "$image_fill").GetComponent<Image>();
+        m_timer = Utils.FindChild(transform, "$text_timer").GetComponent<Text>();
+        m_timer.transform.position += new Vector3(0f, -15f);
+        m_title = Utils.FindChild(transform, "$text_title").GetComponent<Text>();
+        m_texts = GetComponentsInChildren<Text>();
+        HideName();
+        m_loaded = true;
     }
     
     public void Update()
@@ -154,6 +172,7 @@ public class SpellSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
 
     public void UpdateData()
     {
+        if (!m_loaded) return;
         if (m_talent is null)
         {
             SetName("");

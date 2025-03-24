@@ -35,6 +35,7 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
             if (m_contentList.GetChild(i) is { } child)
             {
                 var slot = child.gameObject.AddComponent<SpellSlot>();
+                slot.Init();
                 slot.m_index = i;
                 m_slots[i] = slot;
                 m_elementTexts.AddRange(slot.m_texts);

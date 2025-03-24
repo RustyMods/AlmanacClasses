@@ -45,7 +45,7 @@ public class UIManager : MonoBehaviour
         AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("UIManager Initialized");
     }
 
-    public bool IsVisible()
+    public static bool IsVisible()
     {
         return SpellBook.IsVisible() && PassiveBar.IsVisible() && ExperienceBar.IsVisible();
     }

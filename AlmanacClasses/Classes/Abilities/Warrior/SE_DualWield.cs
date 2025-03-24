@@ -159,7 +159,6 @@ public static class DualWield
             if (!PlayerManager.m_playerTalents.TryGetValue("DualWield", out Talent talent)) return;
             if (talent.m_status is { } status && __instance.GetSEMan().RemoveStatusEffect(status.NameHash()))
                 talent.m_passiveActive = false;
-            // if (__instance.GetSEMan().RemoveStatusEffect(talent.m_statusEffectHash)) talent.m_passiveActive = false;
         }
     }
 
