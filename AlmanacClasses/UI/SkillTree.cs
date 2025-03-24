@@ -53,6 +53,7 @@ public class SkillTree : MonoBehaviour
 
     public static void UpdateUI()
     {
+        if (!m_instance) return;
         if (AlmanacClassesPlugin._ShowUIEnabled.Value is AlmanacClassesPlugin.Toggle.On)
         {
             if (Input.GetKeyDown(AlmanacClassesPlugin._ShowUIKey.Value)) m_instance.Show();
@@ -112,6 +113,7 @@ public class SkillTree : MonoBehaviour
 
     public void Show()
     {
+        if (!m_instance) return;
         gameObject.SetActive(true);
         FillLines.SetInitialFillLines();
         PassiveBar.m_instance.Show();
@@ -120,6 +122,7 @@ public class SkillTree : MonoBehaviour
 
     public void Hide()
     {
+        if (!m_instance) return;
         gameObject.SetActive(false);
         Prestige.DeselectTalent();
         PassiveBar.m_instance.Hide();
@@ -258,7 +261,8 @@ public class SkillTree : MonoBehaviour
     
     private static void OnReset()
     {
-        if (!Player.m_localPlayer.NoCostCheat() || Player.m_localPlayer.GetInventory().CountItems("$item_coins") < AlmanacClassesPlugin._ResetCost.Value)
+        if (!Player.m_localPlayer) return;
+        if (!Player.m_localPlayer.NoCostCheat() && Player.m_localPlayer.GetInventory().CountItems("$item_coins") < AlmanacClassesPlugin._ResetCost.Value)
         {
             Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"$text_cost {AlmanacClassesPlugin._ResetCost.Value} $item_coins $text_to_reset");
             return;
@@ -269,7 +273,11 @@ public class SkillTree : MonoBehaviour
             Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_on_cooldown");
             return;
         }
-        Player.m_localPlayer.GetInventory().RemoveItem("$item_coins", AlmanacClassesPlugin._ResetCost.Value);
+
+        if (!Player.m_localPlayer.NoCostCheat())
+        {
+            Player.m_localPlayer.GetInventory().RemoveItem("$item_coins", AlmanacClassesPlugin._ResetCost.Value);
+        }
         TalentManager.ResetTalents();
         ExperienceBar.UpdateExperienceBar();
     }

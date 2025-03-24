@@ -201,17 +201,17 @@ public static class ExperienceManager
         };
     }
 
-    private static bool IsViking(string name)
-    {
-        List<string> prefabNames = new() { "VikingRaider", "VikingElf" };
-        return prefabNames.Contains(name.Replace("(Clone)", string.Empty));
-    }
+    // private static bool IsViking(string name)
+    // {
+    //     List<string> prefabNames = new() { "VikingRaider", "VikingElf" };
+    //     return prefabNames.Contains(name.Replace("(Clone)", string.Empty));
+    // }
     private static int GetExperienceAmount(Character instance)
     {
-        if (IsViking(instance.name))
-        {
-            return (int)(GetRaiderExperience() * instance.m_level * AlmanacClassesPlugin._ExperienceMultiplier.Value);
-        }
+        // if (IsViking(instance.name))
+        // {
+        //     return (int)(GetRaiderExperience() * instance.m_level * AlmanacClassesPlugin._ExperienceMultiplier.Value);
+        // }
         if (m_creatureExperienceMap.TryGetValue(instance.name.Replace("(Clone)", string.Empty), out ExperienceData data))
         {
             int playerLevel = PlayerManager.GetPlayerLevel(PlayerManager.GetExperience());
@@ -347,11 +347,10 @@ public static class ExperienceManager
     {
         GameObject UpgradeItem = ZNetScene.instance.GetPrefab("StaminaUpgrade_Greydwarf");
         GameObject item = Object.Instantiate(UpgradeItem, AlmanacClassesPlugin._Root.transform, false);
-        if (item.transform.Find("heart"))
+        if (item.transform.Find("heart") is {} heart)
         {
-            Object.Destroy(item.transform.Find("heart").gameObject);
+            Object.Destroy(heart.gameObject);
         }
-
         GameObject inner = item.transform.Find("model/inner").gameObject;
         if (inner.TryGetComponent(out MeshRenderer innerRenderer))
         {
@@ -421,6 +420,8 @@ public static class ExperienceManager
         ObjectDB.instance.m_itemByHash[item.name.GetStableHashCode()] = item;
         if (!ZNetScene.instance.m_prefabs.Contains(item)) ZNetScene.instance.m_prefabs.Add(item);
         ZNetScene.instance.m_namedPrefabs[item.name.GetStableHashCode()] = item;
+        
+        Snapshot.SnapshotItem(component, 0.6f);     
     }
     public static void DropOrb(Character instance)
     {

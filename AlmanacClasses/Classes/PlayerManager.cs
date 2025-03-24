@@ -130,8 +130,8 @@ public static class PlayerManager
     {
         if (m_initiatedPlayerTalents) return;
         AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Loaded player talents");
-        LoadSpellBook();
         LoadPlayerTalents();
+        LoadSpellBook();
         LoadInventory();
         m_initiatedPlayerTalents = true;
     }
@@ -295,7 +295,8 @@ public static class PlayerManager
     {
         private static void Postfix(Player __instance)
         {
-            if (__instance != Player.m_localPlayer) return;
+            if (__instance != Player.m_localPlayer || !Hud.m_instance) return;
+            LoadUI.InitHud();
             InitPlayerTalents();
             if (m_playerTalents.ContainsKey("MonkeyWrench")) MonkeyWrench.ModifyTwoHandedWeapons();
             ExperienceBar.SetHUDVisibility(AlmanacClassesPlugin._HudVisible.Value is AlmanacClassesPlugin.Toggle.On);

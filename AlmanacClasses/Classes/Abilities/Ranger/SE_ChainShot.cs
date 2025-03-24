@@ -43,6 +43,7 @@ public class SE_ChainShot : StatusEffect
     {
         private static void Prefix(Projectile __instance, Collider collider)
         {
+            if (!Player.m_localPlayer || __instance.m_owner is not {} owner || !owner.IsPlayer()) return;
             if (!PlayerManager.m_playerTalents.TryGetValue("ChainShot", out Talent talent)) return;
             if (talent.m_status is not { } status || !Player.m_localPlayer.GetSEMan().HaveStatusEffect(status.NameHash())) return;
             if (__instance.m_owner != Player.m_localPlayer) return;
