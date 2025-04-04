@@ -66,20 +66,21 @@ public class SpellInventory : MonoBehaviour
         {
             if (SpellBook.IsAbilityInBook(talent))
             {
-                if (!AbilityManager.IsReady(talent)) return;
+                if (!AbilityManager.IsReady(talent))
+                    return;
+                
                 SpellBook.Remove(talent);
                 element.SetBorder(false);
             }
             else
             {
-                if (SpellBook.m_abilities.Count > 7)
+                if (SpellBook.ActiveSlotCount() > 7)
                 {
                     Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_spell_book_full");
                 }
                 else
                 {
                     SpellBook.Add(talent);
-                    SpellBook.UpdateAbilities();
                     element.SetBorder(true);
                 }
             }

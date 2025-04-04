@@ -23,7 +23,7 @@ public class ExperienceBar : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         m_instance = this;
         SetHUDVisibility(false);
         m_rect = GetComponent<RectTransform>();
-        m_rect.SetAsLastSibling();
+        m_rect.SetAsFirstSibling();
         m_rect.position = AlmanacClassesPlugin._ExperienceBarPos.Value;
 
         SetScale(AlmanacClassesPlugin._ExperienceBarScale.Value);
@@ -102,5 +102,27 @@ public class ExperienceBar : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     {
         if (m_instance == null) return;
         m_instance.SetScale(AlmanacClassesPlugin._ExperienceBarScale.Value);
+    }
+    
+    /// <summary>
+    /// Checks if the UI is visible, if it has been moved off-screen
+    /// </summary>
+    public static bool IsVisible()
+    {
+        return m_instance.m_rect.position.x < Screen.width;
+    }
+    
+    /// <summary>
+    /// Sets 'visibility' by moving it off-screen, like Valheim does. Thus it can keep ticking.
+    /// </summary>
+    public static void SetVisible(bool shouldBeVisible)
+    {
+        if (IsVisible() == shouldBeVisible)
+            return;
+        
+        if (shouldBeVisible)
+            m_instance.m_rect.position = AlmanacClassesPlugin._ExperienceBarPos.Value;
+        else
+            m_instance.m_rect.position = Hud.s_notVisiblePosition;
     }
 }

@@ -33,7 +33,7 @@ public static class FontManager
         _ => "AveriaSerifLibre-Regular"
     };
 
-    private static Font? GetFont(FontOptions option)
+    public static Font? GetFont(FontOptions option)
     {
         if (m_fonts.TryGetValue(option, out Font? font)) return font;
         Font[]? fonts = Resources.FindObjectsOfTypeAll<Font>();
@@ -46,7 +46,8 @@ public static class FontManager
     {
         var font = GetFont(AlmanacClassesPlugin._Font.Value);
         foreach (var text in m_allTexts) text.Update(font);
-        SpellElement.UpdateFont(font);
+        SpellSlot.UpdateFont(font);
+        // SpellElement.UpdateFont(font);
         PassiveButton.OnFontChange(font);
         InventoryButton.OnFontChange(font);
     }

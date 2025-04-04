@@ -69,18 +69,27 @@ public static class SpriteManager
     public static readonly Sprite? BulkUp_Icon = RegisterSprite("SE_WarriorVitality.png", "Icons.Classes.Warrior");
     public static readonly Sprite? Resistant_Icon = RegisterSprite("SE_WarriorResistance.png", "Icons.Classes.Warrior");
 
-
-
     
     public static Sprite Wishbone_Icon = null!;
+    public static Sprite Wet_Icon = null!;
+    public static Sprite Trap_Icon = null!;
 
     public static readonly Dictionary<string, Sprite> m_backgrounds = new ();
     public static void LoadSpriteResources()
     {
-        GameObject wishbone = ZNetScene.instance.GetPrefab("Wishbone");
-        if (wishbone.TryGetComponent(out ItemDrop wishboneItem))
+        if (ZNetScene.instance.GetPrefab("Wishbone").TryGetComponent(out ItemDrop wishboneItem))
         {
             Wishbone_Icon = wishboneItem.m_itemData.GetIcon();
+        }
+
+        if (ObjectDB.m_instance.GetStatusEffect(SEMan.s_statusEffectWet) is { } SE_Wet)
+        {
+            Wet_Icon = SE_Wet.m_icon;
+        }
+
+        if (ZNetScene.instance.GetPrefab("piece_trap_troll").TryGetComponent(out Piece trapPiece))
+        {
+            Trap_Icon = trapPiece.m_icon;
         }
     }
 

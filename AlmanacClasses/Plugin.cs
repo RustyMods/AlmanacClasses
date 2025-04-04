@@ -22,7 +22,7 @@ namespace AlmanacClasses
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
-        internal const string ModVersion = "0.5.9";
+        internal const string ModVersion = "0.6.5";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
         private const string ConfigFileName = ModGUID + ".cfg";
@@ -186,7 +186,7 @@ namespace AlmanacClasses
             _DisplayExperience = config("2 - Settings", "Show Creature Experience", Toggle.Off,
                 "If on, creature hover names will display the amount of experience they give");
 
-            _ExperienceBarPos = config("2 - Settings", "XP Bar Position", new Vector2((300f / 1920f) * Screen.width, (25f / 1080f) * Screen.height),
+            _ExperienceBarPos = config("2 - Settings", "XP Bar Position", new Vector2((1280f / 2560f) * Screen.width, (31.3f / 1440f) * Screen.height),
                 "Set the position of the experience bar", false);
             _ExperienceBarPos.SettingChanged += ExperienceBar.OnChangeExperienceBarPosition;
             _ExperienceBarScale = config("2 - Settings", "XP Bar Scale", 100f,
@@ -198,11 +198,11 @@ namespace AlmanacClasses
                 false);
             _HudVisible.SettingChanged += ExperienceBar.OnChangeExperienceBarVisibility;
 
-            _SpellBookPos = config("2 - Settings", "Spell Bar Position", new Vector2((1500f / 1920f) * Screen.width, (100f / 1080f) * Screen.height),
+            _SpellBookPos = config("2 - Settings", "Spell Bar Position", new Vector2((922f / 2560f) * Screen.width, (70.33f / 1440f) * Screen.height),
                 "Set the location of the spellbar", false);
             _SpellBookPos.SettingChanged += SpellBook.OnSpellBarPosChange;
-
-            _PassiveBarPos = config("2 - Settings", "Passive Bar Position", new Vector2((1500f / 1920f) * Screen.width, (200f / 1080f) * Screen.height),
+            
+            _PassiveBarPos = config("2 - Settings", "Passive Bar Position", new Vector2((962f / 2560f) * Screen.width, (268f / 1440f) * Screen.height),
                 "Set the location of the passive bar", false);
             _PassiveBarPos.SettingChanged += PassiveBar.OnPassiveBarPosChange;
             

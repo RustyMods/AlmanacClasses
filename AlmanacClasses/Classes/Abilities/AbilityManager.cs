@@ -38,50 +38,50 @@ public static class AbilityManager
     {
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell1.Value))
         {
-            if (!SpellBook.m_abilities.TryGetValue(0, out SpellBook.AbilityData ability)) return;
-            CastTalent(ability.m_data);
+            if (!SpellBook.m_slots.TryGetValue(0, out SpellSlot slot) || slot.m_talent is not { } data) return;
+            CastTalent(data);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell2.Value))
         {
-            if (!SpellBook.m_abilities.TryGetValue(1, out SpellBook.AbilityData ability)) return;
-            CastTalent(ability.m_data);
+            if (!SpellBook.m_slots.TryGetValue(1, out SpellSlot slot) || slot.m_talent is not { } data) return;
+            CastTalent(data);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell3.Value))
         {
-            if (!SpellBook.m_abilities.TryGetValue(2, out SpellBook.AbilityData ability)) return;
-            CastTalent(ability.m_data);
+            if (!SpellBook.m_slots.TryGetValue(2, out SpellSlot slot) || slot.m_talent is not { } data) return;
+            CastTalent(data);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell4.Value))
         {
-            if (!SpellBook.m_abilities.TryGetValue(3, out SpellBook.AbilityData ability)) return;
-            CastTalent(ability.m_data);
+            if (!SpellBook.m_slots.TryGetValue(3, out SpellSlot slot) || slot.m_talent is not { } data) return;
+            CastTalent(data);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell5.Value))
         {
-            if (!SpellBook.m_abilities.TryGetValue(4, out SpellBook.AbilityData ability)) return;
-            CastTalent(ability.m_data);
+            if (!SpellBook.m_slots.TryGetValue(4, out SpellSlot slot) || slot.m_talent is not { } data) return;
+            CastTalent(data);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell6.Value))
         {
-            if (!SpellBook.m_abilities.TryGetValue(5, out SpellBook.AbilityData ability)) return;
-            CastTalent(ability.m_data);
+            if (!SpellBook.m_slots.TryGetValue(5, out SpellSlot slot) || slot.m_talent is not { } data) return;
+            CastTalent(data);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell7.Value))
         {
-            if (!SpellBook.m_abilities.TryGetValue(6, out SpellBook.AbilityData ability)) return;
-            CastTalent(ability.m_data);
+            if (!SpellBook.m_slots.TryGetValue(6, out SpellSlot slot) || slot.m_talent is not { } data) return;
+            CastTalent(data);
         }
 
         if (Input.GetKeyDown(AlmanacClassesPlugin._Spell8.Value))
         {
-            if (!SpellBook.m_abilities.TryGetValue(7, out SpellBook.AbilityData ability)) return;
-            CastTalent(ability.m_data);
+            if (!SpellBook.m_slots.TryGetValue(7, out SpellSlot slot) || slot.m_talent is not { } data) return;
+            CastTalent(data);
         }
     }
     private static void CastTalent(Talent ability)
@@ -111,7 +111,6 @@ public static class AbilityManager
         while (count < cooldown)
         {
             m_cooldownMap[ability.m_key] -= 1f / cooldown;
-            ability.m_abilityData?.Update();
             yield return new WaitForSeconds(1f);
             ++count;
         }

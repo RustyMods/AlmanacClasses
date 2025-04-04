@@ -130,8 +130,8 @@ public static class PlayerManager
     {
         if (m_initiatedPlayerTalents) return;
         AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Client: Loaded player talents");
-        LoadSpellBook();
         LoadPlayerTalents();
+        LoadSpellBook();
         LoadInventory();
         m_initiatedPlayerTalents = true;
     }
@@ -152,7 +152,11 @@ public static class PlayerManager
         {
             if (!TalentManager.m_talents.TryGetValue(kvp.Value, out Talent match)) continue;
             if (match == null) continue;
-            SpellBook.m_abilities[kvp.Key] = new SpellBook.AbilityData(match);
+            if (SpellBook.IsAbilityInBook(match)) continue;
+            if (SpellBook.m_slots.TryGetValue(kvp.Key, out SpellSlot slot))
+            {
+                slot.SetAbility(match);
+            }
         }
     }
 
@@ -183,9 +187,10 @@ public static class PlayerManager
     }
     private static void SaveSpellBook()
     {
-        foreach (KeyValuePair<int, SpellBook.AbilityData> kvp in SpellBook.m_abilities)
+        foreach (var slot in SpellBook.m_slots.Values)
         {
-            m_tempPlayerData.m_spellBook[kvp.Key] = kvp.Value.m_data.m_key;
+            if (slot.m_talent is null) continue;
+            m_tempPlayerData.m_spellBook[slot.m_index] = slot.m_talent.m_key;
         }
     }
 
@@ -290,7 +295,8 @@ public static class PlayerManager
     {
         private static void Postfix(Player __instance)
         {
-            if (__instance != Player.m_localPlayer) return;
+            if (__instance != Player.m_localPlayer || !Hud.m_instance) return;
+            LoadUI.InitHud();
             InitPlayerTalents();
             if (m_playerTalents.ContainsKey("MonkeyWrench")) MonkeyWrench.ModifyTwoHandedWeapons();
             ExperienceBar.SetHUDVisibility(AlmanacClassesPlugin._HudVisible.Value is AlmanacClassesPlugin.Toggle.On);
