@@ -89,6 +89,5 @@ public class PassiveBar : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 component.SetBorder(talent.m_passiveActive);
             }
         });
-        component.ShouldUpdate(talent.m_onClickPassive is null);
     }
 }

@@ -15,7 +15,6 @@ public class PassiveButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public Text m_name = null!;
     public Button m_button = null!;
     public Talent m_talent = null!;
-    public bool m_shouldUpdate = true;
     private float m_timer;
     public void Init()
     {
@@ -33,19 +32,9 @@ public class PassiveButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         m_instances.Remove(this);
     }
 
-    public void Update()
-    {
-        if (!m_shouldUpdate) return;
-        m_timer += Time.deltaTime;
-        if (m_timer < 1f) return;
-        m_timer = 0.0f;
-        SetBorder(m_talent.m_passiveActive);
-    }
-
     public void SetIcon(Sprite? sprite) => m_icon.sprite = sprite;
     public void SetName(string text) => m_name.text = text;
     public void SetBorder(bool enable) => m_border.fillAmount = enable ? 1f : 0f;
-    public void ShouldUpdate(bool enable) => m_shouldUpdate = enable;
     public void OnClick(UnityAction action) => m_button.onClick.AddListener(action);
     public void OnPointerEnter(PointerEventData eventData) => m_name.gameObject.SetActive(true);
     public void OnPointerExit(PointerEventData eventData) => m_name.gameObject.SetActive(false);

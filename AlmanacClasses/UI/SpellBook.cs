@@ -230,6 +230,7 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
         }
 
         m_abilities.Add(m_abilities.Count, new AbilityData(ability));
+        
         Player.m_localPlayer.Message(MessageHud.MessageType.Center, "$msg_added_spell");
         UpdateAbilities();
         return true;
