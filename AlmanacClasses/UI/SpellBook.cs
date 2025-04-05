@@ -21,7 +21,6 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     public RectTransform m_rect = null!;
     public List<Text> m_elementTexts = new();
     private Transform m_contentList = null!;
-    private float m_timer;
     
     public void Init()
     {
@@ -38,7 +37,7 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
                 slot.Init();
                 slot.m_index = i;
                 m_slots[i] = slot;
-                m_elementTexts.AddRange(slot.m_texts);
+                if (slot.m_texts != null) m_elementTexts.AddRange(slot.m_texts);
             }
             else
             {
@@ -52,20 +51,13 @@ public class SpellBook : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     {
         if (!m_instance || !Player.m_localPlayer || Minimap.IsOpen()) return;
         if (Player.m_localPlayer.IsTeleporting() || Player.m_localPlayer.IsDead() || Player.m_localPlayer.IsSleeping()) return;
-
-        if (SpellSlot.m_draggedSpellImage is not null)
-        {
-            SpellSlot.m_draggedSpellImage.transform.position = Input.mousePosition;
-            if ((Input.GetKeyDown(KeyCode.Mouse0) && !SpellSlot.m_hoveringSlot) || Input.GetKeyDown(KeyCode.Escape))
-            {
-                SpellSlot.m_selectedSlot = null;
-                Destroy(SpellSlot.m_draggedSpellImage);
-                SpellSlot.m_draggedSpellImage = null;
-            }
-        }
-        m_timer += Time.deltaTime;
-        if (m_timer < 1f) return;
-        m_timer = 0.0f;
+        if (SpellSlot.m_draggedSpellImage is null) return;
+        
+        SpellSlot.m_draggedSpellImage.transform.position = Input.mousePosition;
+        if ((!Input.GetKeyDown(KeyCode.Mouse0) || SpellSlot.m_hoveringSlot) && !Input.GetKeyDown(KeyCode.Escape)) return;
+        SpellSlot.m_selectedSlot = null;
+        Destroy(SpellSlot.m_draggedSpellImage);
+        SpellSlot.m_draggedSpellImage = null;
     }
     
     private Vector3 mouseDifference = Vector3.zero;

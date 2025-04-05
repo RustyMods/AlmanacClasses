@@ -76,7 +76,6 @@ public class PassiveBar : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     {
         var component = Instantiate(m_element, m_contentList).GetComponent<PassiveButton>();
         component.Init();
-        component.m_talent = talent;
         component.SetIcon(talent.m_sprite);
         component.SetBorder(talent.m_passiveActive);
         component.SetName(Localization.m_instance.Localize(talent.GetName()));

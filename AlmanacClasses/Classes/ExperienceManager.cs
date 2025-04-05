@@ -200,18 +200,8 @@ public static class ExperienceManager
             _ => 5
         };
     }
-
-    // private static bool IsViking(string name)
-    // {
-    //     List<string> prefabNames = new() { "VikingRaider", "VikingElf" };
-    //     return prefabNames.Contains(name.Replace("(Clone)", string.Empty));
-    // }
     private static int GetExperienceAmount(Character instance)
     {
-        // if (IsViking(instance.name))
-        // {
-        //     return (int)(GetRaiderExperience() * instance.m_level * AlmanacClassesPlugin._ExperienceMultiplier.Value);
-        // }
         if (m_creatureExperienceMap.TryGetValue(instance.name.Replace("(Clone)", string.Empty), out ExperienceData data))
         {
             int playerLevel = PlayerManager.GetPlayerLevel(PlayerManager.GetExperience());

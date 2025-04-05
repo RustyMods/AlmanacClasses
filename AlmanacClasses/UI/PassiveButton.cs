@@ -14,8 +14,6 @@ public class PassiveButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public Image m_icon = null!;
     public Text m_name = null!;
     public Button m_button = null!;
-    public Talent m_talent = null!;
-    private float m_timer;
     public void Init()
     {
         m_button = GetComponent<Button>();

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using AlmanacClasses.Classes;
+﻿using AlmanacClasses.Classes;
 using AlmanacClasses.Classes.Abilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -14,34 +13,20 @@ public class SpellSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
     public static bool m_hoveringSlot;
 
     // Prefab GameObjects
-    public RectTransform m_rect = null!;
-    public Image m_icon = null!;
-    public Text m_hotkey = null!;
-    public Image m_gray = null!;
-    public Image m_fill = null!;
-    public Text m_timer = null!;
-    public Text m_title = null!;
-    public Text[] m_texts = null!;
+    public RectTransform? m_rect;
+    public Image? m_icon;
+    public Text? m_hotkey;
+    public Image? m_gray;
+    public Image? m_fill;
+    public Text? m_timer;
+    public Text? m_title;
+    public Text[]? m_texts;
 
     public Talent? m_talent;
     public int m_index;
     private bool m_updating;
     public bool m_loaded;
-    public void Awake()
-    {
-        if (m_loaded) return;
-        m_rect = GetComponent<RectTransform>();
-        m_icon = Utils.FindChild(transform, "$image_icon").GetComponent<Image>();
-        m_hotkey = Utils.FindChild(transform, "$text_hotkey").GetComponent<Text>();
-        m_gray = Utils.FindChild(transform, "$image_gray").GetComponent<Image>();
-        m_fill = Utils.FindChild(transform, "$image_fill").GetComponent<Image>();
-        m_timer = Utils.FindChild(transform, "$text_timer").GetComponent<Text>();
-        m_timer.transform.position += new Vector3(0f, -15f);
-        m_title = Utils.FindChild(transform, "$text_title").GetComponent<Text>();
-        m_texts = GetComponentsInChildren<Text>();
-        HideName();
-        m_loaded = true;
-    }
+    public void Awake() => Init();
 
     public void Init()
     {
@@ -150,9 +135,11 @@ public class SpellSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
             var image = m_draggedSpellImage.AddComponent<Image>();
             image.sprite = m_talent.GetSprite();
             image.raycastTarget = false;
-
-            var rectTransform = m_draggedSpellImage.GetComponent<RectTransform>();
-            rectTransform.sizeDelta = m_rect.sizeDelta * 0.75f;
+            if (m_rect != null)
+            {
+                var rectTransform = m_draggedSpellImage.GetComponent<RectTransform>();
+                rectTransform.sizeDelta = m_rect.sizeDelta * 0.75f;
+            }
             SpellInfo.m_instance.Hide();
         }
     }
@@ -172,22 +159,29 @@ public class SpellSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
 
     public void UpdateData()
     {
-        if (!m_loaded) return;
-        if (m_talent is null)
+        try
         {
-            SetName("");
-            SetBorder(0f);
-            SetHotkey("");
-            SetTimer("");
-            SetFillAmount(0f);
-            SetIconVisibility(false);
+            if (!m_loaded) return;
+            if (m_talent == null)
+            {
+                SetName("");
+                SetBorder(0f);
+                SetHotkey("");
+                SetTimer("");
+                SetFillAmount(0f);
+                SetIconVisibility(false);
+            }
+            else
+            {
+                SetName(m_talent.GetName());
+                SetHotkey(GetKeyCode(m_index));
+                SetIcon(m_talent.GetSprite());
+                SetIconVisibility(true);
+            }
         }
-        else
+        catch
         {
-            SetName(m_talent.GetName());
-            SetHotkey(GetKeyCode(m_index));
-            SetIcon(m_talent.GetSprite());
-            SetIconVisibility(true);
+            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to update spell slot data");
         }
     }
     
@@ -210,8 +204,7 @@ public class SpellSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
     private static string AddAltKey(string key)
     {
         var spellModifier = AlmanacClassesPlugin._SpellAlt.Value;
-        if (spellModifier is KeyCode.None)
-            return key;
+        if (spellModifier is KeyCode.None) return key;
     
         switch (spellModifier)
         {
@@ -251,7 +244,7 @@ public class SpellSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
         {
             ShowSpellInfo();
         }
-        m_icon.rectTransform.sizeDelta *= 1.15f;
+        if (m_icon != null) m_icon.rectTransform.sizeDelta *= 1.15f;
         m_hoveringSlot = true;
     }
     
@@ -259,7 +252,7 @@ public class SpellSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
     {
         HideName();
         SpellInfo.m_instance.Hide();
-        m_icon.rectTransform.sizeDelta /= 1.15f;
+        if (m_icon != null) m_icon.rectTransform.sizeDelta /= 1.15f;
         m_hoveringSlot = false;
     }
 
@@ -278,17 +271,63 @@ public class SpellSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
             ShowName();
         }
     }
-    public void SetIcon(Sprite? sprite) => m_icon.sprite = sprite;
-    public void SetIconVisibility(bool isEnabled) => m_icon.enabled = isEnabled;
-    public void SetHotkey(string text) => m_hotkey.text = text;
-    public void SetBorder(float amount) => m_gray.fillAmount = amount;
-    public void SetFillAmount(float amount) => m_fill.fillAmount = amount;
-    public void SetTimer(string text) => m_timer.text = text;
-    public void SetName(string text) => m_title.text = Localization.instance.Localize(text);
-    public void ShowName() => m_title.gameObject.SetActive(true);
-    public void HideName() => m_title.gameObject.SetActive(false);
+
+    public void SetIcon(Sprite? sprite)
+    {
+        if (m_icon is null) return;
+        m_icon.sprite = sprite;
+    }
+
+    public void SetIconVisibility(bool isEnabled)
+    {
+        if (m_icon is null) return;
+        m_icon.enabled = isEnabled;
+    }
+
+    public void SetHotkey(string text)
+    {
+        if (m_hotkey is null) return;
+        m_hotkey.text = text;
+    }
+
+    public void SetBorder(float amount)
+    {
+        if (m_gray is null) return;
+        m_gray.fillAmount = amount;
+    }
+
+    public void SetFillAmount(float amount)
+    {
+        if (m_fill is null) return;
+        m_fill.fillAmount = amount;
+    }
+
+    public void SetTimer(string text)
+    {
+        if (m_timer is null) return;
+        m_timer.text = text;
+    }
+
+    public void SetName(string text)
+    {
+        if (m_title is null) return;
+        m_title.text = Localization.instance.Localize(text);
+    }
+
+    public void ShowName()
+    {
+        if (m_title == null) return;
+        m_title.gameObject.SetActive(true);
+    }
+
+    public void HideName()
+    {
+        if (m_title == null) return;
+        m_title.gameObject.SetActive(false);
+    }
     public void SetFont(Font? font)
     {
+        if (m_texts == null) return;
         foreach (var text in m_texts) text.font = font;
     }
     public static void UpdateFont(Font? font)
