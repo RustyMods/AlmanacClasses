@@ -159,29 +159,22 @@ public class SpellSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
 
     public void UpdateData()
     {
-        try
+        if (!m_loaded) return;
+        if (m_talent == null)
         {
-            if (!m_loaded) return;
-            if (m_talent == null)
-            {
-                SetName("");
-                SetBorder(0f);
-                SetHotkey("");
-                SetTimer("");
-                SetFillAmount(0f);
-                SetIconVisibility(false);
-            }
-            else
-            {
-                SetName(m_talent.GetName());
-                SetHotkey(GetKeyCode(m_index));
-                SetIcon(m_talent.GetSprite());
-                SetIconVisibility(true);
-            }
+            SetName("");
+            SetBorder(0f);
+            SetHotkey("");
+            SetTimer("");
+            SetFillAmount(0f);
+            SetIconVisibility(false);
         }
-        catch
+        else
         {
-            AlmanacClassesPlugin.AlmanacClassesLogger.LogDebug("Failed to update spell slot data");
+            SetName(m_talent.GetName());
+            SetHotkey(GetKeyCode(m_index));
+            SetIcon(m_talent.GetSprite());
+            SetIconVisibility(true);
         }
     }
     

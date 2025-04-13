@@ -22,7 +22,7 @@ namespace AlmanacClasses
     public class AlmanacClassesPlugin : BaseUnityPlugin
     {
         internal const string ModName = "AlmanacClasses";
-        internal const string ModVersion = "0.6.8";
+        internal const string ModVersion = "0.6.9";
         internal const string Author = "RustyMods";
         private const string ModGUID = Author + "." + ModName;
         private const string ConfigFileName = ModGUID + ".cfg";
@@ -106,6 +106,43 @@ namespace AlmanacClasses
             ExperienceManager.LoadServerExperienceMapWatcher();
             StaticExperience.LoadServerStaticExperienceWatcher();
             Watcher.InitWatcher();
+
+            var SimpleOrb = new ExperienceManager.ExperienceOrb("ExperienceOrb_Simple", "Simple Orb", 10, Heightmap.Biome.Meadows | Heightmap.Biome.BlackForest)
+            {
+                m_amount = 10,
+                m_color = new Color(1f, 0.9f, 0f, 1f),
+                m_emissionColor = new Color32(255, 0, 0, 255),
+                m_shellColor = new Color(1f, 0.5f, 0.5f, 0.6f),
+                m_lightColor = new Color(1f, 0.7f, 0.5f, 1f),
+                m_biomes = Heightmap.Biome.Meadows
+            };
+            var MagicOrb = new ExperienceManager.ExperienceOrb("ExperienceOrb_Magic", "Magic Orb", 25, Heightmap.Biome.BlackForest | Heightmap.Biome.Swamp)
+            {
+                m_amount = 25,
+                m_color = new Color(0.3f, 1f, 0f, 1f),
+                m_emissionColor = new Color32(255, 255, 0, 255),
+                m_shellColor = new Color(0f, 0.5f, 0.5f, 0.6f),
+                m_lightColor = new Color(0.5f, 1f, 0f, 1f),
+                m_biomes = Heightmap.Biome.Swamp
+            };
+            var EpicOrb = new ExperienceManager.ExperienceOrb("ExperienceOrb_Epic", "Epic Orb", 50, Heightmap.Biome.Mountain | Heightmap.Biome.Plains | Heightmap.Biome.Ocean)
+            {
+                m_amount = 50,
+                m_color = new Color(0f, 0.2f, 0.8f, 1f),
+                m_emissionColor = new Color32(150, 0, 250, 255),
+                m_shellColor = new Color(0.8f, 0f, 0.5f, 0.6f),
+                m_lightColor = new Color(1f, 0.7f, 0.5f, 1f),
+                m_biomes = Heightmap.Biome.Mountain
+            };
+            var LegendaryOrb = new ExperienceManager.ExperienceOrb("ExperienceOrb_Legendary", "Legendary Orb", 100, Heightmap.Biome.Plains | Heightmap.Biome.Mistlands | Heightmap.Biome.AshLands | Heightmap.Biome.DeepNorth)
+            {
+                m_amount = 100,
+                m_color = new Color(1f, 0.9f, 1f, 1f),
+                m_emissionColor = new Color32(150, 150, 255, 255),
+                m_shellColor = new Color(0.6f, 1f, 1f, 0.6f),
+                m_lightColor = new Color(0.5f, 0.7f, 1f, 1f),
+                m_biomes = Heightmap.Biome.Plains
+            };
         }
         public void Update()
         {
@@ -312,3 +349,4 @@ namespace AlmanacClasses
         }
     }
 }
+

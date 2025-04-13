@@ -206,6 +206,7 @@
         <Compile Include="Managers\CommandsManager.cs" />
         <Compile Include="Managers\DisplayText.cs" />
         <Compile Include="Managers\FontManager.cs" />
+        <Compile Include="Managers\Helpers.cs" />
         <Compile Include="Managers\LocalizationManager.cs" />
         <Compile Include="Managers\MaterialReplacer.cs" />
         <Compile Include="Managers\PieceManager.cs" />

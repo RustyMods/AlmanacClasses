@@ -303,6 +303,15 @@ public static class PlayerManager
             ExperienceBar.UpdateExperienceBar();
         } 
     }
+
+    [HarmonyPatch(typeof(Hud), nameof(Hud.OnDestroy))]
+    private static class Hud_OnDestroy_Patch
+    {
+        private static void Postfix()
+        {
+            LoadUI.m_hudInitialized = false;
+        }
+    }
     
     [HarmonyPatch(typeof(Player), nameof(Player.SetMaxEitr))]
     private static class Player_SetMaxEitr_Patch

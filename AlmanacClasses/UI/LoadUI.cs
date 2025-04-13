@@ -9,7 +9,7 @@ namespace AlmanacClasses.UI;
 
 public static class LoadUI
 {
-    private static bool m_hudInitialized;
+    public static bool m_hudInitialized;
     public static UIManager? UIManager;
     
     [Header("Assets")]
